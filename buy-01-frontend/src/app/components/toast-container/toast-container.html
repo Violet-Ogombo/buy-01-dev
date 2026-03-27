@@ -1,0 +1,18 @@
+<div class="toast-container" *ngIf="(toasts$ | async) as toasts">
+  <div
+    *ngFor="let toast of toasts; trackBy: trackById"
+    class="toast"
+    [ngClass]="{
+      'toast-success': toast.type === 'success',
+      'toast-error': toast.type === 'error',
+      'toast-info': toast.type === 'info'
+    }"
+  >
+    <div class="d-flex justify-content-between align-items-start gap-2">
+      <span>{{ toast.message }}</span>
+      <button type="button" class="btn-close" aria-label="Close" (click)="dismiss(toast.id)">
+        
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,75 @@
+<div class="product-detail-container" *ngIf="loading">
+  <div class="full-page-center">
+    <div class="spinner"></div>
+    <p style="margin-top: 1rem; text-align: center; color: #666;">Loading product details...</p>
+  </div>
+</div>
+
+<div class="product-detail-container" *ngIf="!loading && error">
+  <div class="error" style="margin: 2rem auto; max-width: 500px; padding: 1.5rem; background: #ffebee; border-radius: 8px; border-left: 4px solid #d32f2f;">
+    <h2 style="color: #d32f2f; margin-top: 0;">{{ notFound ? 'Product Not Found' : 'Error Loading Product' }}</h2>
+    <p style="color: #555;">{{ error }}</p>
+    <div style="display: flex; gap: 1rem;">
+      <a routerLink="/products" class="btn-secondary-main">Back to products</a>
+      <button type="button" class="btn-primary-main" (click)="loadProduct(product?.id || routeRef.snapshot.paramMap.get('id') || '')">
+        Try Again
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="product-detail-container" *ngIf="!loading && !error && product">
+  <div class="detail-layout">
+    <div class="gallery" *ngIf="product.imageUrls && product.imageUrls.length; else noImage">
+      <div class="main-image-wrapper" (click)="openFullscreen()">
+        <img [src]="selectedImageUrl || product.imageUrls[0]" alt="Product image" class="main-image" (error)="onImageLoadError($event)" />
+      </div>
+      <div class="thumbnails" *ngIf="product.imageUrls.length > 1">
+        <img
+          *ngFor="let url of product.imageUrls; trackBy: trackByImageUrl"
+          [src]="url"
+          alt="Thumbnail"
+          class="thumbnail"
+          [class.active]="url === selectedImageUrl"
+          (click)="selectImage(url)"
+          (error)="onImageLoadError($event)"
+        />
+      </div>
+    </div>
+    <ng-template #noImage>
+      <div class="no-image">No image available</div>
+    </ng-template>
+
+    <div class="info">
+      <h1>{{ product.name }}</h1>
+      <div class="price">${{ product.price }}</div>
+      <div class="quantity" [class.out-of-stock]="product.quantity === 0">
+        <ng-container *ngIf="product.quantity === 0; else available">
+          Out of Stock
+        </ng-container>
+        <ng-template #available>In stock: {{ product.quantity }}</ng-template>
+      </div>
+
+      <p class="description">{{ product.description }}</p>
+
+      <div class="seller" *ngIf="product.userId">
+        <h3>Seller</h3>
+        <p>Seller ID: {{ product.userId }}</p>
+        <p class="seller-note">(Name & avatar require an additional user endpoint and are not available yet.)</p>
+      </div>
+
+      <button type="button" class="contact" disabled>
+        Contact Seller (coming soon)
+      </button>
+    </div>
+  </div>
+
+  <a routerLink="/products" class="back-link">&larr; Back to products</a>
+</div>
+
+<div class="fullscreen-backdrop" *ngIf="showImageFullscreen" (click)="closeFullscreen()">
+  <div class="fullscreen-modal" (click)="$event.stopPropagation()">
+    <img *ngIf="selectedImageUrl" [src]="selectedImageUrl" alt="Fullscreen image" (error)="onImageLoadError($event)" />
+    <button type="button" (click)="closeFullscreen()">Close</button>
+  </div>
+</div>

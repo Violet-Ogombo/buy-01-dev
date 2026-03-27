@@ -1,0 +1,10 @@
+com/example/identity/config/SecurityConfig.class
+com/example/identity/service/UserService.class
+com/example/identity/service/JwtService.class
+com/example/identity/IdentityServiceApplication.class
+com/example/identity/filter/HeaderAuthenticationFilter.class
+com/example/identity/controller/AuthController.class
+com/example/identity/model/Role.class
+com/example/identity/repository/UserRepository.class
+com/example/identityservice/config/KafkaTopicConfig.class
+com/example/identity/model/User.class

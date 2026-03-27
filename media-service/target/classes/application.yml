@@ -1,0 +1,39 @@
+jwt:
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+server:
+  port: 8083
+  # SSL temporarily disabled
+  # ssl:
+  #   enabled: true
+  #   key-store: classpath:keystore.p12
+  #   key-store-password: password123
+  #   key-store-type: PKCS12
+  #   key-alias: buy01
+
+spring:
+  application:
+    name: media-service
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/buy01
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+  kafka:
+    bootstrap-servers: localhost:9092
+
+media:
+  upload:
+    dir: /app/uploads/images
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+  instance:
+    prefer-ip-address: true
+    # secure-port-enabled: true
+    # non-secure-port-enabled: false
+    # status-page-url: https://localhost:8083/actuator/info
+    # health-check-url: https://localhost:8083/actuator/health

@@ -1,0 +1,144 @@
+.product-detail-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.detail-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 2rem;
+}
+
+.gallery {
+  background: #fff;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.main-image-wrapper {
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: zoom-in;
+}
+
+.main-image {
+  width: 100%;
+  max-height: 480px;
+  object-fit: cover;
+  transition: transform 0.2s;
+}
+
+.main-image-wrapper:hover .main-image {
+  transform: scale(1.03);
+}
+
+.thumbnails {
+  margin-top: 0.75rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.thumbnail {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.thumbnail.active {
+  border: 2px solid #1976d2;
+  opacity: 1;
+}
+
+.no-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: #fafafa;
+  border-radius: 8px;
+  color: #777;
+}
+
+.info h1 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+.price {
+  font-size: 2rem;
+  color: #2e7d32;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.quantity {
+  margin-bottom: 1rem;
+  color: #555;
+}
+
+.quantity.out-of-stock {
+  color: #d32f2f;
+}
+
+.description {
+  margin-bottom: 1.5rem;
+  white-space: pre-line;
+}
+
+.contact {
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  border: none;
+  background: #1976d2;
+  color: #fff;
+  font-weight: 500;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.back-link {
+  display: inline-block;
+  margin-top: 1.5rem;
+  text-decoration: none;
+  color: #1976d2;
+}
+
+.fullscreen-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.fullscreen-modal {
+  background: #fff;
+  padding: 1rem;
+  border-radius: 6px;
+  max-width: 90vw;
+  max-height: 90vh;
+}
+
+.fullscreen-modal img {
+  max-width: 80vw;
+  max-height: 70vh;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.fullscreen-modal button {
+  padding: 0.4rem 0.8rem;
+}
+
+@media (max-width: 768px) {
+  .detail-layout {
+    grid-template-columns: 1fr;
+  }
+}

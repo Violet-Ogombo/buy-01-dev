@@ -1,0 +1,42 @@
+<div class="product-list-container">
+  <h1>Products</h1>
+  
+  <div *ngIf="error" class="error">
+    {{ error }}
+    <button class="btn-secondary-main ms-2" type="button" (click)="loadProducts()">Retry</button>
+  </div>
+  
+  <ng-container *ngIf="!error">
+    <div *ngIf="products.length > 0" class="products-grid">
+      <div *ngFor="let product of paginatedProducts; trackBy: trackByProductId" class="product-card" [routerLink]="['/products', product.id]">
+        <img
+          *ngIf="product.imageUrls && product.imageUrls.length"
+          [src]="product.imageUrls[0]"
+          alt="Product image"
+          class="product-image"
+          (error)="onImageLoadError($event)"
+        />
+        <h3>{{ product.name }}</h3>
+        <p class="description">{{ product.description }}</p>
+        <p class="price">${{ product.price }}</p>
+        <p class="quantity">
+          <ng-container *ngIf="product.quantity === 0; else inStock">
+            Out of Stock
+          </ng-container>
+          <ng-template #inStock>In stock: {{ product.quantity }}</ng-template>
+        </p>
+        <span class="view-details">View Details</span>
+      </div>
+    </div>
+
+    <div *ngIf="products.length === 0" class="no-products">
+      No products available
+    </div>
+
+    <div *ngIf="products.length > 0" class="pagination">
+      <button (click)="changePage(-1)" [disabled]="currentPage === 1">Previous</button>
+      <span>Page {{ currentPage }} of {{ totalPages }}</span>
+      <button (click)="changePage(1)" [disabled]="currentPage === totalPages">Next</button>
+    </div>
+  </ng-container>
+</div>

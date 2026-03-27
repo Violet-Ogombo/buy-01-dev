@@ -1,0 +1,67 @@
+.seller-layout {
+  max-width: 1200px;
+  margin: 1.5rem auto;
+  padding: 0 1rem;
+}
+
+.seller-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.25rem;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.seller-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.seller-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.seller-name {
+  font-weight: 600;
+}
+
+.seller-role {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.seller-nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.seller-nav a {
+  text-decoration: none;
+  color: #1976d2;
+  font-weight: 500;
+}
+
+.seller-nav a.active {
+  border-bottom: 2px solid #1976d2;
+}
+
+.seller-logout {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  border: none;
+  background: #e53935;
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.seller-content {
+  margin-top: 1rem;
+}

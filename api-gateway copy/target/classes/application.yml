@@ -1,0 +1,67 @@
+server:
+  port: 8080
+  # Enable HTTPS/SSL for production (uncomment and configure with keystore)
+  # To generate keystore: keytool -genkeypair -alias tomcat -keyalg RSA -keysize 2048 \
+  #   -keystore keystore.p12 -storetype PKCS12 -storepass password123 -validity 365 \
+  #   -dname "CN=localhost, OU=IT, O=Company, L=City, ST=State, C=Country"
+  # ssl:
+  #   enabled: true
+  #   key-store: classpath:keystore.p12
+  #   key-store-password: ${SSL_KEYSTORE_PASSWORD:password123}
+  #   key-store-type: PKCS12
+  #   key-alias: tomcat
+
+jwt:
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      httpclient:
+        connect-timeout: 5000
+        response-timeout: 5000ms
+        ssl:
+          use-insecure-trust-manager: true
+      routes:
+        - id: identity-service
+          uri: lb://identity-service
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - RewritePath=/api/auth/?(?<segment>.*), /${segment}
+
+        - id: user-service
+          uri: lb://identity-service
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - RewritePath=/api/users/?(?<segment>.*), /${segment}
+
+        - id: product-service
+          uri: lb://product-service
+          predicates:
+            - Path=/api/products/**
+          filters:
+            - RewritePath=/api/products/?(?<segment>.*), /${segment}
+            # Headers will be added by GlobalJwtAuthenticationFilter, but we preserve them here
+            - name: AddRequestHeader
+              args:
+                name: X-Forwarded-Proto
+                value: http
+        
+        - id: media-service
+          uri: lb://media-service
+          predicates:
+            - Path=/api/media/**
+          filters:
+            - StripPrefix=2
+            - AddRequestHeader=X-Forwarded-Proto,http
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    register-with-eureka: true
+    fetch-registry: true

@@ -1,0 +1,35 @@
+<div class="full-page-center">
+  <form class="card-form w-100" [formGroup]="form" (ngSubmit)="submit()">
+    <h1 class="h4 mb-3">Login</h1>
+
+    <div class="form-field">
+      <label>Email</label>
+      <input formControlName="email" type="email" autocomplete="email" />
+      <div *ngIf="form.get('email')?.touched && form.get('email')?.invalid" class="form-error-text">
+        Enter a valid email address.
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label>Password</label>
+      <input formControlName="password" type="password" autocomplete="current-password" />
+      <div *ngIf="form.get('password')?.touched && form.get('password')?.invalid" class="form-error-text">
+        Password is required.
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <label class="d-flex align-items-center gap-2 mb-0">
+        <input type="checkbox" formControlName="rememberMe" />
+        <span>Remember me</span>
+      </label>
+    </div>
+
+    <button type="submit" class="btn-primary-main w-100 d-flex justify-content-center align-items-center" [disabled]="form.invalid || loading">
+      <span *ngIf="!loading">Login</span>
+      <span *ngIf="loading" class="spinner spinner-sm spinner-inline"></span>
+    </button>
+
+    <div *ngIf="error" class="form-error-text mt-3">{{ error }}</div>
+  </form>
+</div>

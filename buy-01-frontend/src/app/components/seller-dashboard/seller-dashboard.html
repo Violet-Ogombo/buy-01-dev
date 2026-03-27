@@ -1,0 +1,63 @@
+<div class="dashboard-container">
+  <div class="header">
+    <h1>My Products</h1>
+    <button class="btn-primary" (click)="createProduct()">+ Add New Product</button>
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    <div class="spinner spinner-sm spinner-inline me-2"></div>
+    <span>Loading your products...</span>
+  </div>
+  
+  <div *ngIf="error" class="error">
+    {{ error }}
+    <button type="button" class="btn-secondary-main ms-2" (click)="loadMyProducts()">Retry</button>
+  </div>
+
+  <div *ngIf="!loading && !error" class="products-table">
+    <table *ngIf="products.length > 0">
+      <thead>
+        <tr>
+          <th>Image</th>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Price</th>
+          <th>Quantity</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let product of paginatedProducts; trackBy: trackByProductId">
+          <td>
+            <img
+              *ngIf="product.imageUrls && product.imageUrls.length"
+              [src]="product.imageUrls[0]"
+              alt="Thumbnail"
+              class="thumb"
+              (error)="onImageLoadError($event)"
+            />
+          </td>
+          <td>{{ product.name }}</td>
+          <td class="description">{{ product.description }}</td>
+          <td class="price">${{ product.price }}</td>
+          <td>{{ product.quantity }}</td>
+          <td class="actions">
+            <button class="btn-edit" (click)="editProduct(product.id!)">Edit</button>
+            <button class="btn-delete" (click)="deleteProduct(product.id!)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="products.length === 0" class="no-products">
+      <p>You haven't created any products yet.</p>
+      <button class="btn-primary" (click)="createProduct()">Create Your First Product</button>
+    </div>
+  </div>
+
+  <div *ngIf="products.length > 0" class="pagination">
+    <button (click)="changePage(-1)" [disabled]="currentPage === 1">Previous</button>
+    <span>Page {{ currentPage }} of {{ totalPages }}</span>
+    <button (click)="changePage(1)" [disabled]="currentPage === totalPages">Next</button>
+  </div>
+</div>

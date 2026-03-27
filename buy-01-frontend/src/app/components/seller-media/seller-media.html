@@ -1,0 +1,79 @@
+<div class="media-container">
+  <div class="media-header">
+    <h1>Media Library</h1>
+    <div class="filters">
+      <button [class.active]="filter === 'all'" (click)="setFilter('all')">All</button>
+      <button [class.active]="filter === 'linked'" (click)="setFilter('linked')">Linked</button>
+      <button [class.active]="filter === 'unlinked'" (click)="setFilter('unlinked')">Unlinked</button>
+    </div>
+  </div>
+
+  <div class="upload-section">
+    <label class="file-input">
+      <span>Select images</span>
+      <input type="file" multiple accept="image/*" (change)="onFilesSelected($event)" />
+    </label>
+    <div
+      class="drop-zone"
+      [class.drag-over]="isDragOver"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onDrop($event)"
+    >
+      Drag & drop images here (max 2MB each)
+    </div>
+    <div class="uploading" *ngIf="uploading">
+      <div class="spinner spinner-sm spinner-inline me-2"></div>
+      <span>Uploading images...</span>
+      <div class="progress mt-2">
+        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    <div class="spinner spinner-sm spinner-inline me-2"></div>
+    <span>Loading media...</span>
+  </div>
+  <div *ngIf="error" class="error">
+    {{ error }}
+    <button type="button" class="btn-secondary-main ms-2" (click)="loadMedia()">Retry</button>
+  </div>
+  <div *ngIf="copyMessage" class="info">{{ copyMessage }}</div>
+
+  <div *ngIf="!loading && !error && filteredMedia.length > 0" class="media-grid">
+    <div class="media-card" *ngFor="let item of paginatedMedia">
+      <img [src]="getImageUrl(item)" alt="Image" />
+      <div class="media-meta">
+        <div class="filename">{{ item.filename }}</div>
+        <div class="details">
+          <span>Size: {{ item.size | number }} bytes</span>
+          <span *ngIf="item.productId">Linked to product</span>
+          <span *ngIf="!item.productId">Unlinked</span>
+        </div>
+      </div>
+      <div class="media-actions">
+        <button (click)="preview(item)">Preview</button>
+        <button (click)="copyUrl(item)">Copy URL</button>
+        <button (click)="delete(item)">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && !error && filteredMedia.length === 0" class="empty">
+    No images found.
+  </div>
+
+  <div *ngIf="!loading && !error && filteredMedia.length > 0" class="pagination">
+    <button (click)="changePage(-1)" [disabled]="currentPage === 1">Previous</button>
+    <span>Page {{ currentPage }} of {{ totalPages }}</span>
+    <button (click)="changePage(1)" [disabled]="currentPage === totalPages">Next</button>
+  </div>
+
+  <div class="preview-backdrop" *ngIf="showPreview" (click)="closePreview()">
+    <div class="preview-modal" (click)="$event.stopPropagation()">
+      <img *ngIf="previewUrl" [src]="previewUrl" alt="Preview" />
+      <button (click)="closePreview()">Close</button>
+    </div>
+  </div>
+</div>

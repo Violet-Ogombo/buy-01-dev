@@ -1,0 +1,5 @@
+/Users/aung.min/Desktop/Audits/amin/buy-01/api-gateway/src/main/java/com/example/gateway/config/SecurityConfig.java
+/Users/aung.min/Desktop/Audits/amin/buy-01/api-gateway/src/main/java/com/example/gateway/filter/JwtAuthenticationFilter.java
+/Users/aung.min/Desktop/Audits/amin/buy-01/api-gateway/src/main/java/com/example/gateway/filter/LoggingFilter.java
+/Users/aung.min/Desktop/Audits/amin/buy-01/api-gateway/src/main/java/com/example/gateway/ApiGatewayApplication.java
+/Users/aung.min/Desktop/Audits/amin/buy-01/api-gateway/src/main/java/com/example/gateway/filter/GlobalJwtAuthenticationFilter.java

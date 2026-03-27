@@ -1,0 +1,58 @@
+<div class="full-page-center">
+  <form class="card-form w-100" [formGroup]="form" (ngSubmit)="submit()">
+    <h1 class="h4 mb-3">Create account</h1>
+
+    <div class="form-field">
+      <label>Name</label>
+      <input formControlName="name" type="text" autocomplete="name" />
+      <div *ngIf="form.get('name')?.touched && form.get('name')?.invalid" class="form-error-text">
+        Name is required (min 2 characters).
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label>Email</label>
+      <input formControlName="email" type="email" autocomplete="email" />
+      <div *ngIf="form.get('email')?.touched && form.get('email')?.invalid" class="form-error-text">
+        Enter a valid email address.
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label>Password</label>
+      <input formControlName="password" type="password" autocomplete="new-password" />
+      <div *ngIf="form.get('password')?.touched && form.get('password')?.invalid" class="form-error-text">
+        Password is required (min 8 characters).
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label>Confirm Password</label>
+      <input formControlName="confirmPassword" type="password" autocomplete="new-password" />
+      <div *ngIf="form.errors?.['passwordsMismatch'] && form.get('confirmPassword')?.touched" class="form-error-text">
+        Passwords do not match.
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label>Role</label>
+      <div class="d-flex flex-wrap gap-3">
+        <label *ngFor="let role of roles" class="d-flex align-items-center gap-2 mb-0">
+          <input type="radio" [value]="role" formControlName="role" />
+          <span>{{ role }}</span>
+        </label>
+      </div>
+    </div>
+
+    <button
+      type="submit"
+      class="btn-primary-main w-100 d-flex justify-content-center align-items-center"
+      [disabled]="form.invalid || loading"
+    >
+      <span *ngIf="!loading">Register</span>
+      <span *ngIf="loading" class="spinner spinner-sm spinner-inline"></span>
+    </button>
+
+    <div *ngIf="error" class="form-error-text mt-3">{{ error }}</div>
+  </form>
+</div>

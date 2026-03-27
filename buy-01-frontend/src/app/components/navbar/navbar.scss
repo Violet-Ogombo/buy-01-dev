@@ -1,0 +1,112 @@
+.navbar {
+  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
+  .navbar-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    text-decoration: none;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 0.9;
+    }
+  }
+
+  .navbar-menu {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .navbar-link {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+
+  .navbar-user {
+    color: white;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .btn-logout,
+  .btn-register {
+    padding: 0.5rem 1.25rem;
+    border: 2px solid white;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn-logout {
+    background: transparent;
+    color: white;
+
+    &:hover {
+      background: white;
+      color: #1976d2;
+    }
+  }
+
+  .btn-register {
+    background: white;
+    color: #1976d2;
+
+    &:hover {
+      background: transparent;
+      color: white;
+    }
+  }
+
+  .navbar-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .navbar {
+    .navbar-container {
+      padding: 1rem;
+    }
+
+    .navbar-menu {
+      gap: 0.75rem;
+      font-size: 0.9rem;
+    }
+
+    .navbar-brand {
+      font-size: 1.25rem;
+    }
+  }
+}

@@ -1,0 +1,10 @@
+# Build context exclusions for faster Docker builds
+.git/
+.gitignore
+*.md
+*.log
+node_modules/
+.DS_Store
+dist/
+.angular/
+coverage/

@@ -1,0 +1,18 @@
+server:
+  port: 8081
+spring:
+  application:
+    name: identity-service
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/buy01
+  kafka:
+    bootstrap-servers: localhost:9092
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    register-with-eureka: true
+    fetch-registry: true
+jwt:
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970

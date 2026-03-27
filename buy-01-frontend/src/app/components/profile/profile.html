@@ -1,0 +1,90 @@
+<div *ngIf="loading" class="full-page-center">
+  <div class="spinner"></div>
+</div>
+
+<!-- View Mode -->
+<div *ngIf="!loading && user && !isEditMode" class="card-form profile-container">
+  <div class="profile-header">
+    <h2 class="h5">My Profile</h2>
+    <button type="button" class="btn-primary-main" (click)="toggleEditMode()">Edit Profile</button>
+  </div>
+
+  <div class="profile-info">
+    <div class="info-item">
+      <label>Username</label>
+      <p>{{ user.name }}</p>
+    </div>
+
+    <div class="info-item">
+      <label>Email</label>
+      <p>{{ user.email }}</p>
+    </div>
+
+    <div class="info-item">
+      <label>Role</label>
+      <p>{{ user.role }}</p>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="form-error-text mt-2">{{ error }}</div>
+  <div *ngIf="success" style="color: #2e7d32; margin-top: 0.5rem;">{{ success }}</div>
+</div>
+
+<!-- Edit Mode -->
+<div *ngIf="!loading && user && isEditMode" class="card-form profile-container">
+  <div class="profile-header">
+    <h2 class="h5">Edit Profile</h2>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="form-field">
+      <label>Username</label>
+      <input type="text" formControlName="name" />
+      <div *ngIf="form.get('name')?.touched && form.get('name')?.invalid" class="form-error-text">
+        Username is required (min 2 characters).
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label>Email</label>
+      <input type="email" formControlName="email" />
+      <div *ngIf="form.get('email')?.touched && form.get('email')?.invalid" class="form-error-text">
+        Please enter a valid email address.
+      </div>
+    </div>
+
+    <div class="form-divider">
+      <h3 class="h6">Change Password (Optional)</h3>
+    </div>
+
+    <div class="form-field">
+      <label>Current Password</label>
+      <input type="password" formControlName="oldPassword" />
+      <div class="form-hint">Leave empty if you don't want to change your password</div>
+    </div>
+
+    <div class="form-field">
+      <label>New Password</label>
+      <input type="password" formControlName="newPassword" />
+      <div class="form-hint">Must be at least 8 characters (optional)</div>
+    </div>
+
+    <div class="form-field">
+      <label>Confirm New Password</label>
+      <input type="password" formControlName="confirmPassword" />
+    </div>
+
+    <div *ngIf="form.errors && form.touched" class="form-error-text">
+      {{ getPasswordErrorMessage() }}
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-primary-main" [disabled]="saving || form.invalid">
+        {{ saving ? 'Saving...' : 'Save Changes' }}
+      </button>
+      <button type="button" class="btn-secondary" (click)="toggleEditMode()">Cancel</button>
+    </div>
+  </form>
+
+  <div *ngIf="error" class="form-error-text mt-2">{{ error }}</div>
+  <div *ngIf="success" style="color: #2e7d32; margin-top: 0.5rem;">{{ success }}</div>
