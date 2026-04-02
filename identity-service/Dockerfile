@@ -15,7 +15,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Stage 2: Runtime with minimal image
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
@@ -24,10 +24,10 @@ COPY --from=builder /app/target/*.jar app.jar
 
 # Health check
 HEALTHCHECK --interval=10s --timeout=5s --retries=5 \
-    CMD wget --quiet --tries=1 --spider http://localhost:8081/actuator/health || exit 1
+    CMD wget --quiet --tries=1 --spider http://localhost:8080/actuator/health || exit 1
 
 # Expose port
-EXPOSE 8081
+EXPOSE 8080
 
 # Set environment variables for JVM optimization
 ENV JAVA_OPTS="-XX:+UseG1GC -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=25.0"
