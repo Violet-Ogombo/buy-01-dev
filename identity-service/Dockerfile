@@ -1,6 +1,6 @@
 # Multi-stage build for Identity Service (User authentication)
 # Stage 1: Build with Maven
-FROM maven:3.9-eclipse-temurin-17 as builder
+FROM maven:3.9-eclipse-temurin-17 AS builder
 
 WORKDIR /app
 
@@ -24,10 +24,10 @@ COPY --from=builder /app/target/*.jar app.jar
 
 # Health check
 HEALTHCHECK --interval=10s --timeout=5s --retries=5 \
-    CMD wget --quiet --tries=1 --spider http://localhost:8080/actuator/health || exit 1
+    CMD wget --quiet --tries=1 --spider http://localhost:8081/actuator/health || exit 1
 
 # Expose port
-EXPOSE 8080
+EXPOSE 8081
 
 # Set environment variables for JVM optimization
 ENV JAVA_OPTS="-XX:+UseG1GC -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=25.0"
