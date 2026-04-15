@@ -33,28 +33,36 @@ pipeline {
         stage('Run API Gateway Tests') {
             steps {
                 echo "Testing API Gateway..."
-                sh 'docker exec api-gateway mvn test'
+                dir('api-gateway') {
+                    sh 'mvn test'
+                }
             }
         }
         
         stage('Run Product Service Tests') {
             steps {
                 echo "Testing Product Service..."
-                sh 'docker exec product-service mvn test'
+                dir('product-service') {
+                    sh 'mvn test'
+                }
             }
         }
         
         stage('Run Media Service Tests') {
             steps {
                 echo "Testing Media Service..."
-                sh 'docker exec media-service mvn test'
+                dir('media-service') {
+                    sh 'mvn test'
+                }
             }
         }
         
         stage('Run Identity Service Tests') {
             steps {
                 echo "Testing Identity Service..."
-                sh 'docker exec identity-service mvn test'
+                dir('identity-service') {
+                    sh 'mvn test'
+                }
             }
         }
     }
