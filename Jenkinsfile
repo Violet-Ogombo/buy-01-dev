@@ -61,7 +61,9 @@ pipeline {
     post {
         always {
             echo "Collecting test results..."
-            junit '**/target/surefire-reports/*.xml' || true
+            catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                junit '**/target/surefire-reports/*.xml'
+            }
         }
         success {
             echo '✅ All tests passed!'

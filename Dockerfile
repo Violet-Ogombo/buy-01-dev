@@ -3,9 +3,9 @@ FROM jenkins/jenkins:lts
 # Switch to root to install packages
 USER root
 
-# Install Docker client
+# Install Docker client and Docker Compose
 RUN apt-get update && \
-    apt-get install -y docker.io && \
+    apt-get install -y docker.io docker-compose-plugin && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
