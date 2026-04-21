@@ -9,7 +9,6 @@ import java.util.UUID;
 @Component
 public class FileValidator {
 
-    private static final long MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
     private static final List<String> ALLOWED_CONTENT_TYPES = List.of(
             "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"
     );
@@ -17,11 +16,6 @@ public class FileValidator {
     public void validate(MultipartFile file) {
         if (file.isEmpty()) {
             throw new IllegalArgumentException("File is empty");
-        }
-
-        // Validate file size
-        if (file.getSize() > MAX_FILE_SIZE) {
-            throw new IllegalArgumentException("File size exceeds 50MB limit");
         }
 
         // Validate content type

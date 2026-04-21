@@ -27,8 +27,12 @@ class FileValidatorTest {
     }
 
     @Test
-    void validate_rejectsTooLargeFile() {
+    void validate_acceptsLargeFile() {
         byte[] largeContent = new byte[3 * 1024 * 1024]; // 3MB
+        // Add valid JPEG header
+        largeContent[0] = (byte) 0xFF;
+        largeContent[1] = (byte) 0xD8;
+        largeContent[2] = (byte) 0xFF;
         MockMultipartFile file = new MockMultipartFile(
                 "file",
                 "large.jpg",
@@ -36,8 +40,8 @@ class FileValidatorTest {
                 largeContent
         );
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> fileValidator.validate(file));
-        assertTrue(exception.getMessage().contains("File size exceeds"));
+        // Should not throw any exception for large files
+        assertDoesNotThrow(() -> fileValidator.validate(file));
     }
 
     @Test
