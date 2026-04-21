@@ -30,6 +30,9 @@ class ProductServiceTest {
 	@Mock
 	private RestTemplate restTemplate;
 
+	@Mock
+	private AuditService auditService;
+
 	@InjectMocks
 	private ProductService productService;
 

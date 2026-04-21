@@ -1,4 +1,4 @@
-NET::ERR_CERT_AUTHORITY_INVALID#!/bin/bash
+#!/bin/bash
 
 # Generate Self-Signed SSL Certificate for Local Development
 # This script creates a self-signed certificate valid for 365 days
