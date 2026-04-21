@@ -1,11 +1,18 @@
 spring:
   data:
     mongodb:
-      uri: mongodb://localhost:27017/buy01-test
+      uri: mongodb://mongodb:27017/buy01-test
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: kafka:9092
 eureka:
   client:
     enabled: false
     register-with-eureka: false
     fetch-registry: false
+  instance:
+    leaseRenewalIntervalInSeconds: 10
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
