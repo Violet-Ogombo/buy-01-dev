@@ -98,7 +98,7 @@ pipeline {
                         docker-compose build --no-cache
                         
                         echo "🔄 Restarting services with updated images..."
-                        docker-compose up -d
+                        docker-compose up -d --force-recreate
                         
                         echo "⏳ Waiting for services to be healthy (30 seconds)..."
                         sleep 30
