@@ -94,11 +94,14 @@ pipeline {
                         docker tag buy-01-dev-identity-service:latest buy-01-dev-identity-service:previous 2>/dev/null || true
                         docker tag buy-01-dev-frontend:latest buy-01-dev-frontend:previous 2>/dev/null || true
                         
+                        echo "� Stopping and removing existing containers..."
+                        docker-compose down
+                        
                         echo "🔨 Rebuilding Docker images with version tag: ${BUILD_TAG}..."
                         docker-compose build --no-cache
                         
-                        echo "🔄 Restarting services with updated images..."
-                        docker-compose up -d --force-recreate
+                        echo "🚀 Starting fresh services with updated images..."
+                        docker-compose up -d
                         
                         echo "⏳ Waiting for services to be healthy (30 seconds)..."
                         sleep 30
