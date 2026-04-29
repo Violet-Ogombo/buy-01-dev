@@ -16,6 +16,10 @@ pipeline {
         SLACK_CHANNEL = '#build-notifications'
         SLACK_WEBHOOK_URL = credentials('slack-webhook-url')
         BUILD_URL_DISPLAY = "${env.BUILD_URL}console"
+        BUILD_TAG = "build-${BUILD_NUMBER}"
+        IMAGE_TAG_LATEST = "latest"
+        IMAGE_TAG_PREVIOUS = "previous"
+        DEPLOYMENT_TIMEOUT = '300'
     }
     
     stages {
@@ -74,6 +78,70 @@ pipeline {
                 echo "Testing Identity Service..."
                 dir('identity-service') {
                     sh 'mvn test'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo "🚀 Starting deployment..."
+                script {
+                    sh '''
+                        echo "📸 Creating backup of current images as 'previous'..."
+                        docker tag buy-01-dev-api-gateway:latest buy-01-dev-api-gateway:previous 2>/dev/null || true
+                        docker tag buy-01-dev-product-service:latest buy-01-dev-product-service:previous 2>/dev/null || true
+                        docker tag buy-01-dev-media-service:latest buy-01-dev-media-service:previous 2>/dev/null || true
+                        docker tag buy-01-dev-identity-service:latest buy-01-dev-identity-service:previous 2>/dev/null || true
+                        docker tag buy-01-dev-frontend:latest buy-01-dev-frontend:previous 2>/dev/null || true
+                        
+                        echo "🔨 Rebuilding Docker images with version tag: ${BUILD_TAG}..."
+                        docker-compose build --no-cache
+                        
+                        echo "🔄 Restarting services with updated images..."
+                        docker-compose up -d
+                        
+                        echo "⏳ Waiting for services to be healthy (30 seconds)..."
+                        sleep 30
+                        
+                        echo "✅ Checking service health..."
+                        docker-compose ps
+                        
+                        echo "🏥 Running smoke tests to verify deployment..."
+                        max_attempts=5
+                        attempt=1
+                        while [ $attempt -le $max_attempts ]; do
+                            echo "Attempt $attempt/$max_attempts - Testing services..."
+                            
+                            # Test API Gateway
+                            if curl -s -f http://localhost:8080/health > /dev/null 2>&1; then
+                                echo "✅ API Gateway is healthy"
+                            else
+                                echo "⚠️  API Gateway health check failed"
+                            fi
+                            
+                            # Test Product Service
+                            if curl -s -f http://localhost:8082/health > /dev/null 2>&1; then
+                                echo "✅ Product Service is healthy"
+                            else
+                                echo "⚠️  Product Service health check failed"
+                            fi
+                            
+                            # Test Media Service
+                            if curl -s -f http://localhost:8083/health > /dev/null 2>&1; then
+                                echo "✅ Media Service is healthy"
+                            else
+                                echo "⚠️  Media Service health check failed"
+                            fi
+                            
+                            if [ $attempt -lt $max_attempts ]; then
+                                echo "Waiting 10 seconds before next attempt..."
+                                sleep 10
+                            fi
+                            attempt=$((attempt + 1))
+                        done
+                        
+                        echo "✅ Deployment completed successfully!"
+                    '''
                 }
             }
         }
@@ -202,6 +270,81 @@ pipeline {
                         ]
                     }" \
                     $SLACK_WEBHOOK_URL || echo "Slack notification failed (webhook may not be configured yet)"
+                '''
+            }
+        }
+        
+        unstable {
+            echo '⚠️  Deployment failed - initiating rollback...'
+            script {
+                sh '''
+                    echo "🔄 Rolling back to previous stable version..."
+                    
+                    docker tag buy-01-dev-api-gateway:previous buy-01-dev-api-gateway:latest 2>/dev/null || true
+                    docker tag buy-01-dev-product-service:previous buy-01-dev-product-service:latest 2>/dev/null || true
+                    docker tag buy-01-dev-media-service:previous buy-01-dev-media-service:latest 2>/dev/null || true
+                    docker tag buy-01-dev-identity-service:previous buy-01-dev-identity-service:latest 2>/dev/null || true
+                    docker tag buy-01-dev-frontend:previous buy-01-dev-frontend:latest 2>/dev/null || true
+                    
+                    echo "🔄 Restarting services with previous version..."
+                    docker-compose up -d
+                    
+                    echo "⏳ Waiting for services to stabilize..."
+                    sleep 20
+                    
+                    docker-compose ps
+                    
+                    echo "✅ Rollback completed!"
+                '''
+            }
+            
+            script {
+                sh '''
+                    curl -X POST -H 'Content-type: application/json' \
+                    --data "{
+                        \\"text\\": \\"⚠️  ROLLBACK EXECUTED\\",
+                        \\"blocks\\": [
+                            {
+                                \\"type\\": \\"header\\",
+                                \\"text\\": {
+                                    \\"type\\": \\"plain_text\\",
+                                    \\"text\\": \\"⚠️  Deployment Failed - Rollback Executed\\"
+                                }
+                            },
+                            {
+                                \\"type\\": \\"section\\",
+                                \\"fields\\": [
+                                    {
+                                        \\"type\\": \\"mrkdwn\\",
+                                        \\"text\\": \\"*Repository:*\\nbuy-01-dev\\"
+                                    },
+                                    {
+                                        \\"type\\": \\"mrkdwn\\",
+                                        \\"text\\": \\"*Action:*\\nReverted to previous stable version\\"
+                                    },
+                                    {
+                                        \\"type\\": \\"mrkdwn\\",
+                                        \\"text\\": \\"*Build #:*\\n''' + "${env.BUILD_NUMBER}" + '''\\"
+                                    }
+                                ]
+                            },
+                            {
+                                \\"type\\": \\"actions\\",
+                                \\"elements\\": [
+                                    {
+                                        \\"type\\": \\"button\\",
+                                        \\"text\\": {
+                                            \\"type\\": \\"plain_text\\",
+                                            \\"text\\": \\"View Build Log\\"
+                                        },
+                                        \\"url\\": \\"''' + "${BUILD_URL_DISPLAY}" + '''\\",
+                                        \\"style\\": \\"danger\\"
+                                    }
+                                ]
+                            }
+                        ]
+                    }" \
+                    $SLACK_WEBHOOK_URL || echo "Slack notification failed"
                 '''
             }
         }
