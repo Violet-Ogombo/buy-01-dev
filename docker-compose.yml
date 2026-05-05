@@ -1,6 +1,8 @@
 # Docker Compose configuration for Buy-01 E-Commerce Microservices Platform
 # This orchestrates all services needed for the application to run
 
+name: buy-01-dev
+
 services:
   # ==================== Infrastructure Services ====================
   
