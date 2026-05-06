@@ -20,7 +20,7 @@ pipeline {
         IMAGE_TAG_LATEST = "latest"
         IMAGE_TAG_PREVIOUS = "previous"
         DEPLOYMENT_TIMEOUT = '300'
-        APP_SERVICES = "api-gateway product-service media-service identity-service frontend"
+        // APP_SERVICES = "api-gateway product-service media-service identity-service frontend"
     }
 
     stages {
