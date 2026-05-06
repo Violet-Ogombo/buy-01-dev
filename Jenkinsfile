@@ -94,11 +94,11 @@ pipeline {
                         docker tag buy-01-dev-identity-service:latest buy-01-dev-identity-service:previous 2>/dev/null || true
                         docker tag buy-01-dev-frontend:latest buy-01-dev-frontend:previous 2>/dev/null || true
                         
-                        echo "🧹 Force cleaning ALL conflicting containers and orphaned infrastructure..."
-                        docker-compose down --remove-orphans --volumes --rmi local 2>/dev/null || true
+                        echo "🧹 Safely stopping and removing containers..."
+                        docker-compose down --remove-orphans 2>/dev/null || true
                         
                         echo "🧹 Explicitly removing orphaned infrastructure containers..."
-                        docker rm -f discovery-server zookeeper jenkins mongodb 2>/dev/null || true
+                        docker rm -f discovery-server zookeeper kafka zookeeper mongodb 2>/dev/null || true
                         
                         echo "🔨 Rebuilding Docker images with version tag: ${BUILD_TAG}..."
                         docker-compose build --no-cache
