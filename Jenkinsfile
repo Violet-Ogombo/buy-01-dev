@@ -51,6 +51,7 @@ pipeline {
                 echo "Testing Product Service..."
                 dir('product-service') {
                     sh 'mvn test'
+                    sh 'exit 1'
                 }
             }
         }
