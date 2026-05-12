@@ -21,6 +21,8 @@ pipeline {
         IMAGE_TAG_PREVIOUS = "previous"
         DEPLOYMENT_TIMEOUT = '300'
         APP_SERVICES = "api-gateway product-service media-service identity-service frontend"
+        SONARQUBE_URL = 'http://sonarqube:9000'
+        SONARQUBE_LOGIN = credentials('sonar-token')
     }
 
     stages {
@@ -34,6 +36,67 @@ pipeline {
                         credentialsId: 'github-ssh-key'
                     ]]
                 ])
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                echo "🔍 Running SonarQube Analysis on all services..."
+                script {
+                    // Analyze API Gateway
+                    dir('api-gateway') {
+                        sh '''
+                            mvn clean verify sonar:sonar \
+                              -Dsonar.projectKey=api-gateway \
+                              -Dsonar.host.url=${SONARQUBE_URL} \
+                              -Dsonar.login=${SONARQUBE_LOGIN}
+                        '''
+                    }
+                    
+                    // Analyze Product Service
+                    dir('product-service') {
+                        sh '''
+                            mvn clean verify sonar:sonar \
+                              -Dsonar.projectKey=product-service \
+                              -Dsonar.host.url=${SONARQUBE_URL} \
+                              -Dsonar.login=${SONARQUBE_LOGIN}
+                        '''
+                    }
+                    
+                    // Analyze Media Service
+                    dir('media-service') {
+                        sh '''
+                            mvn clean verify sonar:sonar \
+                              -Dsonar.projectKey=media-service \
+                              -Dsonar.host.url=${SONARQUBE_URL} \
+                              -Dsonar.login=${SONARQUBE_LOGIN}
+                        '''
+                    }
+                    
+                    // Analyze Identity Service
+                    dir('identity-service') {
+                        sh '''
+                            mvn clean verify sonar:sonar \
+                              -Dsonar.projectKey=identity-service \
+                              -Dsonar.host.url=${SONARQUBE_URL} \
+                              -Dsonar.login=${SONARQUBE_LOGIN}
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                echo "🚪 Checking Quality Gate status..."
+                script {
+                    def qualityGateProjectKeys = ['api-gateway', 'product-service', 'media-service', 'identity-service']
+                    
+                    qualityGateProjectKeys.each { projectKey ->
+                        echo "Waiting for Quality Gate on ${projectKey}..."
+                        waitForQualityGate abortPipeline: true, credentialsId: 'sonar-token'
+                    }
+                }
             }
         }
 

@@ -1,11 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, from } from 'rxjs';
-import { mergeMap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { User } from '../models/user.model';
 import { SessionService } from './session.service';
-import { PasswordHasherService } from './password-hasher.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -13,32 +11,15 @@ export class AuthService {
 
   constructor(
     private http: HttpClient,
-    private session: SessionService,
-    private passwordHasher: PasswordHasherService
+    private session: SessionService
   ) {}
 
   login(credentials: { email: string; password: string }): Observable<any> {
-    // Hash password before sending to backend
-    return from(this.passwordHasher.hashPassword(credentials.password)).pipe(
-      mergeMap(hashedPassword => {
-        return this.http.post<any>(`${this.apiUrl}/auth/login`, {
-          email: credentials.email,
-          password: hashedPassword
-        });
-      })
-    );
+    return this.http.post<any>(`${this.apiUrl}/auth/login`, credentials);
   }
 
   register(data: { name: string; email: string; password: string; role: string; avatar?: string }): Observable<User> {
-    // Hash password before sending to backend
-    return from(this.passwordHasher.hashPassword(data.password)).pipe(
-      mergeMap(hashedPassword => {
-        return this.http.post<User>(`${this.apiUrl}/auth/register`, {
-          ...data,
-          password: hashedPassword
-        });
-      })
-    );
+    return this.http.post<User>(`${this.apiUrl}/auth/register`, data);
   }
 
   logout(): void {
