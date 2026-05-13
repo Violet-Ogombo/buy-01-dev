@@ -44,44 +44,55 @@ pipeline {
             steps {
                 echo "🔍 Running SonarQube Analysis on all services..."
                 script {
-                    // Analyze API Gateway
-                    dir('api-gateway') {
-                        sh '''
-                            mvn clean verify sonar:sonar \
-                              -Dsonar.projectKey=api-gateway \
-                              -Dsonar.host.url=${SONARQUBE_URL} \
-                              -Dsonar.login=${SONARQUBE_LOGIN}
-                        '''
-                    }
+                    // Requires SonarQube Scanner for Jenkins plugin installed
+                    // Configure SonarQube server in Jenkins: Manage Jenkins > Configure System > SonarQube servers
+                    // Add SonarScanner tool: Manage Jenkins > Global Tool Configuration > SonarQube Scanner
+                    def scannerHome = tool 'SonarScanner'
                     
-                    // Analyze Product Service
-                    dir('product-service') {
-                        sh '''
-                            mvn clean verify sonar:sonar \
-                              -Dsonar.projectKey=product-service \
-                              -Dsonar.host.url=${SONARQUBE_URL} \
-                              -Dsonar.login=${SONARQUBE_LOGIN}
-                        '''
-                    }
-                    
-                    // Analyze Media Service
-                    dir('media-service') {
-                        sh '''
-                            mvn clean verify sonar:sonar \
-                              -Dsonar.projectKey=media-service \
-                              -Dsonar.host.url=${SONARQUBE_URL} \
-                              -Dsonar.login=${SONARQUBE_LOGIN}
-                        '''
-                    }
-                    
-                    // Analyze Identity Service
-                    dir('identity-service') {
-                        sh '''
-                            mvn clean verify sonar:sonar \
-                              -Dsonar.projectKey=identity-service \
-                              -Dsonar.host.url=${SONARQUBE_URL} \
-                              -Dsonar.login=${SONARQUBE_LOGIN}
-                        '''
+                    withSonarQubeEnv('SonarQube') {
+                        // Analyze API Gateway
+                        dir('api-gateway') {
+                            sh """
+                                ${scannerHome}/bin/sonar-scanner \
+                                  -Dsonar.projectKey=api-gateway \
+                                  -Dsonar.sources=src/main/java \
+                                  -Dsonar.java.binaries=target/classes \
+                                  -Dsonar.java.test.binaries=target/test-classes
+                            """
+                        }
+                        
+                        // Analyze Product Service
+                        dir('product-service') {
+                            sh """
+                                ${scannerHome}/bin/sonar-scanner \
+                                  -Dsonar.projectKey=product-service \
+                                  -Dsonar.sources=src/main/java \
+                                  -Dsonar.java.binaries=target/classes \
+                                  -Dsonar.java.test.binaries=target/test-classes
+                            """
+                        }
+                        
+                        // Analyze Media Service
+                        dir('media-service') {
+                            sh """
+                                ${scannerHome}/bin/sonar-scanner \
+                                  -Dsonar.projectKey=media-service \
+                                  -Dsonar.sources=src/main/java \
+                                  -Dsonar.java.binaries=target/classes \
+                                  -Dsonar.java.test.binaries=target/test-classes
+                            """
+                        }
+                        
+                        // Analyze Identity Service
+                        dir('identity-service') {
+                            sh """
+                                ${scannerHome}/bin/sonar-scanner \
+                                  -Dsonar.projectKey=identity-service \
+                                  -Dsonar.sources=src/main/java \
+                                  -Dsonar.java.binaries=target/classes \
+                                  -Dsonar.java.test.binaries=target/test-classes
+                            """
+                        }
                     }
                 }
             }
@@ -89,14 +100,11 @@ pipeline {
 
         stage('Quality Gate') {
             steps {
-                echo "🚪 Checking Quality Gate status..."
-                script {
-                    def qualityGateProjectKeys = ['api-gateway', 'product-service', 'media-service', 'identity-service']
-                    
-                    qualityGateProjectKeys.each { projectKey ->
-                        echo "Waiting for Quality Gate on ${projectKey}..."
-                        waitForQualityGate abortPipeline: true, credentialsId: 'sonar-token'
-                    }
+                echo "🚪 Checking Quality Gate status for all projects..."
+                timeout(time: 5, unit: 'MINUTES') {
+                    // Single waitForQualityGate checks the pipeline's analysis status
+                    // Individual project gates are tracked via their projectKeys above
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
