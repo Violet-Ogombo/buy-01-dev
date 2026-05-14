@@ -58,7 +58,7 @@ class GlobalJwtAuthenticationFilterTest {
         int order = filter.getOrder();
 
         // Assert - filter should return a valid order value
-        assertThat(order).isNotNull();
+        assertThat(order).isGreaterThanOrEqualTo(0);
     }
 
     @Test
