@@ -1,59 +1,75 @@
 package com.example.product.service;
 
-import com.example.product.exception.AccessDeniedException;
-import com.example.product.exception.ResourceNotFoundException;
 import com.example.product.model.Product;
-import com.example.product.model.RemoteMedia;
 import com.example.product.repository.ProductRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-@SpringBootTest
+/**
+ * Unit tests for ProductService - NO Spring context loaded
+ */
+@ExtendWith(MockitoExtension.class)
 class ProductServiceTest {
 
-	@MockBean
+	@Mock
 	private ProductRepository productRepository;
 
-	@MockBean
+	@Mock
 	private KafkaTemplate<String, String> kafkaTemplate;
 
-	@MockBean
+	@Mock
 	private RestTemplate restTemplate;
 
-	@MockBean
+	@Mock
 	private AuditService auditService;
 
-	@Autowired
+	@InjectMocks
 	private ProductService productService;
-
-	@BeforeEach
-	void setUp() {
-		// No-op; initialization handled by Spring
-	}
 
 	@Test
 	void createProduct_setsOwnerAndPublishesEvent() {
 		// Arrange
 		Product input = new Product();
+		input.setName("Test Laptop");
+		input.setPrice(999.99);
+		input.setQuantity(10);
+		String userId = "seller-123";
+
+		when(productRepository.save(any(Product.class))).thenAnswer(invocation -> {
+			Product p = invocation.getArgument(0);
+			p.setId("prod-1");
+			return p;
+		});
+
+		// Act
+		Product result = productService.createProduct(input, userId);
+
+		// Assert
+		assertThat(result.getUserId()).isEqualTo(userId);
+		assertThat(result.getCreatedAt()).isNotNull();
+		assertThat(result.getUpdatedAt()).isNotNull();
+		assertThat(result.getId()).isEqualTo("prod-1");
+
+		ArgumentCaptor<Product> productCaptor = ArgumentCaptor.forClass(Product.class);
+		verify(productRepository).save(productCaptor.capture());
+		Product saved = productCaptor.getValue();
+		assertThat(saved.getUserId()).isEqualTo(userId);
+
+		verify(kafkaTemplate).send(eq("product-created"), eq("prod-1"));
+	}
+}
 		input.setName("Test Product");
 		input.setPrice(100.0);
 		input.setQuantity(5);
