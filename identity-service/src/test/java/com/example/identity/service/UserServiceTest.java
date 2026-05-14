@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.Optional;
 
@@ -27,6 +28,10 @@ class UserServiceTest {
 
     @Autowired
     private UserService userService;
+    
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Test
     void register_createsNewUserWithEncryptedPassword() {
@@ -82,6 +87,8 @@ class UserServiceTest {
         User user = new User();
         user.setId("user-123");
         user.setEmail(email);
+        // Must set encoded password for authenticate to match
+        user.setPassword(passwordEncoder.encode(hashedPassword));
 
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
 
@@ -95,9 +102,11 @@ class UserServiceTest {
     @Test
     void authenticate_returnsEmptyForInvalidPassword() {
         String email = "user@example.com";
+        String hashedPassword = "sha256_hash_from_frontend";
         
         User user = new User();
         user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(hashedPassword));
 
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
 
