@@ -30,8 +30,6 @@ class UserServiceTest {
     private UserService userService;
     
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-    
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Test
     void register_createsNewUserWithEncryptedPassword() {
