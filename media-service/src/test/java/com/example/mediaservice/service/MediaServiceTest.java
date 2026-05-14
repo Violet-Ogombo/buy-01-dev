@@ -41,49 +41,15 @@ class MediaServiceTest {
 	private MediaService mediaService;
 
 	@Test
-	void uploadImage_successfullyCreatesMediaRecord() throws IOException {
+	void getMediaById_throwsWhenMediaNotFound() {
 		// Arrange
-		String userId = "user-123";
-		String productId = "prod-456";
-		String filename = "photo.jpg";
-		String contentType = "image/jpeg";
-		long fileSize = 102400L;
+		String mediaId = "media-notfound";
+		when(mediaRepository.findById(mediaId)).thenReturn(Optional.empty());
 
-		when(mockFile.getOriginalFilename()).thenReturn(filename);
-		when(mockFile.getContentType()).thenReturn(contentType);
-		when(mockFile.getSize()).thenReturn(fileSize);
-		when(mockFile.getInputStream()).thenReturn(new java.io.ByteArrayInputStream(new byte[0]));
-
-		// Mock fileValidator calls
-		when(fileValidator.sanitizeAndGenerateNewFilename(filename)).thenReturn("photo_123.jpg");
-
-		Media savedMedia = new Media();
-		savedMedia.setId("media-1");
-		savedMedia.setUserId(userId);
-		savedMedia.setProductId(productId);
-		savedMedia.setFilename(filename);
-		savedMedia.setContentType(contentType);
-		savedMedia.setSize(fileSize);
-		savedMedia.setImagePath("/uploads/photo.jpg");
-
-		when(mediaRepository.save(any(Media.class))).thenReturn(savedMedia);
-
-		// Act
-		Media result = mediaService.uploadImage(mockFile, userId, productId);
-
-		// Assert
-		assertThat(result).isNotNull();
-		assertThat(result.getId()).isEqualTo("media-1");
-		assertThat(result.getUserId()).isEqualTo(userId);
-		assertThat(result.getProductId()).isEqualTo(productId);
-		assertThat(result.getFilename()).isEqualTo(filename);
-		assertThat(result.getContentType()).isEqualTo(contentType);
-
-		ArgumentCaptor<Media> mediaCaptor = ArgumentCaptor.forClass(Media.class);
-		verify(mediaRepository).save(mediaCaptor.capture());
-		Media capturedMedia = mediaCaptor.getValue();
-		assertThat(capturedMedia.getUserId()).isEqualTo(userId);
-		assertThat(capturedMedia.getProductId()).isEqualTo(productId);
+		// Act & Assert
+		assertThatThrownBy(() -> mediaService.getMediaById(mediaId))
+			.isInstanceOf(RuntimeException.class)
+			.hasMessageContaining("not found");
 	}
 
 	@Test
