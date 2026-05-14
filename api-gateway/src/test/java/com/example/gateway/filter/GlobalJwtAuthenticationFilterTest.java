@@ -101,7 +101,7 @@ class GlobalJwtAuthenticationFilterTest {
         assertThat(token).isNotNull();
         // Token format: eyJ... (header) . eyJ... (payload) . signature
         String[] parts = token.split("\\.");
-        assertThat(parts).hasLength(3);
+        assertThat(parts).hasSize(3);
         assertThat(parts[0]).isNotEmpty(); // header
         assertThat(parts[1]).isNotEmpty(); // payload
         assertThat(parts[2]).isNotEmpty(); // signature
