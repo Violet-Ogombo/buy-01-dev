@@ -43,45 +43,39 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 echo "🔍 Running SonarQube Analysis on all services..."
-                script {
-                    // Analyze API Gateway
-                    dir('api-gateway') {
-                        sh '''
-                            mvn clean verify sonar:sonar \
-                              -Dsonar.projectKey=api-gateway \
-                              -Dsonar.host.url=${SONARQUBE_URL} \
-                              -Dsonar.login=${SONARQUBE_LOGIN}
-                        '''
-                    }
-                    
-                    // Analyze Product Service
-                    dir('product-service') {
-                        sh '''
-                            mvn clean verify sonar:sonar \
-                              -Dsonar.projectKey=product-service \
-                              -Dsonar.host.url=${SONARQUBE_URL} \
-                              -Dsonar.login=${SONARQUBE_LOGIN}
-                        '''
-                    }
-                    
-                    // Analyze Media Service
-                    dir('media-service') {
-                        sh '''
-                            mvn clean verify sonar:sonar \
-                              -Dsonar.projectKey=media-service \
-                              -Dsonar.host.url=${SONARQUBE_URL} \
-                              -Dsonar.login=${SONARQUBE_LOGIN}
-                        '''
-                    }
-                    
-                    // Analyze Identity Service
-                    dir('identity-service') {
-                        sh '''
-                            mvn clean verify sonar:sonar \
-                              -Dsonar.projectKey=identity-service \
-                              -Dsonar.host.url=${SONARQUBE_URL} \
-                              -Dsonar.login=${SONARQUBE_LOGIN}
-                        '''
+                withSonarQubeEnv('SonarQube') {
+                    script {
+                        // Analyze API Gateway
+                        dir('api-gateway') {
+                            sh '''
+                                mvn clean verify sonar:sonar \
+                                  -Dsonar.projectKey=api-gateway
+                            '''
+                        }
+                        
+                        // Analyze Product Service
+                        dir('product-service') {
+                            sh '''
+                                mvn clean verify sonar:sonar \
+                                  -Dsonar.projectKey=product-service
+                            '''
+                        }
+                        
+                        // Analyze Media Service
+                        dir('media-service') {
+                            sh '''
+                                mvn clean verify sonar:sonar \
+                                  -Dsonar.projectKey=media-service
+                            '''
+                        }
+                        
+                        // Analyze Identity Service
+                        dir('identity-service') {
+                            sh '''
+                                mvn clean verify sonar:sonar \
+                                  -Dsonar.projectKey=identity-service
+                            '''
+                        }
                     }
                 }
             }
