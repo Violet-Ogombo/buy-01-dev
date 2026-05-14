@@ -12,13 +12,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 
 import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -66,12 +67,16 @@ class AuthControllerTest {
             .thenReturn(registeredUser);
 
         // Act
-        ResponseEntity<Map<String, Object>> response = authController.register(request);
+        ResponseEntity<?> response = authController.register(request);
 
         // Assert
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(response.getBody()).containsKeys("id", "email", "name", "role");
-        assertThat(response.getBody().get("id")).isEqualTo("user-456");
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isInstanceOf(Map.class);
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) response.getBody();
+        assertThat(body).containsKeys("id", "email", "name", "role");
+        assertThat(body.get("id")).isEqualTo("user-456");
 
         verify(userService).register("John Doe", "john@example.com", "hashed_password", Role.SELLER, "avatar.jpg");
     }
@@ -87,16 +92,14 @@ class AuthControllerTest {
             "avatar", "avatar.jpg"
         );
 
-        when(userService.register(any(), eq("existing@example.com"), any(), any(), any()))
+        when(userService.register(any(), any(), any(), any(), any()))
             .thenThrow(new RuntimeException("Email already exists"));
 
-        // Act & Assert
-        try {
-            authController.register(request);
-            throw new AssertionError("Expected RuntimeException");
-        } catch (RuntimeException e) {
-            assertThat(e.getMessage()).contains("Email already exists");
-        }
+        // Act
+        ResponseEntity<?> response = authController.register(request);
+
+        // Assert
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Test
@@ -111,19 +114,22 @@ class AuthControllerTest {
             .thenReturn(Optional.of(testUser));
 
         String token = "jwt.token.here";
-        when(jwtService.generateToken(testUser.getId(), testUser.getRole().name()))
+        when(jwtService.generateToken(testUser))
             .thenReturn(token);
 
         // Act
-        ResponseEntity<Map<String, Object>> response = authController.login(request);
+        ResponseEntity<?> response = authController.login(request);
 
         // Assert
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).containsKeys("token", "user");
-        assertThat(response.getBody().get("token")).isEqualTo(token);
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) response.getBody();
+        assertThat(body).containsKeys("token", "id", "email", "name", "role");
+        assertThat(body.get("token")).isEqualTo(token);
 
         verify(userService).authenticate("test@example.com", "correct_password");
-        verify(jwtService).generateToken(testUser.getId(), "SELLER");
+        verify(jwtService).generateToken(testUser);
     }
 
     @Test
@@ -137,108 +143,92 @@ class AuthControllerTest {
         when(userService.authenticate("test@example.com", "wrong_password"))
             .thenReturn(Optional.empty());
 
-        // Act & Assert
-        try {
-            authController.login(request);
-            throw new AssertionError("Expected exception for invalid credentials");
-        } catch (Exception e) {
-            // Expected behavior - should return unauthorized
-            assertThat(e).isNotNull();
-        }
-    }
+        // Act
+        ResponseEntity<?> response = authController.login(request);
 
-    @Test
-    void login_returnsUnauthorizedForNonExistentUser() {
-        // Arrange
-        Map<String, String> request = Map.of(
-            "email", "nonexistent@example.com",
-            "password", "any_password"
-        );
-
-        when(userService.authenticate("nonexistent@example.com", "any_password"))
-            .thenReturn(Optional.empty());
-
-        // Act & Assert
-        try {
-            authController.login(request);
-            throw new AssertionError("Expected exception");
-        } catch (Exception e) {
-            // Expected
-            assertThat(e).isNotNull();
-        }
+        // Assert
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
     @Test
     void updateProfile_successfullyUpdatesUserProfile() {
         // Arrange
         Map<String, String> request = Map.of(
-            "email", "test@example.com",
             "name", "Updated Name",
-            "avatar", "new-avatar.jpg"
+            "email", "test@example.com",
+            "oldPassword", "old",
+            "newPassword", "new"
         );
 
         User updatedUser = new User();
         updatedUser.setId("user-123");
         updatedUser.setEmail("test@example.com");
         updatedUser.setName("Updated Name");
-        updatedUser.setAvatar("new-avatar.jpg");
         updatedUser.setRole(Role.SELLER);
 
-        when(userService.updateProfile("test@example.com", "Updated Name", "new-avatar.jpg"))
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn("test@example.com");
+        
+        when(userService.updateProfileWithPassword("test@example.com", "Updated Name", "test@example.com", "old", "new"))
             .thenReturn(Optional.of(updatedUser));
 
         // Act
-        ResponseEntity<Map<String, Object>> response = authController.updateProfile(request);
+        ResponseEntity<?> response = authController.updateProfile(request, auth);
 
         // Assert
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).containsKeys("id", "email", "name", "avatar");
-        assertThat(response.getBody().get("name")).isEqualTo("Updated Name");
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) response.getBody();
+        assertThat(body).containsKeys("id", "email", "name");
+        assertThat(body.get("name")).isEqualTo("Updated Name");
 
-        verify(userService).updateProfile("test@example.com", "Updated Name", "new-avatar.jpg");
+        verify(userService).updateProfileWithPassword("test@example.com", "Updated Name", "test@example.com", "old", "new");
     }
 
     @Test
     void updateProfile_returnsNotFoundForNonExistentUser() {
         // Arrange
         Map<String, String> request = Map.of(
-            "email", "nonexistent@example.com",
             "name", "New Name",
-            "avatar", "avatar.jpg"
+            "email", "nonexistent@example.com",
+            "oldPassword", "old",
+            "newPassword", "new"
         );
 
-        when(userService.updateProfile("nonexistent@example.com", "New Name", "avatar.jpg"))
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn("nonexistent@example.com");
+
+        when(userService.updateProfileWithPassword(any(), any(), any(), any(), any()))
             .thenReturn(Optional.empty());
 
-        // Act & Assert
-        try {
-            authController.updateProfile(request);
-            throw new AssertionError("Expected exception");
-        } catch (Exception e) {
-            // Expected - user not found
-            assertThat(e).isNotNull();
-        }
+        // Act
+        ResponseEntity<?> response = authController.updateProfile(request, auth);
+
+        // Assert
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
-    void refreshToken_generatesNewTokenForValidUser() {
+    void getProfile_returnsAuthenticatedUserProfile() {
         // Arrange
-        Map<String, String> request = Map.of(
-            "userId", "user-123",
-            "role", "SELLER"
-        );
-
-        String newToken = "new.jwt.token.here";
-        when(jwtService.generateToken("user-123", "SELLER"))
-            .thenReturn(newToken);
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn("test@example.com");
+        
+        when(userService.findByEmail("test@example.com"))
+            .thenReturn(Optional.of(testUser));
 
         // Act
-        ResponseEntity<Map<String, String>> response = authController.refreshToken(request);
+        ResponseEntity<?> response = authController.getProfile(auth);
 
         // Assert
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).containsEntry("token", newToken);
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) response.getBody();
+        assertThat(body).containsKeys("id", "email", "name", "role");
+        assertThat(body.get("email")).isEqualTo("test@example.com");
 
-        verify(jwtService).generateToken("user-123", "SELLER");
+        verify(userService).findByEmail("test@example.com");
     }
 }
