@@ -1,6 +1,5 @@
 package com.example.gateway.filter;
 
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,7 +16,6 @@ import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.http.server.reactive.MockServerHttpResponse;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ServerWebExchange;
-import org.springframework.web.server.adapter.DefaultServerWebExchangeBuilder;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
@@ -75,9 +73,8 @@ class GlobalJwtAuthenticationFilterTest {
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
             .build();
 
-        ServerWebExchange exchange = new DefaultServerWebExchangeBuilder(request)
-            .response(new MockServerHttpResponse())
-            .build();
+        MockServerHttpResponse response = new MockServerHttpResponse();
+        ServerWebExchange exchange = new org.springframework.web.server.adapter.DefaultServerWebExchange(request, response, null);
 
         when(chain.filter(exchange)).thenReturn(Mono.empty());
 
@@ -95,9 +92,8 @@ class GlobalJwtAuthenticationFilterTest {
             .get("/api/products")
             .build();
 
-        ServerWebExchange exchange = new DefaultServerWebExchangeBuilder(request)
-            .response(new MockServerHttpResponse())
-            .build();
+        MockServerHttpResponse response = new MockServerHttpResponse();
+        ServerWebExchange exchange = new org.springframework.web.server.adapter.DefaultServerWebExchange(request, response, null);
 
         when(chain.filter(exchange)).thenReturn(Mono.empty());
 
@@ -116,9 +112,8 @@ class GlobalJwtAuthenticationFilterTest {
             .header(HttpHeaders.AUTHORIZATION, "NotBearer token")
             .build();
 
-        ServerWebExchange exchange = new DefaultServerWebExchangeBuilder(request)
-            .response(new MockServerHttpResponse())
-            .build();
+        MockServerHttpResponse response = new MockServerHttpResponse();
+        ServerWebExchange exchange = new org.springframework.web.server.adapter.DefaultServerWebExchange(request, response, null);
 
         when(chain.filter(exchange)).thenReturn(Mono.empty());
 
@@ -142,9 +137,8 @@ class GlobalJwtAuthenticationFilterTest {
             .header(HttpHeaders.CONTENT_TYPE, MediaType.MULTIPART_FORM_DATA_VALUE)
             .build();
 
-        ServerWebExchange exchange = new DefaultServerWebExchangeBuilder(request)
-            .response(new MockServerHttpResponse())
-            .build();
+        MockServerHttpResponse response = new MockServerHttpResponse();
+        ServerWebExchange exchange = new org.springframework.web.server.adapter.DefaultServerWebExchange(request, response, null);
 
         when(chain.filter(exchange)).thenReturn(Mono.empty());
 
@@ -165,9 +159,8 @@ class GlobalJwtAuthenticationFilterTest {
             .header(HttpHeaders.AUTHORIZATION, "Bearer invalid.token.here")
             .build();
 
-        ServerWebExchange exchange = new DefaultServerWebExchangeBuilder(request)
-            .response(new MockServerHttpResponse())
-            .build();
+        MockServerHttpResponse response = new MockServerHttpResponse();
+        ServerWebExchange exchange = new org.springframework.web.server.adapter.DefaultServerWebExchange(request, response, null);
 
         when(chain.filter(exchange)).thenReturn(Mono.empty());
 
@@ -188,9 +181,8 @@ class GlobalJwtAuthenticationFilterTest {
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
             .build();
 
-        ServerWebExchange exchange = new DefaultServerWebExchangeBuilder(request)
-            .response(new MockServerHttpResponse())
-            .build();
+        MockServerHttpResponse response = new MockServerHttpResponse();
+        ServerWebExchange exchange = new org.springframework.web.server.adapter.DefaultServerWebExchange(request, response, null);
 
         when(chain.filter(exchange)).thenReturn(Mono.empty());
 
@@ -213,9 +205,8 @@ class GlobalJwtAuthenticationFilterTest {
             .contentType(MediaType.APPLICATION_JSON)
             .build();
 
-        ServerWebExchange exchange = new DefaultServerWebExchangeBuilder(request)
-            .response(new MockServerHttpResponse())
-            .build();
+        MockServerHttpResponse response = new MockServerHttpResponse();
+        ServerWebExchange exchange = new org.springframework.web.server.adapter.DefaultServerWebExchange(request, response, null);
 
         when(chain.filter(exchange)).thenReturn(Mono.empty());
 
