@@ -32,6 +32,9 @@ class MediaServiceTest {
 	private AuditService auditService;
 
 	@Mock
+	private FileValidator fileValidator;
+
+	@Mock
 	private MultipartFile mockFile;
 
 	@InjectMocks
@@ -50,6 +53,9 @@ class MediaServiceTest {
 		when(mockFile.getContentType()).thenReturn(contentType);
 		when(mockFile.getSize()).thenReturn(fileSize);
 		when(mockFile.getInputStream()).thenReturn(new java.io.ByteArrayInputStream(new byte[0]));
+
+		// Mock fileValidator calls
+		when(fileValidator.sanitizeAndGenerateNewFilename(filename)).thenReturn("photo_123.jpg");
 
 		Media savedMedia = new Media();
 		savedMedia.setId("media-1");
