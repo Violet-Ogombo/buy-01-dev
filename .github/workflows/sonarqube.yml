@@ -32,4 +32,5 @@ jobs:
         uses: SonarSource/sonarqube-quality-gate-action@master
         timeout-minutes: 5
         env:
+          SONAR_HOST_URL: https://sonarcloud.io
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
