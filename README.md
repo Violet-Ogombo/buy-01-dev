@@ -1,113 +1,351 @@
-# buy-01-dev
+# SafeZone: Code Quality & Security Enhancement
 
-A microservices e-commerce platform with a Jenkins CI/CD pipeline for testing, deployment, rollback, and Slack notifications.
+## Project Overview
 
-## Project overview
+SafeZone is an automated code quality and security enhancement framework for the buy-01-dev e-commerce microservices project. It integrates **SonarQube** with **GitHub** and **GitHub Actions** to provide continuous code analysis, detect quality issues, and enforce quality gates across all microservices.
 
-This project is built with a microservices architecture. The main services are:
+**Key Objectives:**
+- Automated code quality checks using SonarQube
+- GitHub integration for PR-based analysis
+- Security vulnerability detection
+- Continuous monitoring and compliance tracking
+- Code review and approval workflows
 
-- `api-gateway` — entry point for client requests.
-- `discovery-server` — service discovery.
-- `identity-service` — authentication and authorization.
-- `product-service` — product management.
-- `media-service` — media and file handling.
-- `frontend` — user interface.
-- Infrastructure services used in development include Jenkins, MongoDB, Kafka, and ZooKeeper.
+---
 
-## How the Jenkins pipeline works
+## Architecture
 
-The Jenkins pipeline is defined in the `Jenkinsfile` and runs automatically when code is pushed or when SCM polling detects a change.
+### Components
 
-### 1. Checkout
-Jenkins pulls the latest code from the `main` branch of the repository.
+| Component | Purpose | Details |
+|-----------|---------|---------|
+| **SonarCloud** | Cloud Code Quality Platform | Analyzes code and provides quality metrics |
+| **GitHub Actions** | CI/CD Pipeline | Triggers analysis on push/PR events |
+| **SonarQube (local)** | Local Analysis Server | Optional: for Jenkins integration |
+| **Jenkins** | Local CI/CD | Optional: alternative to GitHub Actions |
 
-### 2. Run tests
-The pipeline runs Maven tests for the main backend services:
+### Supported Microservices
 
-- API Gateway
-- Product Service
-- Media Service
-- Identity Service
+- **api-gateway**: API Gateway service (Port 8080)
+- **product-service**: Product management (Port 8082)
+- **media-service**: Media handling (Port 8083)
+- **identity-service**: User authentication (Port 8081)
+- **buy-01-frontend**: Angular frontend application
 
-If any test fails, the pipeline stops and marks the build as failed.
+---
 
-### 3. Deploy application services
-If the build is on the `main` branch and tests pass, Jenkins deploys only the application microservices:
+## Setup Instructions
 
-- `api-gateway`
-- `product-service`
-- `media-service`
-- `identity-service`
-- `frontend`
+### Prerequisites
 
-The pipeline does **not** tear down the full environment. Shared infrastructure such as Jenkins, MongoDB, Kafka, and ZooKeeper stays running.
+- Git and GitHub account
+- SonarCloud account (https://sonarcloud.io)
+- GitHub repository access (Violet-Ogombo/buy-01-dev)
+- Docker (for local SonarQube, optional)
 
-Before deployment, Jenkins creates backup image tags named `previous`. It then rebuilds and recreates only the application services using Docker Compose.
+### Step 1: Set Up SonarCloud
 
-### 4. Smoke tests
-After deployment, Jenkins performs health checks against the running services. If a health check fails, the deployment is marked as failed.
+1. Sign up at https://sonarcloud.io with your GitHub account
+2. Import your GitHub repository
+3. Generate a user authentication token:
+   - Navigate to: **Account → Security**
+   - Click: **Generate Tokens**
+   - Name: `GitHub Actions`
+   - Copy the token (shown only once)
 
-### 5. Rollback strategy
-If deployment becomes unstable or fails after a new image is applied, Jenkins rolls application services back to the previously tagged images.
+### Step 2: Add GitHub Secrets
 
-This rollback affects only the application services and does not remove shared infrastructure containers.
+1. Go to GitHub repository: https://github.com/Violet-Ogombo/buy-01-dev
+2. Navigate to: **Settings → Secrets and variables → Actions**
+3. Create secret: `SONAR_TOKEN`
+   - Paste the token from Step 1
 
-### 6. Notifications
-Slack notifications are sent automatically for:
+### Step 3: Configure SonarQube Properties
 
-- successful builds,
-- failed builds,
-- rollback events.
+File: `sonar-project.properties` (repo root)
 
-The Slack webhook URL is stored securely in Jenkins credentials as `slack-webhook-url`.
+```properties
+# Project Identification
+sonar.projectKey=buy-01-dev
+sonar.projectName=buy-01-dev
+sonar.organization=violet-ogombo
 
-## Triggering builds
+# Code Analysis
+sonar.sources=.
+sonar.java.binaries=**/target/classes
 
-The pipeline can start in two ways:
+# Language & Encoding
+sonar.sourceEncoding=UTF-8
 
-- GitHub webhook trigger
-- SCM polling configured in the Jenkinsfile
+# Test Reports
+sonar.junit.reportPaths=**/target/surefire-reports
 
-This allows Jenkins to react automatically to repository updates.
+# Exclusions
+sonar.exclusions=\
+  **/node_modules/**,\
+  **/.git/**,\
+  **/target/**,\
+  **/dist/**,\
+  **/.angular/**
+```
 
-## Test reports
+### Step 4: Set Up GitHub Actions Workflow
 
-JUnit test reports are collected from Maven Surefire output:
+File: `.github/workflows/sonarqube.yml`
 
-- `**/target/surefire-reports/*.xml`
+```yaml
+name: SonarQube Analysis
 
-These reports are stored in Jenkins and can be reviewed after each build.
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
-## Why this pipeline setup is safer
+jobs:
+  sonarqube:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-Earlier versions of the pipeline shut down the whole Docker environment during deployment. The updated pipeline is safer because it only rebuilds the microservices that belong to the application.
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: 'temurin'
 
-This means:
+      - name: Run SonarQube Analysis
+        uses: SonarSource/sonarqube-scan-action@master
+        env:
+          SONAR_HOST_URL: https://sonarcloud.io
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_ORGANIZATION: violet-ogombo
 
-- Jenkins stays online,
-- MongoDB data is preserved,
-- Kafka and ZooKeeper are not restarted unnecessarily,
-- deployments are faster and less disruptive.
+      - name: SonarQube Quality Gate
+        uses: SonarSource/sonarqube-quality-gate-action@master
+        timeout-minutes: 5
+        env:
+          SONAR_HOST_URL: https://sonarcloud.io
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+```
 
-## Local development
+---
 
-Typical local workflow:
+## Configuration Details
 
-1. Start the full development environment with Docker.
-2. Let Jenkins handle testing and redeployment of application services.
-3. Monitor build logs, test reports, and Slack notifications.
+### SonarQube Properties Explained
 
-## Repository structure
+| Property | Purpose |
+|----------|---------|
+| `sonar.projectKey` | Unique project identifier in SonarCloud |
+| `sonar.organization` | SonarCloud organization namespace |
+| `sonar.sources` | Source code directory to analyze |
+| `sonar.java.binaries` | Compiled Java classes location |
+| `sonar.junit.reportPaths` | JUnit test results location |
+| `sonar.exclusions` | Directories to skip during analysis |
 
-- `Jenkinsfile` — CI/CD pipeline definition.
-- `docker-compose.yml` — local container orchestration.
-- `api-gateway/` — API Gateway service.
-- `discovery-server/` — discovery service.
-- `identity-service/` — identity service.
-- `product-service/` — product catalog service.
-- `media-service/` — media handling service.
-- `frontend/` — frontend application.
+### Exclusions
 
-## Notes
+The following directories are **excluded** from analysis:
+- `node_modules/` - Frontend dependencies
+- `target/` - Maven build artifacts
+- `dist/` - Build output
+- `.git/` - Version control
+- `.angular/` - Angular build cache
 
-This README focuses on the Jenkins pipeline and deployment flow so that reviewers can quickly understand how CI/CD is handled in the project.
+---
+
+## GitHub Integration
+
+### Workflow Triggers
+
+**GitHub Actions runs automatically on:**
+
+1. **Push to main branch**
+   ```bash
+   git push origin main
+   ```
+
+2. **Pull Requests to main**
+   ```bash
+   git checkout -b feature/my-feature
+   # Make changes
+   git push origin feature/my-feature
+   # Create PR via GitHub UI
+   ```
+
+### PR Analysis Results
+
+After workflow completion:
+- ✅ SonarCloud analysis status posted to PR
+- ✅ Quality gate results shown
+- ✅ Code issues highlighted
+- ❌ PR can be blocked if quality gate fails (with branch protection rules)
+
+### Branch Protection Rules (Recommended)
+
+1. Go to: **Settings → Branches → Branch protection rules**
+2. Add rule for `main` branch
+3. Require: "Status checks to pass before merging"
+4. Select: SonarQube Quality Gate
+
+---
+
+## Code Analysis
+
+### Analysis Scope
+
+SonarQube analyzes:
+- ✅ Java code (all microservices)
+- ✅ Test coverage
+- ✅ Code smells
+- ✅ Security vulnerabilities
+- ✅ Bugs and potential issues
+
+### Running Analysis Locally
+
+For **SonarCloud** (recommended):
+```bash
+# GitHub Actions runs automatically on push/PR
+# View results at: https://sonarcloud.io/dashboard?id=buy-01-dev
+```
+
+For **local SonarQube** (optional):
+```bash
+# Start SonarQube
+docker-compose up -d sonarqube
+
+# Access at: http://localhost:9000
+# Admin: admin / admin
+```
+
+---
+
+## Continuous Monitoring
+
+### SonarCloud Dashboard
+
+Monitor code quality at: **https://sonarcloud.io/dashboard?id=buy-01-dev**
+
+Metrics tracked:
+- **Code Coverage**: Percentage of code tested
+- **Technical Debt**: Time to fix all issues
+- **Code Smells**: Maintainability issues
+- **Bugs**: Critical issues
+- **Vulnerabilities**: Security issues
+- **Security Hotspots**: Potential security concerns
+
+### Quality Gate Status
+
+- **PASSED** ✅: Code meets quality standards
+- **FAILED** ❌: Issues detected, PR blocked (with branch rules)
+
+---
+
+## Code Review & Approval Process
+
+### Recommended Workflow
+
+1. **Create Feature Branch**
+   ```bash
+   git checkout -b feature/description
+   ```
+
+2. **Commit Changes**
+   ```bash
+   git commit -m "feat: description"
+   ```
+
+3. **Push and Create PR**
+   ```bash
+   git push origin feature/description
+   ```
+
+4. **Wait for GitHub Actions**
+   - SonarCloud analysis runs automatically
+   - Results posted to PR
+
+5. **Review SonarCloud Results**
+   - Check quality gate status
+   - Review code issues
+   - Address findings
+
+6. **Code Review by Teammates**
+   - Team members review code
+   - SonarCloud findings discussed
+   - Approval required before merge
+
+7. **Merge to Main**
+   ```bash
+   # Merge via GitHub UI (requires approval + quality gate)
+   ```
+
+---
+
+## Notifications & Monitoring (Bonus)
+
+### GitHub Notifications
+
+- PR comments with SonarCloud results
+- Commit status checks
+- Branch protection rule feedback
+
+---
+
+## Testing & Verification
+
+### Verify SonarCloud Integration
+
+1. **Check Workflow Status**
+   ```bash
+   # On GitHub: Actions tab
+   # Should show: SonarQube Analysis workflow runs
+   ```
+
+2. **Create Test PR**
+   ```bash
+   git checkout -b test/sonarqube-integration
+   # Make small change
+   git commit -m "test: SonarQube integration"
+   git push origin test/sonarqube-integration
+   # Create PR via GitHub
+   ```
+
+3. **Verify Results**
+   - ✅ GitHub Actions runs
+   - ✅ SonarCloud analysis completes
+   - ✅ PR shows quality gate status
+   - ✅ Issues highlighted in PR
+
+### Local Testing (Optional)
+
+If using local SonarQube:
+```bash
+# Start containers
+docker-compose up -d
+
+# Verify SonarQube is running
+curl http://localhost:9000/api/system/health
+
+# Run analysis for a service
+cd product-service
+mvn clean verify sonar:sonar -Dsonar.projectKey=product-service
+```
+
+---
+
+## Resources
+
+- [SonarQube Official Documentation](https://docs.sonarqube.org/latest/)
+- [SonarCloud Documentation](https://docs.sonarcloud.io/)
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+- [SonarLint IDE Integration](https://www.sonarlint.org/)
+
+---
+
+**Project**: buy-01-dev  
+**Framework**: SafeZone Code Quality Initiative  
+**Last Updated**: May 2026
