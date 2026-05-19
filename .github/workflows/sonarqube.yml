@@ -24,8 +24,9 @@ jobs:
       - name: Run SonarQube Analysis
         uses: SonarSource/sonarqube-scan-action@master
         env:
-          SONAR_HOST_URL: http://localhost:9000
+          SONAR_HOST_URL: https://sonarcloud.io
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_ORGANIZATION: violet-ogombo
 
       - name: SonarQube Quality Gate
         uses: SonarSource/sonarqube-quality-gate-action@master
