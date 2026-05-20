@@ -1,0 +1,57 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: 'temurin'
+
+      - name: Build API Gateway
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        run: |
+          cd api-gateway
+          mvn clean package -DskipTests
+
+      - name: Build Product Service
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        run: |
+          cd product-service
+          mvn clean package -DskipTests
+
+      - name: Build Media Service
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        run: |
+          cd media-service
+          mvn clean package -DskipTests
+
+      - name: Build Identity Service
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        run: |
+          cd identity-service
+          mvn clean package -DskipTests
+
+      - name: Run Tests
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        run: |
+          cd api-gateway && mvn test
+          cd ../product-service && mvn test
+          cd ../media-service && mvn test
+          cd ../identity-service && mvn test

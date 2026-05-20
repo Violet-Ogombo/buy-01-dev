@@ -1,0 +1,139 @@
+# Environment Variables
+.env
+.env.local
+.env.*.local
+.env.example.local
+
+# Build Artifacts
+target/
+dist/
+build/
+node_modules/
+*.jar
+*.war
+*.zip
+
+# Maven
+.m2/
+*.pom
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+
+# Gradle
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+.gradletasknamecache
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.iml
+*.iws
+*.ipr
+.classpath
+.project
+.settings/
+bin/
+.c9/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# npm
+npm-debug.log
+node_modules/
+package-lock.json
+yarn.lock
+
+# Angular
+.angular/
+dist/
+**/node_modules/
+**/package-lock.json
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Docker
+.dockerignore
+Dockerfile
+
+# Jenkins
+.jenkinsfile
+.jenkins/
+workspace/
+jobs/
+
+# SonarQube
+.sonarlint/
+.sonar/
+coverage/
+
+# Temporary Files
+*.tmp
+*.bak
+*.swp
+*~
+temp/
+tmp/
+
+# SSH Keys (if accidentally added)
+*.pem
+*.key
+*.pub
+id_rsa*
+
+# Keystore Files
+*.p12
+*.jks
+*.keystore
+keystore/
+
+# Database Files
+*.db
+*.sqlite
+*.sqlite3
+
+# OS generated files
+.AppleDouble
+.LSOverride
+.TemporaryItems
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+.directory
+.Trash-*
+
+# Sensitive Data (double-check, shouldn't be here!)
+credentials.json
+secrets.json
+config.secret.*
+.aws/
+.gcloud/
