@@ -30,7 +30,7 @@ jobs:
           SONAR_PROJECT_KEY: buy-01-dev
 
       - name: SonarQube Quality Gate
-        uses: SonarSource/sonarqube-quality-gate-action@master
+        uses: SonarSource/sonarqube-quality-gate-action@59db25f34e16620e48ab4bb9e4a5dce155cb5432
         timeout-minutes: 5
         env:
           SONAR_HOST_URL: https://sonarcloud.io
