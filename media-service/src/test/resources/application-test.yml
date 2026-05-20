@@ -1,0 +1,23 @@
+# Test Configuration - Disables Kafka for unit tests
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      auto-offset-reset: earliest
+      group-id: test-group
+    producer:
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+  main:
+    lazy-initialization: true
+    
+  # Disable MongoDB connection for tests if needed
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/buy01-test
+
+# Disable Kafka listener containers for tests
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
