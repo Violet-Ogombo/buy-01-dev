@@ -22,7 +22,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Run SonarQube Analysis
-        uses: SonarSource/sonarqube-scan-action@master
+        uses: SonarSource/sonarqube-scan-action@59db25f34e16620e48ab4bb9e4a5dce155cb5432
         env:
           SONAR_HOST_URL: https://sonarcloud.io
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
