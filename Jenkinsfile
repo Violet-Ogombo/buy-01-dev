@@ -24,6 +24,7 @@ pipeline {
         APP_SERVICES = "api-gateway product-service media-service identity-service frontend"
         SONARQUBE_URL = 'http://sonarqube:9000'
         SONARQUBE_LOGIN = credentials('sonar-token')
+        MVN_TEST_CMD = 'mvn test'
     }
 
     stages {
@@ -96,7 +97,7 @@ pipeline {
             steps {
                 echo "Testing API Gateway..."
                 dir('api-gateway') {
-                    sh 'mvn test'
+                    sh env.MVN_TEST_CMD
                 }
             }
         }
@@ -105,7 +106,7 @@ pipeline {
             steps {
                 echo "Testing Product Service..."
                 dir('product-service') {
-                    sh 'mvn test'
+                    sh env.MVN_TEST_CMD
                     //sh 'exit 1'
                 }
             }
@@ -115,7 +116,7 @@ pipeline {
             steps {
                 echo "Testing Media Service..."
                 dir('media-service') {
-                    sh 'mvn test'
+                    sh env.MVN_TEST_CMD
                 }
             }
         }
@@ -124,7 +125,7 @@ pipeline {
             steps {
                 echo "Testing Identity Service..."
                 dir('identity-service') {
-                    sh 'mvn test'
+                    sh env.MVN_TEST_CMD
                 }
             }
         }
