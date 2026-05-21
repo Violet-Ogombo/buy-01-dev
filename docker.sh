@@ -77,7 +77,7 @@ cleanup_containers() {
     
     # Get all exited containers
     EXITED=$(docker ps -aq -f status=exited)
-    if [ -n "$EXITED" ]; then
+    if [[ -n "$EXITED" ]]; then
         print_info "Found exited containers, removing..."
         echo "$EXITED" | xargs docker rm -f 2>/dev/null || true
         print_success "Orphaned containers removed"
@@ -137,7 +137,7 @@ verify_clean_database() {
     
     print_info "Products in database: $PRODUCT_COUNT"
     
-    if [ "$PRODUCT_COUNT" = "0" ]; then
+    if [[ "$PRODUCT_COUNT" = "0" ]]; then
         print_info "Waiting for auto-initialization of sample products..."
         sleep 5
         PRODUCT_COUNT=$(docker exec mongodb mongosh --quiet --eval "db.getSiblingDB('buy01').product.countDocuments()" 2>/dev/null || echo "0")

@@ -11,7 +11,7 @@ KEY_FILE="$KEYSTORE_DIR/server.key"
 mkdir -p "$KEYSTORE_DIR"
 
 # Check if certificates already exist
-if [ -f "$CERT_FILE" ] && [ -f "$KEY_FILE" ]; then
+if [[ -f "$CERT_FILE" ]] && [[ -f "$KEY_FILE" ]]; then
     echo "✅ SSL certificates already exist at $KEYSTORE_DIR"
     echo "   Certificate: $CERT_FILE"
     echo "   Private Key: $KEY_FILE"
@@ -25,7 +25,7 @@ echo "🔐 Generating self-signed SSL certificate..."
 openssl req -x509 -newkey rsa:4096 -keyout "$KEY_FILE" -out "$CERT_FILE" -days 365 -nodes \
     -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost"
 
-if [ $? -eq 0 ]; then
+if [[ $? -eq 0 ]]; then
     echo "✅ SSL certificate generated successfully!"
     echo ""
     echo "📁 Files created:"
