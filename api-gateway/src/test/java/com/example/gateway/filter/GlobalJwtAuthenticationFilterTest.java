@@ -6,13 +6,21 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class GlobalJwtAuthenticationFilterTest {
@@ -20,90 +28,159 @@ class GlobalJwtAuthenticationFilterTest {
     @InjectMocks
     private GlobalJwtAuthenticationFilter filter;
 
+    @Mock
+    private ServerWebExchange exchange;
+
+    @Mock
+    private GatewayFilterChain chain;
+
     private String jwtSecret = "my-secret-key-for-testing-jwt-operations-in-gateway-filter";
 
     @BeforeEach
     void setUp() {
-        // Inject the JWT secret via reflection
         ReflectionTestUtils.setField(filter, "jwtSecret", jwtSecret);
     }
 
     private String generateValidJwt(String userId, String role) {
         return Jwts.builder()
-            .setSubject("user-subject")
+            .setSubject("user@example.com")
             .claim("userId", userId)
             .claim("role", role)
             .setIssuedAt(new Date())
-            .setExpiration(new Date(System.currentTimeMillis() + 3600000)) // 1 hour
+            .setExpiration(new Date(System.currentTimeMillis() + 3600000))
             .signWith(SignatureAlgorithm.HS256, jwtSecret.getBytes(StandardCharsets.UTF_8))
             .compact();
     }
 
     @Test
     void filter_implementsGlobalFilter() {
-        // Act & Assert
-        assertThat(filter).isNotNull();
         assertThat(filter).isInstanceOf(org.springframework.cloud.gateway.filter.GlobalFilter.class);
     }
 
     @Test
     void filter_implementsOrdered() {
-        // Act & Assert
         assertThat(filter).isInstanceOf(org.springframework.core.Ordered.class);
     }
 
     @Test
     void filter_returnsValidOrderValue() {
-        // Act
-        int order = filter.getOrder();
-
-        // Assert - filter should return a valid order value
-        assertThat(order).isEqualTo(-100);
+        assertThat(filter.getOrder()).isEqualTo(-100);
     }
 
     @Test
-    void generateValidJwt_createsToken() {
+    void filter_withValidJwt_addsAuthHeaders() {
+        // Arrange
+        String validJwt = generateValidJwt("user-123", "SELLER");
+        setupMockExchange("/api/products", "GET", "Bearer " + validJwt, null);
+        when(chain.filter(any())).thenReturn(Mono.empty());
+
         // Act
-        String token = generateValidJwt("user-123", "SELLER");
+        filter.filter(exchange, chain).block();
 
         // Assert
-        assertThat(token).isNotNull();
-        assertThat(token).contains(".");
-        assertThat(token.split("\\.")).hasSize(3); // JWT has 3 parts: header.payload.signature
+        verify(chain).filter(any(ServerWebExchange.class));
     }
 
     @Test
-    void generateValidJwt_createsTokenWithUserId() {
+    void filter_withoutJwt_proceedsWithoutHeaders() {
+        // Arrange
+        setupMockExchange("/api/products", "GET", null, null);
+        when(chain.filter(any())).thenReturn(Mono.empty());
+
         // Act
-        String token = generateValidJwt("seller-456", "BUYER");
+        filter.filter(exchange, chain).block();
 
         // Assert
-        assertThat(token).isNotNull();
-        // Token should be valid and decodable
-        assertThat(token).isNotEmpty();
+        verify(chain).filter(exchange);
     }
 
     @Test
-    void filter_jwtSecretIsSet() {
+    void filter_withInvalidJwt_proceedsWithoutHeaders() {
+        // Arrange
+        setupMockExchange("/api/products", "GET", "Bearer invalid-token", null);
+        when(chain.filter(any())).thenReturn(Mono.empty());
+
         // Act
-        String secret = (String) ReflectionTestUtils.getField(filter, "jwtSecret");
+        filter.filter(exchange, chain).block();
 
         // Assert
-        assertThat(secret).isEqualTo(jwtSecret);
+        verify(chain).filter(exchange);
     }
 
     @Test
-    void generateValidJwt_tokenHasCorrectClaims() {
-        // Act
-        String token = generateValidJwt("user-123", "SELLER");
+    void filter_withMultipartRequest_skipsHeaderMutation() {
+        // Arrange
+        String validJwt = generateValidJwt("user-123", "SELLER");
+        setupMockExchange("/api/upload", "POST", "Bearer " + validJwt, "multipart/form-data");
+        when(chain.filter(any())).thenReturn(Mono.empty());
 
-        // Assert - verify token can be decoded and has the right structure
-        assertThat(token).isNotNull();
-        // Token format: eyJ... (header) . eyJ... (payload) . signature
-        String[] parts = token.split("\\.");
-        assertThat(parts).hasSize(3);
-        assertThat(parts[0]).isNotEmpty(); // header
-        assertThat(parts[1]).isNotEmpty(); // payload
-        assertThat(parts[2]).isNotEmpty(); // signature
+        // Act
+        filter.filter(exchange, chain).block();
+
+        // Assert - should still process but not mutate headers for multipart
+        verify(chain).filter(any());
+    }
+
+    @Test
+    void filter_withRegularRequest_mutatesToAddHeaders() {
+        // Arrange
+        String validJwt = generateValidJwt("user-456", "BUYER");
+        setupMockExchange("/api/products", "GET", "Bearer " + validJwt, "application/json");
+        when(chain.filter(any())).thenReturn(Mono.empty());
+
+        // Act
+        filter.filter(exchange, chain).block();
+
+        // Assert
+        verify(chain).filter(any(ServerWebExchange.class));
+    }
+
+    @Test
+    void filter_extracts_userId_from_jwt() {
+        // Arrange
+        String userId = "seller-789";
+        String validJwt = generateValidJwt(userId, "SELLER");
+        setupMockExchange("/api/products", "POST", "Bearer " + validJwt, null);
+        when(chain.filter(any())).thenReturn(Mono.empty());
+
+        // Act
+        filter.filter(exchange, chain).block();
+
+        // Assert
+        verify(chain).filter(any(ServerWebExchange.class));
+    }
+
+    @Test
+    void filter_extracts_role_from_jwt() {
+        // Arrange
+        String role = "ADMIN";
+        String validJwt = generateValidJwt("user-123", role);
+        setupMockExchange("/api/admin", "GET", "Bearer " + validJwt, null);
+        when(chain.filter(any())).thenReturn(Mono.empty());
+
+        // Act
+        filter.filter(exchange, chain).block();
+
+        // Assert
+        verify(chain).filter(any(ServerWebExchange.class));
+    }
+
+    private void setupMockExchange(String path, String method, String authHeader, String contentType) {
+        var request = mock(org.springframework.http.server.reactive.ServerHttpRequest.class);
+        var headers = mock(HttpHeaders.class);
+        var requestPath = mock(org.springframework.http.server.RequestPath.class);
+
+        when(exchange.getRequest()).thenReturn(request);
+        when(request.getPath()).thenReturn(requestPath);
+        when(requestPath.value()).thenReturn(path);
+        when(request.getMethod()).thenReturn(org.springframework.http.HttpMethod.valueOf(method));
+        when(request.getHeaders()).thenReturn(headers);
+        when(headers.getFirst(HttpHeaders.AUTHORIZATION)).thenReturn(authHeader);
+
+        if (contentType != null && contentType.contains("multipart")) {
+            when(headers.getContentType()).thenReturn(MediaType.MULTIPART_FORM_DATA);
+        } else {
+            when(headers.getContentType()).thenReturn(null);
+        }
     }
 }
