@@ -35,7 +35,7 @@ public class MediaController {
     private String jwtSecret;
     
     @PostMapping
-    public ResponseEntity<?> uploadImage(
+    public ResponseEntity<Map<String, Object>> uploadImage(
             @RequestParam("file") MultipartFile file,
             @RequestParam("productId") String productId,
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
@@ -137,7 +137,7 @@ public class MediaController {
     
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('SELLER')")
-    public ResponseEntity<?> deleteImage(@PathVariable String id,
+    public ResponseEntity<Object> deleteImage(@PathVariable String id,
                                         @RequestHeader("X-User-Id") String userId) {
         try {
             mediaService.deleteImage(id, userId);
