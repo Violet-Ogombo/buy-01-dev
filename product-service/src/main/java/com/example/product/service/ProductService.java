@@ -30,6 +30,8 @@ public class ProductService {
     
     private final AuditService auditService;
 
+    private static final String ENTITY_NAME = "Product";
+
     @Value("${media.service.url:http://localhost:8083}")
     private String mediaServiceUrl;
 
@@ -68,7 +70,7 @@ public class ProductService {
         product.setUpdatedAt(now);
 
         Product saved = productRepository.save(product);
-        auditService.logWriteOperation(userId, "CREATE", "Product", saved.getId(), 
+        auditService.logWriteOperation(userId, "CREATE", ENTITY_NAME, saved.getId(), 
             "name=" + saved.getName() + ", price=" + saved.getPrice());
         kafkaTemplate.send("product-created", saved.getId());
         return saved;
@@ -85,7 +87,7 @@ public class ProductService {
             existingProduct.setQuantity(request.getQuantity());
             existingProduct.setUpdatedAt(LocalDateTime.now());
             Product updated = productRepository.save(existingProduct);
-            auditService.logWriteOperation(userId, "UPDATE", "Product", id,
+            auditService.logWriteOperation(userId, "UPDATE", ENTITY_NAME, id,
                 "name=" + updated.getName() + ", price=" + updated.getPrice());
             kafkaTemplate.send("product-updated", updated.getId());
             return updated;
@@ -98,7 +100,7 @@ public class ProductService {
                 throw new com.example.product.exception.AccessDeniedException("You are not authorized to delete this product.");
             }
             productRepository.deleteById(id);
-            auditService.logWriteOperation(userId, "DELETE", "Product", id,
+            auditService.logWriteOperation(userId, "DELETE", ENTITY_NAME, id,
                 "name=" + product.getName());
             kafkaTemplate.send("product-deleted", id);
         }, () -> {
@@ -147,7 +149,7 @@ public class ProductService {
 
         product.setUpdatedAt(LocalDateTime.now());
         Product updated = productRepository.save(product);
-        auditService.logWriteOperation(userId, "UPDATE", "Product", productId,
+        auditService.logWriteOperation(userId, "UPDATE", ENTITY_NAME, productId,
             "added " + mediaIds.size() + " images");
         return updated;
     }
