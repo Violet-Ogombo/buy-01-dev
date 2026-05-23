@@ -170,12 +170,28 @@ class GlobalJwtAuthenticationFilterTest {
         var headers = mock(HttpHeaders.class);
         var requestPath = mock(org.springframework.http.server.RequestPath.class);
 
+        // Builders to support mutate() calls used by the filter
+        var requestBuilder = mock(org.springframework.http.server.reactive.ServerHttpRequest.Builder.class);
+        var exchangeBuilder = mock(org.springframework.web.server.ServerWebExchange.Builder.class);
+
         when(exchange.getRequest()).thenReturn(request);
         when(request.getPath()).thenReturn(requestPath);
         when(requestPath.value()).thenReturn(path);
         when(request.getMethod()).thenReturn(org.springframework.http.HttpMethod.valueOf(method));
         when(request.getHeaders()).thenReturn(headers);
         when(headers.getFirst(HttpHeaders.AUTHORIZATION)).thenReturn(authHeader);
+
+        // Mock request.mutate() -> builder.header(...).build() -> request
+        when(request.mutate()).thenReturn(requestBuilder);
+        when(requestBuilder.header(org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.<String[]>any()))
+            .thenReturn(requestBuilder);
+        when(requestBuilder.build()).thenReturn(request);
+
+        // Mock exchange.mutate() -> builder.request(...).build() -> exchange
+        when(exchange.mutate()).thenReturn(exchangeBuilder);
+        when(exchangeBuilder.request(any(org.springframework.http.server.reactive.ServerHttpRequest.class)))
+            .thenReturn(exchangeBuilder);
+        when(exchangeBuilder.build()).thenReturn(exchange);
 
         if (contentType != null && contentType.contains("multipart")) {
             when(headers.getContentType()).thenReturn(MediaType.MULTIPART_FORM_DATA);
