@@ -22,7 +22,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Run SonarQube Analysis
-        uses: SonarSource/sonarqube-scan-action@v8.0.0
+        uses: SonarSource/sonarqube-scan-action@7006c4492b2e0ee0f816d36501671557c97f5995
         env:
           SONAR_HOST_URL: https://sonarcloud.io
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -30,7 +30,7 @@ jobs:
           SONAR_PROJECT_KEY: buy-01-dev
 
       - name: SonarQube Quality Gate
-        uses: SonarSource/sonarqube-quality-gate-action@v1.2.0
+        uses: SonarSource/sonarqube-quality-gate-action@v8e9b0ca0a7273d6f16986388d98393efdfcf56fd
         timeout-minutes: 5
         env:
           SONAR_HOST_URL: https://sonarcloud.io
