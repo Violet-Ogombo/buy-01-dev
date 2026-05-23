@@ -21,8 +21,28 @@ jobs:
           java-version: 17
           distribution: 'temurin'
 
-      - name: Build and test all services
-        run: mvn clean verify
+      - name: Build and test API Gateway
+        run: mvn clean verify -f api-gateway/pom.xml
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
+      - name: Build and test Discovery Service
+        run: mvn clean verify -f discovery-server/pom.xml
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
+      - name: Build and test Product Service
+        run: mvn clean verify -f product-service/pom.xml
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
+      - name: Build and test Media Service
+        run: mvn clean verify -f media-service/pom.xml
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
+      - name: Build and test Identity Service
+        run: mvn clean verify -f identity-service/pom.xml
         env:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
