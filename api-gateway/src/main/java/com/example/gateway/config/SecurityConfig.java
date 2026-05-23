@@ -71,6 +71,5 @@ public class SecurityConfig {
      * This caused all API requests to fail with 502 Bad Gateway.
      * Consider using Spring Cloud Gateway response filters or Nginx for header injection.
      */
-    // @Bean
-    // public WebFilter securityHeadersWebFilter() { ... }
+
 }
