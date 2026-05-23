@@ -1,5 +1,6 @@
 package com.example.product.service;
 
+import com.example.product.dto.ProductCreateRequest;
 import com.example.product.model.Product;
 import com.example.product.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
@@ -41,10 +42,12 @@ class ProductServiceTest {
 	@Test
 	void createProduct_setsOwnerAndPublishesEvent() {
 		// Arrange
-		Product input = new Product();
-		input.setName("Test Laptop");
-		input.setPrice(999.99);
-		input.setQuantity(10);
+		ProductCreateRequest request = new ProductCreateRequest(
+			"Test Laptop",
+			"High-performance laptop for developers",
+			999.99,
+			10
+		);
 		String userId = "seller-123";
 
 		when(productRepository.save(any(Product.class))).thenAnswer(invocation -> {
@@ -54,13 +57,16 @@ class ProductServiceTest {
 		});
 
 		// Act
-		Product result = productService.createProduct(input, userId);
+		Product result = productService.createProduct(request, userId);
 
 		// Assert
 		assertThat(result.getUserId()).isEqualTo(userId);
 		assertThat(result.getCreatedAt()).isNotNull();
 		assertThat(result.getUpdatedAt()).isNotNull();
 		assertThat(result.getId()).isEqualTo("prod-1");
+		assertThat(result.getName()).isEqualTo("Test Laptop");
+		assertThat(result.getPrice()).isEqualTo(999.99);
+		assertThat(result.getQuantity()).isEqualTo(10);
 
 		ArgumentCaptor<Product> productCaptor = ArgumentCaptor.forClass(Product.class);
 		verify(productRepository).save(productCaptor.capture());

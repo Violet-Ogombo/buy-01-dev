@@ -1,5 +1,6 @@
 package com.example.product.service;
 
+import com.example.product.dto.ProductCreateRequest;
 import com.example.product.model.Product;
 import com.example.product.model.RemoteMedia;
 import com.example.product.repository.ProductRepository;
@@ -52,7 +53,12 @@ public class ProductService {
         return productRepository.findById(id);
     }
 
-    public Product createProduct(Product product, String userId) {
+    public Product createProduct(ProductCreateRequest request, String userId) {
+        Product product = new Product();
+        product.setName(request.getName());
+        product.setDescription(request.getDescription());
+        product.setPrice(request.getPrice());
+        product.setQuantity(request.getQuantity());
         product.setUserId(userId);
         if (product.getImageUrls() == null) {
             product.setImageUrls(new ArrayList<>());
@@ -68,16 +74,15 @@ public class ProductService {
         return saved;
     }
 
-    public Product updateProduct(String id, Product product, String userId) {
+    public Product updateProduct(String id, ProductCreateRequest request, String userId) {
         return productRepository.findById(id).map(existingProduct -> {
             if (!existingProduct.getUserId().equals(userId)) {
                 throw new com.example.product.exception.AccessDeniedException("You are not authorized to update this product.");
             }
-            existingProduct.setName(product.getName());
-            existingProduct.setDescription(product.getDescription());
-            existingProduct.setPrice(product.getPrice());
-            existingProduct.setQuantity(product.getQuantity());
-            existingProduct.setImageUrls(product.getImageUrls());
+            existingProduct.setName(request.getName());
+            existingProduct.setDescription(request.getDescription());
+            existingProduct.setPrice(request.getPrice());
+            existingProduct.setQuantity(request.getQuantity());
             existingProduct.setUpdatedAt(LocalDateTime.now());
             Product updated = productRepository.save(existingProduct);
             auditService.logWriteOperation(userId, "UPDATE", "Product", id,
