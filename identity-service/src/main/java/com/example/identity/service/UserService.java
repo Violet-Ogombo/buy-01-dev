@@ -76,34 +76,43 @@ public class UserService {
     public Optional<User> updateProfileWithPassword(String email, String name, String newEmail, 
                                                     String oldPassword, String newPassword) {
         return userRepository.findByEmail(email).flatMap(user -> {
-            // Verify old password if provided
-            // Note: oldPassword and newPassword are already SHA-256 hashed from the frontend
-            if (oldPassword != null && !oldPassword.isEmpty()) {
-                if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-                    throw new RuntimeException("Old password is incorrect");
-                }
-                // Update password only if old password is correct
-                if (newPassword != null && !newPassword.isEmpty()) {
-                    // newPassword is already SHA-256 hashed, apply BCrypt on top
-                    user.setPassword(passwordEncoder.encode(newPassword));
-                }
-            }
-
-            // Update name if provided
-            if (name != null && !name.isEmpty()) {
-                user.setName(name);
-            }
-
-            // Update email if provided and not already taken
-            if (newEmail != null && !newEmail.isEmpty() && !newEmail.equals(email)) {
-                if (userRepository.findByEmail(newEmail).isPresent()) {
-                    throw new RuntimeException("Email already in use");
-                }
-                user.setEmail(newEmail);
-            }
-
+            validateAndUpdatePassword(user, oldPassword, newPassword);
+            updateNameIfProvided(user, name);
+            validateAndUpdateEmail(user, email, newEmail);
             return Optional.of(Objects.requireNonNull(userRepository.save(user)));
         });
+    }
+
+    private void validateAndUpdatePassword(User user, String oldPassword, String newPassword) {
+        if (oldPassword == null || oldPassword.isEmpty()) {
+            return;
+        }
+        
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new RuntimeException("Old password is incorrect");
+        }
+        
+        if (newPassword != null && !newPassword.isEmpty()) {
+            user.setPassword(passwordEncoder.encode(newPassword));
+        }
+    }
+
+    private void updateNameIfProvided(User user, String name) {
+        if (name != null && !name.isEmpty()) {
+            user.setName(name);
+        }
+    }
+
+    private void validateAndUpdateEmail(User user, String currentEmail, String newEmail) {
+        if (newEmail == null || newEmail.isEmpty() || newEmail.equals(currentEmail)) {
+            return;
+        }
+        
+        if (userRepository.findByEmail(newEmail).isPresent()) {
+            throw new RuntimeException("Email already in use");
+        }
+        
+        user.setEmail(newEmail);
     }
 
     private boolean isPasswordStrong(String password) {
