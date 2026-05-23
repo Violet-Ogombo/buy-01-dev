@@ -37,8 +37,9 @@ public class GlobalJwtAuthenticationFilter implements GlobalFilter, Ordered {
     }
 
     private String getMethod(ServerWebExchange exchange) {
-        return exchange.getRequest().getMethod() != null ? 
-               exchange.getRequest().getMethod().name() : "";
+        return java.util.Optional.ofNullable(exchange.getRequest().getMethod())
+            .map(m -> m.name())
+            .orElse("");
     }
 
     private boolean isMultipartRequest(ServerWebExchange exchange) {
