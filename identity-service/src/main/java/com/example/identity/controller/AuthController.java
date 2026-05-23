@@ -25,7 +25,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody Map<String, String> req) {
+    public ResponseEntity<Object> register(@RequestBody Map<String, String> req) {
         try {
             String name = req.get("name");
             String email = req.get("email");
@@ -41,23 +41,23 @@ public class AuthController {
                 "message", "Registration successful. Please login."
             ));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Invalid role or missing fields"));
+            return ResponseEntity.badRequest().body((Object) Map.of("error", "Invalid role or missing fields"));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body((Object) Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", "Registration failed: " + e.getMessage()));
+            return ResponseEntity.status(500).body((Object) Map.of("error", "Registration failed: " + e.getMessage()));
         }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> req) {
+    public ResponseEntity<Object> login(@RequestBody Map<String, String> req) {
         try {
             String email = req.get("email");
             String password = req.get("password");
             return userService.authenticate(email, password)
                     .map(user -> {
                         String token = jwtService.generateToken(user);
-                        return ResponseEntity.ok(Map.of(
+                        return ResponseEntity.ok((Object) Map.of(
                             "id", user.getId(),
                             "name", user.getName(),
                             "email", user.getEmail(),
@@ -65,18 +65,18 @@ public class AuthController {
                             "token", token
                         ));
                     })
-                    .orElse(ResponseEntity.status(401).body(Map.of("error", "Invalid credentials")));
+                    .orElse(ResponseEntity.status(401).body((Object) Map.of("error", "Invalid credentials")));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", "Login failed: " + e.getMessage()));
+            return ResponseEntity.status(500).body((Object) Map.of("error", "Login failed: " + e.getMessage()));
         }
     }
 
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> getProfile(Authentication auth) {
+    public ResponseEntity<Object> getProfile(Authentication auth) {
         String email = auth.getName();
         return userService.findByEmail(email)
-            .map(user -> ResponseEntity.ok(Map.of(
+            .map(user -> ResponseEntity.ok((Object) Map.of(
                 "id", user.getId(),
                 "name", user.getName(),
                 "email", user.getEmail(),
@@ -88,7 +88,7 @@ public class AuthController {
 
     @PutMapping("/me")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> updateProfile(@RequestBody Map<String, String> req, Authentication auth) {
+    public ResponseEntity<Object> updateProfile(@RequestBody Map<String, String> req, Authentication auth) {
         try {
             String email = auth.getName();
             String name = req.get("name");
@@ -97,7 +97,7 @@ public class AuthController {
             String newPassword = req.get("newPassword");
 
             return userService.updateProfileWithPassword(email, name, newEmail, oldPassword, newPassword)
-                .map(user -> ResponseEntity.ok(Map.of(
+                .map(user -> ResponseEntity.ok((Object) Map.of(
                     "id", user.getId(),
                     "name", user.getName(),
                     "email", user.getEmail(),
@@ -106,9 +106,9 @@ public class AuthController {
                 )))
                 .orElse(ResponseEntity.notFound().build());
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body((Object) Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", "Update failed: " + e.getMessage()));
+            return ResponseEntity.status(500).body((Object) Map.of("error", "Update failed: " + e.getMessage()));
         }
     }
 }
