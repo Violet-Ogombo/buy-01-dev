@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  sonarqube:
+  validate-with-jenkins:
     runs-on: ubuntu-latest
     
     steps:
@@ -15,48 +15,61 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: 17
-          distribution: 'temurin'
+      - name: Trigger Jenkins Build
+        id: trigger
+        run: |
+          JENKINS_URL="${{ secrets.JENKINS_URL }}"
+          JENKINS_USER="${{ secrets.JENKINS_USER }}"
+          JENKINS_TOKEN="${{ secrets.JENKINS_TOKEN }}"
+          BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
+          
+          # Trigger Jenkins build
+          RESPONSE=$(curl -s -X POST \
+            "$JENKINS_URL/job/buy-01-dev/buildWithParameters" \
+            -u "$JENKINS_USER:$JENKINS_TOKEN" \
+            -d "BRANCH_NAME=$BRANCH_NAME" \
+            -d "GIT_COMMIT=${{ github.sha }}")
+          
+          echo "Jenkins build triggered"
+          echo "response=$RESPONSE" >> $GITHUB_OUTPUT
 
-      - name: Build and test API Gateway
-        run: mvn clean verify -f api-gateway/pom.xml
-        env:
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      - name: Wait for Jenkins Build Completion
+        id: wait
+        run: |
+          JENKINS_URL="${{ secrets.JENKINS_URL }}"
+          JENKINS_USER="${{ secrets.JENKINS_USER }}"
+          JENKINS_TOKEN="${{ secrets.JENKINS_TOKEN }}"
+          MAX_ATTEMPTS=120
+          ATTEMPT=0
+          
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            BUILD_STATUS=$(curl -s -u "$JENKINS_USER:$JENKINS_TOKEN" \
+              "$JENKINS_URL/job/buy-01-dev/lastBuild/api/json" \
+              | grep -o '"result":"[^"]*"' | cut -d'"' -f4)
+            
+            if [ "$BUILD_STATUS" = "SUCCESS" ] || [ "$BUILD_STATUS" = "FAILURE" ] || [ "$BUILD_STATUS" = "UNSTABLE" ]; then
+              echo "status=$BUILD_STATUS" >> $GITHUB_OUTPUT
+              break
+            fi
+            
+            echo "Build in progress... ($ATTEMPT/120)"
+            ATTEMPT=$((ATTEMPT + 1))
+            sleep 5
+          done
 
-      - name: Build and test Discovery Service
-        run: mvn clean verify -f discovery-server/pom.xml
-        env:
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-
-      - name: Build and test Product Service
-        run: mvn clean verify -f product-service/pom.xml
-        env:
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-
-      - name: Build and test Media Service
-        run: mvn clean verify -f media-service/pom.xml
-        env:
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-
-      - name: Build and test Identity Service
-        run: mvn clean verify -f identity-service/pom.xml
-        env:
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-
-      - name: Run SonarQube Analysis
-        uses: SonarSource/sonarqube-scan-action@7006c4492b2e0ee0f816d36501671557c97f5995
-        env:
-          SONAR_HOST_URL: https://sonarcloud.io
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_ORGANIZATION: violet-ogombo
-          SONAR_PROJECT_KEY: buy-01-dev
-
-      - name: SonarQube Quality Gate
-        uses: SonarSource/sonarqube-quality-gate-action@8e9b0ca0a7273d6f16986388d98393efdfcf56fd
-        timeout-minutes: 5
-        env:
-          SONAR_HOST_URL: https://sonarcloud.io
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Report Status to GitHub
+        if: always()
+        run: |
+          BUILD_STATUS="${{ steps.wait.outputs.status }}"
+          JENKINS_URL="${{ secrets.JENKINS_URL }}"
+          
+          if [ "$BUILD_STATUS" = "SUCCESS" ]; then
+            echo "✅ Jenkins build SUCCESS - SonarQube Quality Gate PASSED"
+            exit 0
+          elif [ "$BUILD_STATUS" = "UNSTABLE" ]; then
+            echo "⚠️  Jenkins build UNSTABLE - Check SonarQube results at: $JENKINS_URL/job/buy-01-dev/lastBuild/"
+            exit 1
+          else
+            echo "❌ Jenkins build FAILED - Review at: $JENKINS_URL/job/buy-01-dev/lastBuild/"
+            exit 1
+          fi
