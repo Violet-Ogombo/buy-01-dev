@@ -21,6 +21,11 @@ jobs:
           java-version: 17
           distribution: 'temurin'
 
+      - name: Build and test all services
+        run: mvn clean verify
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
       - name: Run SonarQube Analysis
         uses: SonarSource/sonarqube-scan-action@7006c4492b2e0ee0f816d36501671557c97f5995
         env:
