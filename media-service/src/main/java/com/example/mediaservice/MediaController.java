@@ -26,6 +26,7 @@ import java.util.Map;
 @RequestMapping("/images")
 public class MediaController {
     private static final Logger log = LoggerFactory.getLogger(MediaController.class);
+    private static final String ERROR_KEY = "error";
     
     @Autowired
     private MediaService mediaService;
@@ -56,7 +57,7 @@ public class MediaController {
         
         if (userId == null || userId.isEmpty()) {
             log.warn("❌ Unauthorized - cannot extract user ID from JWT token or SecurityContext");
-            return ResponseEntity.status(403).body(Map.of("error", "Unauthorized - invalid or missing token"));
+            return ResponseEntity.status(403).body(Map.of(ERROR_KEY, "Unauthorized - invalid or missing token"));
         }
         
         log.info("✅ Authentication successful - userId: {}", userId);
@@ -74,10 +75,10 @@ public class MediaController {
             ));
         } catch (IllegalArgumentException e) {
             log.error("❌ Validation error: {}", e.getMessage());
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of(ERROR_KEY, e.getMessage()));
         } catch (Exception e) {
             log.error("❌ Upload failed: {}", e.getMessage(), e);
-            return ResponseEntity.status(500).body(Map.of("error", "Upload failed: " + e.getMessage()));
+            return ResponseEntity.status(500).body(Map.of(ERROR_KEY, "Upload failed: " + e.getMessage()));
         }
     }
     
@@ -143,11 +144,11 @@ public class MediaController {
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             if (e.getMessage().contains("Unauthorized")) {
-                return ResponseEntity.status(403).body(Map.of("error", e.getMessage()));
+                return ResponseEntity.status(403).body(Map.of(ERROR_KEY, e.getMessage()));
             }
-            return ResponseEntity.status(404).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(404).body(Map.of(ERROR_KEY, e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", "Delete failed"));
+            return ResponseEntity.status(500).body(Map.of(ERROR_KEY, "Delete failed"));
         }
     }
     
