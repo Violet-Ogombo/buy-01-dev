@@ -23,6 +23,8 @@ import java.util.List;
 @Service
 public class MediaService {
     
+    private static final String MEDIA_NOT_FOUND = "Media not found";
+    
     @Value("${media.upload.dir:uploads/images}")
     private String uploadDir;
     
@@ -93,7 +95,7 @@ public class MediaService {
     
     public byte[] getImage(String id) throws IOException {
         Media media = mediaRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Media not found"));
+            .orElseThrow(() -> new RuntimeException(MEDIA_NOT_FOUND));
         Path imagePath = Paths.get(media.getImagePath());
         if (!Files.exists(imagePath)) {
             throw new RuntimeException("Image file not found on disk");
@@ -103,12 +105,12 @@ public class MediaService {
     
     public Media getMediaById(String id) {
         return mediaRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Media not found"));
+            .orElseThrow(() -> new RuntimeException(MEDIA_NOT_FOUND));
     }
     
     public void deleteImage(String id, String userId) throws IOException {
         Media media = mediaRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Media not found"));
+            .orElseThrow(() -> new RuntimeException(MEDIA_NOT_FOUND));
         
         if (!media.getUserId().equals(userId)) {
             throw new RuntimeException("Unauthorized to delete this media");
