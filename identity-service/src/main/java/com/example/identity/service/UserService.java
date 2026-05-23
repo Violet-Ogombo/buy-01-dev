@@ -114,17 +114,4 @@ public class UserService {
         
         user.setEmail(newEmail);
     }
-
-    private boolean isPasswordStrong(String password) {
-        // This method is deprecated - password strength validation should happen on frontend
-        // before hashing. Backend receives hashed passwords and cannot validate strength.
-        if (password == null || password.length() < 8) {
-            return false;
-        }
-        boolean hasUppercase = password.matches(".*[A-Z].*");
-        boolean hasLowercase = password.matches(".*[a-z].*");
-        boolean hasDigit = password.matches(".*[0-9].*");
-        boolean hasSpecialChar = password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};:'\"<>,.?/].*");
-        return hasUppercase && hasLowercase && hasDigit && hasSpecialChar;
-    }
 }
