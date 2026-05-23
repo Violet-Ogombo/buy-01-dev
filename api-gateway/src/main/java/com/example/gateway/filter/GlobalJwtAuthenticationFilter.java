@@ -25,84 +25,109 @@ public class GlobalJwtAuthenticationFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path = exchange.getRequest().getPath().value();
-        String method = exchange.getRequest().getMethod() != null ? 
-                       exchange.getRequest().getMethod().name() : "";
+        String method = getMethod(exchange);
 
         log.debug("🔍 GlobalJwtAuthenticationFilter processing: {} {}", method, path);
 
-        // For multipart requests (file uploads), DO NOT mutate the request
-        // The Authorization header is already in the request; services read it directly
+        if (isMultipartRequest(exchange)) {
+            return handleMultipartRequest(exchange, chain, method, path);
+        }
+
+        return handleRegularRequest(exchange, chain, method, path);
+    }
+
+    private String getMethod(ServerWebExchange exchange) {
+        return exchange.getRequest().getMethod() != null ? 
+               exchange.getRequest().getMethod().name() : "";
+    }
+
+    private boolean isMultipartRequest(ServerWebExchange exchange) {
         var contentTypeObj = exchange.getRequest().getHeaders().getContentType();
         String contentType = contentTypeObj != null ? contentTypeObj.toString() : "";
+        return contentType.contains("multipart");
+    }
+
+    private Mono<Void> handleMultipartRequest(ServerWebExchange exchange, GatewayFilterChain chain, 
+                                               String method, String path) {
+        log.debug("⏭️ Skipping header mutation for multipart request {} {}", method, path);
+        validateJwtIfPresent(exchange, method, path);
+        return chain.filter(exchange);
+    }
+
+    private Mono<Void> handleRegularRequest(ServerWebExchange exchange, GatewayFilterChain chain, 
+                                            String method, String path) {
+        var claims = extractAndValidateJwt(exchange, method, path);
         
-        if (contentType.contains("multipart")) {
-            log.debug("⏭️ Skipping header mutation for multipart request {} {}", method, path);
-            // For multipart, just validate JWT and pass through
-            // The downstream service will read Authorization header directly
-            String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                String token = authHeader.substring(7);
-                try {
-                    @SuppressWarnings("null")
-                    byte[] keyBytes = jwtSecret != null ? jwtSecret.getBytes(StandardCharsets.UTF_8) : new byte[0];
-                    Claims claims = Jwts.parserBuilder()
-                        .setSigningKey(keyBytes)
-                        .build()
-                        .parseClaimsJws(token)
-                        .getBody();
-                    String userId = claims.get("userId", String.class);
-                    String role = claims.get("role", String.class);
-                    log.info("✅ JWT valid for multipart {} {}: userId={}, role={}", method, path, userId, role);
-                } catch (Exception e) {
-                    log.warn("JWT validation failed for {} {}: {}", method, path, e.getMessage());
-                }
-            }
-            // Pass through WITHOUT mutating request (this breaks multipart streaming)
-            return chain.filter(exchange);
-        }
-        
-        // For non-multipart requests, mutate to add headers
-        String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        
-        // Try to extract and validate JWT
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
-            try {
-                @SuppressWarnings("null")
-                byte[] keyBytes = jwtSecret != null ? jwtSecret.getBytes(StandardCharsets.UTF_8) : new byte[0];
-
-                Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(keyBytes)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
-
-                String userId = claims.get("userId", String.class);
-                String role = claims.get("role", String.class);
-                String email = claims.getSubject(); // Email is in the 'sub' claim
-
-                log.info("✅ JWT valid - userId: {}, email: {}, role: {} for {} {}", userId, email, role, method, path);
-
-                // Mutate request to add headers - ONLY for non-multipart
-                return chain.filter(
-                    exchange.mutate()
-                        .request(exchange.getRequest().mutate()
-                            .header("X-User-Id", userId)
-                            .header("X-User-Email", email != null ? email : "")
-                            .header("X-User-Role", role)
-                            .build())
-                        .build()
-                );
-            } catch (Exception e) {
-                log.warn("JWT validation failed for {} {}: {}", method, path, e.getMessage());
-            }
-        } else {
-            log.debug("⚠️ No Authorization header for {} {}", method, path);
+        if (claims != null) {
+            return addAuthHeadersAndContinue(exchange, chain, claims);
         }
 
-        // Pass through without auth headers (for public endpoints)
         log.debug("→ Allowing {} {} to proceed (auth may be optional)", method, path);
         return chain.filter(exchange);
+    }
+
+    private void validateJwtIfPresent(ServerWebExchange exchange, String method, String path) {
+        String authHeader = getAuthorizationHeader(exchange);
+        if (authHeader != null) {
+            extractAndValidateJwt(exchange, method, path);
+        }
+    }
+
+    private Claims extractAndValidateJwt(ServerWebExchange exchange, String method, String path) {
+        String authHeader = getAuthorizationHeader(exchange);
+        
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            log.debug("⚠️ No Authorization header for {} {}", method, path);
+            return null;
+        }
+
+        try {
+            String token = authHeader.substring(7);
+            byte[] keyBytes = getJwtKeyBytes();
+            Claims claims = Jwts.parserBuilder()
+                .setSigningKey(keyBytes)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+            logJwtSuccess(claims, method, path);
+            return claims;
+        } catch (Exception e) {
+            log.warn("JWT validation failed for {} {}: {}", method, path, e.getMessage());
+            return null;
+        }
+    }
+
+    private String getAuthorizationHeader(ServerWebExchange exchange) {
+        return exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+    }
+
+    private byte[] getJwtKeyBytes() {
+        return jwtSecret != null ? jwtSecret.getBytes(StandardCharsets.UTF_8) : new byte[0];
+    }
+
+    private void logJwtSuccess(Claims claims, String method, String path) {
+        String userId = claims.get("userId", String.class);
+        String role = claims.get("role", String.class);
+        String email = claims.getSubject();
+        log.info("✅ JWT valid - userId: {}, email: {}, role: {} for {} {}", userId, email, role, method, path);
+    }
+
+    private Mono<Void> addAuthHeadersAndContinue(ServerWebExchange exchange, GatewayFilterChain chain, 
+                                                  Claims claims) {
+        String userId = claims.get("userId", String.class);
+        String role = claims.get("role", String.class);
+        String email = claims.getSubject();
+
+        return chain.filter(
+            exchange.mutate()
+                .request(exchange.getRequest().mutate()
+                    .header("X-User-Id", userId)
+                    .header("X-User-Email", email != null ? email : "")
+                    .header("X-User-Role", role)
+                    .build())
+                .build()
+        );
     }
 
     @Override
