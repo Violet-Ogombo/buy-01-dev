@@ -16,9 +16,6 @@ public class ImageUploadedEvent {
 		 * mapping. Removing this constructor can break deserialization and
 		 * framework integration.
 		 *
-		 * If you want to prevent direct instantiation in application code,
-		 * replace the body with an explicit failure such as:
-		 *     throw new UnsupportedOperationException("Use factory method instead");
 		 */
 	}
 
