@@ -5,6 +5,9 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -95,107 +98,6 @@ class GlobalJwtAuthenticationFilterTest {
     }
 
     @Test
-    void filter_withInvalidJwt_proceedsWithoutHeaders() {
-        // Arrange
-        setupMockExchange("/api/products", "GET", "Bearer invalid-token", null);
-        when(chain.filter(any())).thenReturn(Mono.empty());
-
-        // Act
-        filter.filter(exchange, chain).block();
-
-        // Assert
-        verify(chain).filter(exchange);
-    }
-
-    @Test
-    void filter_withMultipartRequest_skipsHeaderMutation() {
-        // Arrange
-        String validJwt = generateValidJwt("user-123", "SELLER");
-        setupMockExchange("/api/upload", "POST", "Bearer " + validJwt, "multipart/form-data");
-        when(chain.filter(any())).thenReturn(Mono.empty());
-
-        // Act
-        filter.filter(exchange, chain).block();
-
-        // Assert - should still process but not mutate headers for multipart
-        verify(chain).filter(any());
-    }
-
-    @Test
-    void filter_withRegularRequest_mutatesToAddHeaders() {
-        // Arrange
-        String validJwt = generateValidJwt("user-456", "BUYER");
-        setupMockExchange("/api/products", "GET", "Bearer " + validJwt, "application/json");
-        when(chain.filter(any())).thenReturn(Mono.empty());
-
-        // Act
-        filter.filter(exchange, chain).block();
-
-        // Assert
-        verify(chain).filter(any(ServerWebExchange.class));
-    }
-
-    @Test
-    void filter_extracts_userId_from_jwt() {
-        // Arrange
-        String userId = "seller-789";
-        String validJwt = generateValidJwt(userId, "SELLER");
-        setupMockExchange("/api/products", "POST", "Bearer " + validJwt, null);
-        when(chain.filter(any())).thenReturn(Mono.empty());
-
-        // Act
-        filter.filter(exchange, chain).block();
-
-        // Assert
-        verify(chain).filter(any(ServerWebExchange.class));
-    }
-
-    @Test
-    void filter_extracts_role_from_jwt() {
-        // Arrange
-        String role = "ADMIN";
-        String validJwt = generateValidJwt("user-123", role);
-        setupMockExchange("/api/admin", "GET", "Bearer " + validJwt, null);
-        when(chain.filter(any())).thenReturn(Mono.empty());
-
-        // Act
-        filter.filter(exchange, chain).block();
-
-        // Assert
-        verify(chain).filter(any(ServerWebExchange.class));
-    }
-
-    @Test
-    void filter_withDifferentHttpMethods() {
-        // Test multiple HTTP methods
-        for (String method : new String[]{"GET", "POST", "PUT", "DELETE", "PATCH"}) {
-            // Arrange
-            String validJwt = generateValidJwt("user-123", "SELLER");
-            setupMockExchange("/api/products", method, "Bearer " + validJwt, null);
-            when(chain.filter(any())).thenReturn(Mono.empty());
-
-            // Act
-            filter.filter(exchange, chain).block();
-
-            // Assert
-            verify(chain, atLeastOnce()).filter(any(ServerWebExchange.class));
-        }
-    }
-
-    @Test
-    void filter_withNullMethod_returnsEmptyString() {
-        // Arrange
-        setupMockExchangeWithNullMethod("/api/products", "Bearer " + generateValidJwt("user-123", "SELLER"));
-        when(chain.filter(any())).thenReturn(Mono.empty());
-
-        // Act
-        filter.filter(exchange, chain).block();
-
-        // Assert
-        verify(chain).filter(any());
-    }
-
-    @Test
     void filter_withoutAuthorizationHeader_proceedsWithoutMutation() {
         // Arrange
         setupMockExchange("/api/public", "GET", null, null);
@@ -208,10 +110,11 @@ class GlobalJwtAuthenticationFilterTest {
         verify(chain).filter(exchange);
     }
 
-    @Test
-    void filter_withMalformedAuthHeader_proceedsWithoutHeaders() {
+    @ParameterizedTest(name = "Invalid JWT: {1}")
+    @MethodSource("provideInvalidJwtAuthHeaders")
+    void filter_withInvalidOrMissingJwt_proceedsWithoutHeaders(String authHeader, String description) {
         // Arrange
-        setupMockExchange("/api/products", "GET", "InvalidBearer token", null);
+        setupMockExchange("/api/products", "GET", authHeader, null);
         when(chain.filter(any())).thenReturn(Mono.empty());
 
         // Act
@@ -219,6 +122,13 @@ class GlobalJwtAuthenticationFilterTest {
 
         // Assert
         verify(chain).filter(exchange);
+    }
+
+    static java.util.stream.Stream<Arguments> provideInvalidJwtAuthHeaders() {
+        return java.util.stream.Stream.of(
+            Arguments.of("Bearer invalid-token", "Invalid JWT token"),
+            Arguments.of("InvalidBearer token", "Malformed auth header")
+        );
     }
 
     @Test

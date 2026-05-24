@@ -2,6 +2,8 @@ package com.example.product.config;
 
 import com.example.product.model.Product;
 import com.example.product.repository.ProductRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Component;
 @Profile("!test")
 public class DataInitializer implements CommandLineRunner {
 
+    private static final Logger logger = LoggerFactory.getLogger(DataInitializer.class);
     private static final String SAMPLE_SELLER_1 = "sample-seller-1";
     private static final String SAMPLE_SELLER_2 = "sample-seller-2";
 
@@ -21,7 +24,7 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         // Only add sample data if no products exist
         if (productRepository.count() == 0) {
-            System.out.println("Initializing sample products...");
+            logger.info("Initializing sample products...");
             
             // Sample products for testing
             Product product1 = new Product();
@@ -65,9 +68,9 @@ public class DataInitializer implements CommandLineRunner {
             productRepository.save(product4);
             productRepository.save(product5);
             
-            System.out.println("Sample products added successfully!");
+            logger.info("Sample products added successfully!");
         } else {
-            System.out.println("Products already exist, skipping initialization.");
+            logger.info("Products already exist, skipping initialization.");
         }
     }
 }
