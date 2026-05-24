@@ -19,7 +19,6 @@ public class AuthController {
     private final JwtService jwtService;
     
     private static final String EMAIL_KEY = "email";
-    private static final String AVATAR_KEY = "avatar";
     private static final String ERROR_KEY = "error";
 
     @Autowired
@@ -35,8 +34,7 @@ public class AuthController {
             String email = req.get(EMAIL_KEY);
             String password = req.get("password");
             Role role = Role.valueOf(req.get("role"));
-            String avatar = req.get("avatar");
-            User user = userService.register(name, email, password, role, avatar);
+            User user = userService.register(name, email, password, role);
             return ResponseEntity.ok(Map.of(
                 "id", user.getId(), 
                 "name", user.getName(),
@@ -84,8 +82,7 @@ public class AuthController {
                 "id", user.getId(),
                 "name", user.getName(),
                 EMAIL_KEY, user.getEmail(),
-                "role", user.getRole().name(),
-                AVATAR_KEY, user.getAvatar() != null ? user.getAvatar() : ""
+                "role", user.getRole().name()
             )))
             .orElse(ResponseEntity.notFound().build());
     }
@@ -105,8 +102,7 @@ public class AuthController {
                     "id", user.getId(),
                     "name", user.getName(),
                     EMAIL_KEY, user.getEmail(),
-                    "role", user.getRole().name(),
-                    AVATAR_KEY, user.getAvatar() != null ? user.getAvatar() : ""
+                    "role", user.getRole().name()
                 )))
                 .orElse(ResponseEntity.notFound().build());
         } catch (RuntimeException e) {
