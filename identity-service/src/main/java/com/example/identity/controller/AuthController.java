@@ -32,10 +32,10 @@ public class AuthController {
     public ResponseEntity<Object> register(@RequestBody Map<String, String> req) {
         try {
             String name = req.get("name");
-            String email = req.get("email");
+            String email = req.get(EMAIL_KEY);
             String password = req.get("password");
             Role role = Role.valueOf(req.get("role"));
-            String avatar = req.get("avatar"); // Optional, can be null
+            String avatar = req.get("avatar");
             User user = userService.register(name, email, password, role, avatar);
             return ResponseEntity.ok(Map.of(
                 "id", user.getId(), 
@@ -56,7 +56,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<Object> login(@RequestBody Map<String, String> req) {
         try {
-            String email = req.get("email");
+            String email = req.get(EMAIL_KEY);
             String password = req.get("password");
             return userService.authenticate(email, password)
                     .map(user -> {
@@ -96,7 +96,7 @@ public class AuthController {
         try {
             String email = auth.getName();
             String name = req.get("name");
-            String newEmail = req.get("email");
+            String newEmail = req.get(EMAIL_KEY);
             String oldPassword = req.get("oldPassword");
             String newPassword = req.get("newPassword");
 
