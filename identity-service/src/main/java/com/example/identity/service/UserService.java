@@ -26,7 +26,7 @@ public class UserService {
     }
 
     @SuppressWarnings("null")
-    public User register(String name, String email, String password, Role role, String avatar) {
+    public User register(String name, String email, String password, Role role) {
         if (userRepository.findByEmail(email).isPresent()) {
             throw new DuplicateEmailException("Email already exists");
         }
@@ -41,7 +41,6 @@ public class UserService {
         // Apply BCrypt to the SHA-256 hash: BCrypt(SHA256(plaintext))
         user.setPassword(passwordEncoder.encode(password));
         user.setRole(role);
-        user.setAvatar(avatar);
         User savedUser = userRepository.save(user);
         kafkaTemplate.send("user-registered", savedUser.getId());
         return savedUser;
@@ -62,13 +61,10 @@ public class UserService {
     }
 
     @SuppressWarnings("null")
-    public Optional<User> updateProfile(String email, String name, String avatar) {
+    public Optional<User> updateProfile(String email, String name) {
         return userRepository.findByEmail(email).map(user -> {
             if (name != null && !name.isEmpty()) {
                 user.setName(name);
-            }
-            if (avatar != null) {
-                user.setAvatar(avatar);
             }
             return Objects.requireNonNull(userRepository.save(user));
         });

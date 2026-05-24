@@ -63,7 +63,7 @@ class AuthControllerTest {
         registeredUser.setEmail("john@example.com");
         registeredUser.setRole(Role.SELLER);
 
-        when(userService.register("John Doe", "john@example.com", "hashed_password", Role.SELLER, "avatar.jpg"))
+        when(userService.register("John Doe", "john@example.com", "hashed_password", Role.SELLER))
             .thenReturn(registeredUser);
 
         // Act
@@ -78,7 +78,7 @@ class AuthControllerTest {
         assertThat(body).containsKeys("id", "email", "name", "role");
         assertThat(body.get("id")).isEqualTo("user-456");
 
-        verify(userService).register("John Doe", "john@example.com", "hashed_password", Role.SELLER, "avatar.jpg");
+        verify(userService).register("John Doe", "john@example.com", "hashed_password", Role.SELLER);
     }
 
     @Test
@@ -92,7 +92,7 @@ class AuthControllerTest {
             "avatar", "avatar.jpg"
         );
 
-        when(userService.register(any(), any(), any(), any(), any()))
+        when(userService.register(any(), any(), any(), any()))
             .thenThrow(new RuntimeException("Email already exists"));
 
         // Act

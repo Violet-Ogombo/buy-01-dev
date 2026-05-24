@@ -11,7 +11,6 @@ public class User {
     private String email;
     private String password;
     private Role role;
-    private String avatar;
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -23,6 +22,4 @@ public class User {
     public void setPassword(String password) { this.password = password; }
     public Role getRole() { return role; }
     public void setRole(Role role) { this.role = role; }
-    public String getAvatar() { return avatar; }
-    public void setAvatar(String avatar) { this.avatar = avatar; }
 }

@@ -9,7 +9,6 @@
         <a routerLink="/profile" class="navbar-link">Profile</a>
         <a *ngIf="user.role === 'SELLER'" routerLink="/seller" class="navbar-link">My Dashboard</a>
         <span class="navbar-user">
-          <img *ngIf="user.avatar" [src]="user.avatar" alt="Avatar" class="navbar-avatar" />
           {{ user.name }}
         </span>
         <button (click)="logout()" class="btn-logout">Logout</button>

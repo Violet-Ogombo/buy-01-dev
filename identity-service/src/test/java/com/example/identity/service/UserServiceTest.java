@@ -37,25 +37,22 @@ class UserServiceTest {
         String email = "john@example.com";
         String password = "sha256_hash_from_frontend";
         Role role = Role.SELLER;
-        String avatar = "avatar.jpg";
 
         User expectedUser = new User();
         expectedUser.setId("user-123");
         expectedUser.setName(name);
         expectedUser.setEmail(email);
         expectedUser.setRole(role);
-        expectedUser.setAvatar(avatar);
 
         when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
         when(userRepository.save(any(User.class))).thenReturn(expectedUser);
 
-        User result = userService.register(name, email, password, role, avatar);
+        User result = userService.register(name, email, password, role);
 
         assertThat(result.getId()).isEqualTo("user-123");
         assertThat(result.getName()).isEqualTo(name);
         assertThat(result.getEmail()).isEqualTo(email);
         assertThat(result.getRole()).isEqualTo(role);
-        assertThat(result.getAvatar()).isEqualTo(avatar);
 
         verify(kafkaTemplate).send("user-registered", "user-123");
     }
@@ -69,7 +66,7 @@ class UserServiceTest {
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(existingUser));
 
         assertThatThrownBy(() ->
-            userService.register("John", email, "password", Role.SELLER, "avatar.jpg")
+            userService.register("John", email, "password", Role.SELLER)
         )
         .isInstanceOf(RuntimeException.class)
         .hasMessageContaining("Email already exists");
@@ -166,34 +163,10 @@ class UserServiceTest {
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenReturn(updatedUser);
 
-        Optional<User> result = userService.updateProfile(email, newName, null);
+        Optional<User> result = userService.updateProfile(email, newName);
 
         assertThat(result).isPresent();
         assertThat(result.get().getName()).isEqualTo(newName);
-    }
-
-    @Test
-    void updateProfile_updatesAvatarWhenProvided() {
-        String email = "user@example.com";
-        String newAvatar = "new-avatar.jpg";
-        
-        User user = new User();
-        user.setId("user-123");
-        user.setEmail(email);
-        user.setAvatar("old-avatar.jpg");
-
-        User updatedUser = new User();
-        updatedUser.setId("user-123");
-        updatedUser.setEmail(email);
-        updatedUser.setAvatar(newAvatar);
-
-        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
-        when(userRepository.save(any(User.class))).thenReturn(updatedUser);
-
-        Optional<User> result = userService.updateProfile(email, null, newAvatar);
-
-        assertThat(result).isPresent();
-        assertThat(result.get().getAvatar()).isEqualTo(newAvatar);
     }
 
     @Test
@@ -201,7 +174,7 @@ class UserServiceTest {
         String email = "nonexistent@example.com";
         when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
 
-        Optional<User> result = userService.updateProfile(email, "New Name", null);
+        Optional<User> result = userService.updateProfile(email, "New Name");
 
         assertThat(result).isEmpty();
         verify(userRepository, never()).save(any());
