@@ -57,10 +57,10 @@ public class GlobalJwtAuthenticationFilter implements GlobalFilter, Ordered {
 
     private Mono<Void> handleRegularRequest(ServerWebExchange exchange, GatewayFilterChain chain, 
                                             String method, String path) {
-        var claims = extractAndValidateJwt(exchange, method, path);
+        var claimsOpt = extractAndValidateJwt(exchange, method, path);
         
-        if (claims != null) {
-            return addAuthHeadersAndContinue(exchange, chain, claims);
+        if (claimsOpt.isPresent()) {
+            return addAuthHeadersAndContinue(exchange, chain, claimsOpt.get());
         }
 
         log.debug("→ Allowing {} {} to proceed (auth may be optional)", method, path);
@@ -70,16 +70,16 @@ public class GlobalJwtAuthenticationFilter implements GlobalFilter, Ordered {
     private void validateJwtIfPresent(ServerWebExchange exchange, String method, String path) {
         String authHeader = getAuthorizationHeader(exchange);
         if (authHeader != null) {
-            extractAndValidateJwt(exchange, method, path);
+            extractAndValidateJwt(exchange, method, path); // result not used, just validates
         }
     }
 
-    private Claims extractAndValidateJwt(ServerWebExchange exchange, String method, String path) {
+    private java.util.Optional<Claims> extractAndValidateJwt(ServerWebExchange exchange, String method, String path) {
         String authHeader = getAuthorizationHeader(exchange);
         
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             log.debug("⚠️ No Authorization header for {} {}", method, path);
-            return null;
+            return java.util.Optional.empty();
         }
 
         try {
@@ -92,10 +92,10 @@ public class GlobalJwtAuthenticationFilter implements GlobalFilter, Ordered {
                 .getBody();
 
             logJwtSuccess(claims, method, path);
-            return claims;
+            return java.util.Optional.of(claims);
         } catch (Exception e) {
             log.warn("JWT validation failed for {} {}: {}", method, path, e.getMessage());
-            return null;
+            return java.util.Optional.empty();
         }
     }
 

@@ -1,5 +1,7 @@
 package com.example.identity.service;
 
+import com.example.identity.exception.DuplicateEmailException;
+import com.example.identity.exception.InvalidPasswordException;
 import com.example.identity.model.Role;
 import com.example.identity.model.User;
 import com.example.identity.repository.UserRepository;
@@ -26,7 +28,7 @@ public class UserService {
     @SuppressWarnings("null")
     public User register(String name, String email, String password, Role role, String avatar) {
         if (userRepository.findByEmail(email).isPresent()) {
-            throw new RuntimeException("Email already exists");
+            throw new DuplicateEmailException("Email already exists");
         }
         
         // Note: Password received is already SHA-256 hashed from the frontend.
@@ -76,46 +78,42 @@ public class UserService {
     public Optional<User> updateProfileWithPassword(String email, String name, String newEmail, 
                                                     String oldPassword, String newPassword) {
         return userRepository.findByEmail(email).flatMap(user -> {
-            // Verify old password if provided
-            // Note: oldPassword and newPassword are already SHA-256 hashed from the frontend
-            if (oldPassword != null && !oldPassword.isEmpty()) {
-                if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-                    throw new RuntimeException("Old password is incorrect");
-                }
-                // Update password only if old password is correct
-                if (newPassword != null && !newPassword.isEmpty()) {
-                    // newPassword is already SHA-256 hashed, apply BCrypt on top
-                    user.setPassword(passwordEncoder.encode(newPassword));
-                }
-            }
-
-            // Update name if provided
-            if (name != null && !name.isEmpty()) {
-                user.setName(name);
-            }
-
-            // Update email if provided and not already taken
-            if (newEmail != null && !newEmail.isEmpty() && !newEmail.equals(email)) {
-                if (userRepository.findByEmail(newEmail).isPresent()) {
-                    throw new RuntimeException("Email already in use");
-                }
-                user.setEmail(newEmail);
-            }
-
+            validateAndUpdatePassword(user, oldPassword, newPassword);
+            updateNameIfProvided(user, name);
+            validateAndUpdateEmail(user, email, newEmail);
             return Optional.of(Objects.requireNonNull(userRepository.save(user)));
         });
     }
 
-    private boolean isPasswordStrong(String password) {
-        // This method is deprecated - password strength validation should happen on frontend
-        // before hashing. Backend receives hashed passwords and cannot validate strength.
-        if (password == null || password.length() < 8) {
-            return false;
+    private void validateAndUpdatePassword(User user, String oldPassword, String newPassword) {
+        if (oldPassword == null || oldPassword.isEmpty()) {
+            return;
         }
-        boolean hasUppercase = password.matches(".*[A-Z].*");
-        boolean hasLowercase = password.matches(".*[a-z].*");
-        boolean hasDigit = password.matches(".*[0-9].*");
-        boolean hasSpecialChar = password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};:'\"<>,.?/].*");
-        return hasUppercase && hasLowercase && hasDigit && hasSpecialChar;
+        
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new InvalidPasswordException("Old password is incorrect");
+        }
+        
+        if (newPassword != null && !newPassword.isEmpty()) {
+            user.setPassword(passwordEncoder.encode(newPassword));
+        }
+    }
+
+    private void updateNameIfProvided(User user, String name) {
+        if (name != null && !name.isEmpty()) {
+            user.setName(name);
+        }
+    }
+
+    private void validateAndUpdateEmail(User user, String currentEmail, String newEmail) {
+        if (newEmail == null || newEmail.isEmpty() || newEmail.equals(currentEmail)) {
+            return;
+        }
+        
+        if (userRepository.findByEmail(newEmail).isPresent()) {
+            throw new DuplicateEmailException("Email already in use");
+        }
+        
+        user.setEmail(newEmail);
     }
 }

@@ -1,5 +1,6 @@
 package com.example.product.controller;
 
+import com.example.product.dto.ProductCreateRequest;
 import com.example.product.exception.ResourceNotFoundException;
 import com.example.product.model.AddImagesRequest;
 import com.example.product.model.Product;
@@ -47,7 +48,7 @@ public class ProductController {
 
 	@PostMapping
 	@PreAuthorize("hasRole('SELLER')")
-	public ResponseEntity<Product> createProduct(@Valid @RequestBody Product product, 
+	public ResponseEntity<Product> createProduct(@Valid @RequestBody ProductCreateRequest request, 
 	                                             @RequestHeader("X-User-Id") String userId) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		log.info("✅ createProduct endpoint reached - Authentication: {}, Principal: {}, Authorities: {}", 
@@ -55,7 +56,7 @@ public class ProductController {
 				auth != null ? auth.getPrincipal() : "N/A",
 				auth != null ? auth.getAuthorities() : "N/A");
 		
-		Product savedProduct = productService.createProduct(product, userId);
+		Product savedProduct = productService.createProduct(request, userId);
 		return ResponseEntity.status(201).body(savedProduct);
 	}
 
@@ -63,9 +64,9 @@ public class ProductController {
 	@PreAuthorize("hasRole('SELLER')")
 	public ResponseEntity<Product> updateProduct(
 			@PathVariable String id,
-			@Valid @RequestBody Product product,
+			@Valid @RequestBody ProductCreateRequest request,
 			@RequestHeader("X-User-Id") String userId) {
-		Product updated = productService.updateProduct(id, product, userId);
+		Product updated = productService.updateProduct(id, request, userId);
 		return ResponseEntity.ok(updated);
 	}
 

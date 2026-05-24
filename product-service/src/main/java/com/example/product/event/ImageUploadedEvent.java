@@ -7,6 +7,19 @@ public class ImageUploadedEvent {
 	private String userId;
 
 	public ImageUploadedEvent() {
+		/*
+		 * No-arg constructor intentionally left empty.
+		 *
+		 * Reason: serialization frameworks (for example, Jackson) and some
+		 * proxying/ORM tools require a public no-argument constructor to
+		 * instantiate objects via reflection during deserialization or data
+		 * mapping. Removing this constructor can break deserialization and
+		 * framework integration.
+		 *
+		 * If you want to prevent direct instantiation in application code,
+		 * replace the body with an explicit failure such as:
+		 *     throw new UnsupportedOperationException("Use factory method instead");
+		 */
 	}
 
 	public String getMediaId() {

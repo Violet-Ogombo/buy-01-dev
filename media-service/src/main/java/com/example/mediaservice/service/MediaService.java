@@ -1,5 +1,8 @@
 package com.example.mediaservice.service;
 
+import com.example.mediaservice.exception.ImageFileNotFoundException;
+import com.example.mediaservice.exception.MediaAccessDeniedException;
+import com.example.mediaservice.exception.MediaNotFoundException;
 import com.example.mediaservice.model.Media;
 import com.example.mediaservice.repository.MediaRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -22,6 +25,8 @@ import java.util.List;
 
 @Service
 public class MediaService {
+    
+    private static final String MEDIA_NOT_FOUND = "Media not found";
     
     @Value("${media.upload.dir:uploads/images}")
     private String uploadDir;
@@ -93,25 +98,25 @@ public class MediaService {
     
     public byte[] getImage(String id) throws IOException {
         Media media = mediaRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Media not found"));
+            .orElseThrow(() -> new MediaNotFoundException(MEDIA_NOT_FOUND));
         Path imagePath = Paths.get(media.getImagePath());
         if (!Files.exists(imagePath)) {
-            throw new RuntimeException("Image file not found on disk");
+            throw new ImageFileNotFoundException("Image file not found on disk");
         }
         return Files.readAllBytes(imagePath);
     }
     
     public Media getMediaById(String id) {
         return mediaRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Media not found"));
+            .orElseThrow(() -> new MediaNotFoundException(MEDIA_NOT_FOUND));
     }
     
     public void deleteImage(String id, String userId) throws IOException {
         Media media = mediaRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Media not found"));
+            .orElseThrow(() -> new MediaNotFoundException(MEDIA_NOT_FOUND));
         
         if (!media.getUserId().equals(userId)) {
-            throw new RuntimeException("Unauthorized to delete this media");
+            throw new MediaAccessDeniedException("Unauthorized to delete this media");
         }
         
         // Delete file from disk

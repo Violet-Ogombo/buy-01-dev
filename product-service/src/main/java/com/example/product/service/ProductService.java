@@ -1,5 +1,7 @@
 package com.example.product.service;
 
+import com.example.product.dto.ProductCreateRequest;
+import com.example.product.exception.MediaValidationException;
 import com.example.product.model.Product;
 import com.example.product.model.RemoteMedia;
 import com.example.product.repository.ProductRepository;
@@ -29,6 +31,11 @@ public class ProductService {
     
     private final AuditService auditService;
 
+    private static final String ENTITY_NAME = "Product";
+    private static final String NOT_FOUND_MESSAGE = "Product not found with id: ";
+    private static final String AUDIT_FIELD_NAME = "name=";
+    
+
     @Value("${media.service.url:http://localhost:8083}")
     private String mediaServiceUrl;
 
@@ -52,7 +59,12 @@ public class ProductService {
         return productRepository.findById(id);
     }
 
-    public Product createProduct(Product product, String userId) {
+    public Product createProduct(ProductCreateRequest request, String userId) {
+        Product product = new Product();
+        product.setName(request.getName());
+        product.setDescription(request.getDescription());
+        product.setPrice(request.getPrice());
+        product.setQuantity(request.getQuantity());
         product.setUserId(userId);
         if (product.getImageUrls() == null) {
             product.setImageUrls(new ArrayList<>());
@@ -62,29 +74,28 @@ public class ProductService {
         product.setUpdatedAt(now);
 
         Product saved = productRepository.save(product);
-        auditService.logWriteOperation(userId, "CREATE", "Product", saved.getId(), 
-            "name=" + saved.getName() + ", price=" + saved.getPrice());
+        auditService.logWriteOperation(userId, "CREATE", ENTITY_NAME, saved.getId(), 
+            AUDIT_FIELD_NAME + saved.getName() + ", price=" + saved.getPrice());
         kafkaTemplate.send("product-created", saved.getId());
         return saved;
     }
 
-    public Product updateProduct(String id, Product product, String userId) {
+    public Product updateProduct(String id, ProductCreateRequest request, String userId) {
         return productRepository.findById(id).map(existingProduct -> {
             if (!existingProduct.getUserId().equals(userId)) {
                 throw new com.example.product.exception.AccessDeniedException("You are not authorized to update this product.");
             }
-            existingProduct.setName(product.getName());
-            existingProduct.setDescription(product.getDescription());
-            existingProduct.setPrice(product.getPrice());
-            existingProduct.setQuantity(product.getQuantity());
-            existingProduct.setImageUrls(product.getImageUrls());
+            existingProduct.setName(request.getName());
+            existingProduct.setDescription(request.getDescription());
+            existingProduct.setPrice(request.getPrice());
+            existingProduct.setQuantity(request.getQuantity());
             existingProduct.setUpdatedAt(LocalDateTime.now());
             Product updated = productRepository.save(existingProduct);
-            auditService.logWriteOperation(userId, "UPDATE", "Product", id,
-                "name=" + updated.getName() + ", price=" + updated.getPrice());
+            auditService.logWriteOperation(userId, "UPDATE", ENTITY_NAME, id,
+                AUDIT_FIELD_NAME + updated.getName() + ", price=" + updated.getPrice());
             kafkaTemplate.send("product-updated", updated.getId());
             return updated;
-        }).orElseThrow(() -> new com.example.product.exception.ResourceNotFoundException("Product not found with id: " + id));
+        }).orElseThrow(() -> new com.example.product.exception.ResourceNotFoundException(NOT_FOUND_MESSAGE + id));
     }
 
     public void deleteProduct(String id, String userId) {
@@ -93,17 +104,17 @@ public class ProductService {
                 throw new com.example.product.exception.AccessDeniedException("You are not authorized to delete this product.");
             }
             productRepository.deleteById(id);
-            auditService.logWriteOperation(userId, "DELETE", "Product", id,
-                "name=" + product.getName());
+            auditService.logWriteOperation(userId, "DELETE", ENTITY_NAME, id,
+                AUDIT_FIELD_NAME + product.getName());
             kafkaTemplate.send("product-deleted", id);
         }, () -> {
-            throw new com.example.product.exception.ResourceNotFoundException("Product not found with id: " + id);
+            throw new com.example.product.exception.ResourceNotFoundException(NOT_FOUND_MESSAGE + id);
         });
     }
 
     public Product addImages(String productId, List<String> mediaIds, String userId) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new com.example.product.exception.ResourceNotFoundException("Product not found with id: " + productId));
+                .orElseThrow(() -> new com.example.product.exception.ResourceNotFoundException(NOT_FOUND_MESSAGE + productId));
 
         if (!product.getUserId().equals(userId)) {
             throw new com.example.product.exception.AccessDeniedException("You are not authorized to modify this product.");
@@ -127,7 +138,7 @@ public class ProductService {
             } catch (HttpClientErrorException.NotFound e) {
                 throw new com.example.product.exception.ResourceNotFoundException("Media not found with id: " + mediaId);
             } catch (RestClientException e) {
-                throw new RuntimeException("Failed to validate media with id: " + mediaId, e);
+                throw new MediaValidationException("Failed to validate media with id: " + mediaId, e);
             }
 
             if (media == null || media.getUserId() == null || !media.getUserId().equals(userId)) {
@@ -142,7 +153,7 @@ public class ProductService {
 
         product.setUpdatedAt(LocalDateTime.now());
         Product updated = productRepository.save(product);
-        auditService.logWriteOperation(userId, "UPDATE", "Product", productId,
+        auditService.logWriteOperation(userId, "UPDATE", ENTITY_NAME, productId,
             "added " + mediaIds.size() + " images");
         return updated;
     }
