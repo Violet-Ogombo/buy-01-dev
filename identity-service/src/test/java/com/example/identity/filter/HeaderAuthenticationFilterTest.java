@@ -65,7 +65,7 @@ class HeaderAuthenticationFilterTest {
         assertThat(SecurityContextHolder.getContext().getAuthentication().getPrincipal())
                 .isEqualTo("user-123");
         assertThat(SecurityContextHolder.getContext().getAuthentication().getAuthorities())
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_BUYER"));
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_CLIENT"));
     }
 
     @Test
