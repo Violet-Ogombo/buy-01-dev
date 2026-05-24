@@ -1,5 +1,7 @@
 package com.example.identity.service;
 
+import com.example.identity.exception.DuplicateEmailException;
+import com.example.identity.exception.InvalidPasswordException;
 import com.example.identity.model.Role;
 import com.example.identity.model.User;
 import com.example.identity.repository.UserRepository;
@@ -26,7 +28,7 @@ public class UserService {
     @SuppressWarnings("null")
     public User register(String name, String email, String password, Role role, String avatar) {
         if (userRepository.findByEmail(email).isPresent()) {
-            throw new RuntimeException("Email already exists");
+            throw new DuplicateEmailException("Email already exists");
         }
         
         // Note: Password received is already SHA-256 hashed from the frontend.
@@ -89,7 +91,7 @@ public class UserService {
         }
         
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-            throw new RuntimeException("Old password is incorrect");
+            throw new InvalidPasswordException("Old password is incorrect");
         }
         
         if (newPassword != null && !newPassword.isEmpty()) {
@@ -109,7 +111,7 @@ public class UserService {
         }
         
         if (userRepository.findByEmail(newEmail).isPresent()) {
-            throw new RuntimeException("Email already in use");
+            throw new DuplicateEmailException("Email already in use");
         }
         
         user.setEmail(newEmail);
