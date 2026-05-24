@@ -1,6 +1,7 @@
 package com.example.product.service;
 
 import com.example.product.dto.ProductCreateRequest;
+import com.example.product.exception.MediaValidationException;
 import com.example.product.model.Product;
 import com.example.product.model.RemoteMedia;
 import com.example.product.repository.ProductRepository;
@@ -137,7 +138,7 @@ public class ProductService {
             } catch (HttpClientErrorException.NotFound e) {
                 throw new com.example.product.exception.ResourceNotFoundException("Media not found with id: " + mediaId);
             } catch (RestClientException e) {
-                throw new RuntimeException("Failed to validate media with id: " + mediaId, e);
+                throw new MediaValidationException("Failed to validate media with id: " + mediaId, e);
             }
 
             if (media == null || media.getUserId() == null || !media.getUserId().equals(userId)) {

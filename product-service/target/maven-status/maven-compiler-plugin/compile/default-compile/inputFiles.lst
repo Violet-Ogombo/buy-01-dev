@@ -17,3 +17,4 @@
 /Users/violet.ogombo/Desktop/buy-01-dev/product-service/src/main/java/com/example/product/service/ProductService.java
 /Users/violet.ogombo/Desktop/buy-01-dev/product-service/src/main/java/com/example/product/exception/ResourceNotFoundException.java
 /Users/violet.ogombo/Desktop/buy-01-dev/product-service/src/main/java/com/example/product/config/ApiGatewayAuthenticationFilter.java
+/Users/violet.ogombo/Desktop/buy-01-dev/product-service/src/main/java/com/example/product/exception/MediaValidationException.java
