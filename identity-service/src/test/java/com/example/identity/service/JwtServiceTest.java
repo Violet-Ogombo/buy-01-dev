@@ -86,7 +86,6 @@ class JwtServiceTest {
         user.setRole(Role.SELLER);
 
         String token1 = jwtService.generateToken(user);
-        Thread.sleep(2); // Ensure different timestamp
         String token2 = jwtService.generateToken(user);
 
         // Both tokens should be non-empty and valid structure
