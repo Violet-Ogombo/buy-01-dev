@@ -13,7 +13,10 @@ spring:
   # Disable MongoDB connection for tests if needed
   data:
     mongodb:
-      uri: mongodb://localhost:27017/buy01-test
+      uri: mongodb://mongodb:27017/buy01-test
+      socket-timeout: 3000
+      connect-timeout: 3000
+      server-selection-timeout: 3000
 
 # Disable Kafka listener containers for tests
 management:
