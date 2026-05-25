@@ -14,6 +14,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     @Bean
+    @SuppressWarnings("java:S4502") // Safe: stateless REST API with header-based auth, no session cookies
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             // CSRF disabled: Safe for stateless REST APIs behind API Gateway using header-based authentication.

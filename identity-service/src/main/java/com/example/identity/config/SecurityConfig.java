@@ -15,6 +15,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
     
     @Bean
+    @SuppressWarnings("java:S4502") // Safe: stateless microservice with header-based auth, no session cookies
     public SecurityFilterChain filterChain(HttpSecurity http, HeaderAuthenticationFilter headerAuthenticationFilter) throws Exception {
         http
             // CSRF disabled: Safe for stateless microservice behind API Gateway using header-based authentication.
