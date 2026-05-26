@@ -144,3 +144,4 @@ identity-service/target/classes/com/example/identity/IdentityServiceApplication.
 target/
 build/
 .gradle/
+identity-service/target/classes/com/example/identity/IdentityServiceApplication.class
