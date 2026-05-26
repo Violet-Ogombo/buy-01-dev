@@ -346,6 +346,6 @@ mvn clean verify sonar:sonar -Dsonar.projectKey=product-service
 
 ---
 
-**Project**: buy-01-dev  
+**Project**: buy-01-dev  by Rich && Vee
 **Framework**: SafeZone Code Quality Initiative  
 **Last Updated**: May 2026
