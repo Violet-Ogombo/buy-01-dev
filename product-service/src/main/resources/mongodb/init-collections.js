@@ -2,8 +2,8 @@
 // Run this script using mongosh or mongo shell:
 // mongosh < init-collections.js
 
-// Use buy01 database
-use buy01;
+// Select the buy01 database (script-safe form)
+db = db.getSiblingDB("buy01");
 
 // ==================== Shopping Cart Indexes ====================
 db.shopping_cart.createIndex({ "user_id": 1 });
