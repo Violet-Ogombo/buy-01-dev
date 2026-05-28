@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.math.BigDecimal;
 
 @Service
 public class ProductService {
@@ -39,7 +40,6 @@ public class ProductService {
     @Value("${media.service.url:http://localhost:8083}")
     private String mediaServiceUrl;
 
-    @Autowired
     public ProductService(ProductRepository productRepository,
                           KafkaTemplate<String, String> kafkaTemplate,
                           RestTemplate restTemplate,
@@ -66,6 +66,9 @@ public class ProductService {
         product.setPrice(request.getPrice());
         product.setQuantity(request.getQuantity());
         product.setUserId(userId);
+
+        product.setSalesCount(0);
+        product.setRevenue(BigDecimal.ZERO);
         if (product.getImageUrls() == null) {
             product.setImageUrls(new ArrayList<>());
         }

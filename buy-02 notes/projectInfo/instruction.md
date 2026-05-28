@@ -27,7 +27,9 @@ In this final project, you will complete the development of your e-commerce plat
 
 **User Profile:**
 
-- Develop a user profile section where users can see their best products, most buying products, and how much money they spent.
+- Develop a user profile section where users can see their best products, 
+most buying products
+, and how much money they spent.
 - Develop a seller profile section where they can see their best-selling products and how much money they gained.
 
 **Search and Filtering:**

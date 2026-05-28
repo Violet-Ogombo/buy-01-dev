@@ -7,6 +7,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,14 @@ public class Product {
 
 	@Field("userId")
 	private String userId;
+
+
+
+	@Field("sales_count")
+	private int salesCount;
+
+	@Field("revenue")
+	private BigDecimal revenue = BigDecimal.ZERO;
 
 	@Field("imageUrls")
 	private List<String> imageUrls = new ArrayList<>();
@@ -91,6 +100,34 @@ public class Product {
 
 	public void setUserId(String userId) {
 		this.userId = userId;
+	}
+
+
+	public int getSalesCount() {
+		return salesCount;
+	}
+
+	public void setSalesCount(int salesCount) {
+		this.salesCount = salesCount;
+	}
+
+	public void incrementSalesCount(int quantity) {
+		this.salesCount += quantity;
+	}
+
+	public BigDecimal getRevenue() {
+		return revenue;
+	}
+
+	public void setRevenue(BigDecimal revenue) {
+		this.revenue = revenue == null ? BigDecimal.ZERO : revenue;
+	}
+
+	public void addRevenue(BigDecimal amount) {
+		if (amount == null) {
+			return;
+		}
+		this.revenue = this.revenue.add(amount);
 	}
 
 	public List<String> getImageUrls() {

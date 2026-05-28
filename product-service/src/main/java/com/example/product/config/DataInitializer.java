@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -98,6 +99,9 @@ public class DataInitializer implements CommandLineRunner {
             product1.setPrice(999.99);
             product1.setQuantity(50);
             product1.setUserId(SELLER_1);
+       
+            product1.setSalesCount(8);
+            product1.setRevenue(BigDecimal.valueOf(7999.92));
             product1.setImageUrls(Arrays.asList("https://example.com/images/iphone15pro.jpg"));
 
             Product product2 = new Product();
@@ -106,6 +110,9 @@ public class DataInitializer implements CommandLineRunner {
             product2.setPrice(899.99);
             product2.setQuantity(30);
             product2.setUserId(SELLER_1);
+           
+            product2.setSalesCount(5);
+            product2.setRevenue(BigDecimal.valueOf(4499.95));
             product2.setImageUrls(Arrays.asList("https://example.com/images/galaxys24.jpg"));
 
             Product product3 = new Product();
@@ -114,6 +121,9 @@ public class DataInitializer implements CommandLineRunner {
             product3.setPrice(1299.99);
             product3.setQuantity(25);
             product3.setUserId(SELLER_2);
+            
+            product3.setSalesCount(3);
+            product3.setRevenue(BigDecimal.valueOf(3899.97));
             product3.setImageUrls(Arrays.asList("https://example.com/images/macbookairm3.jpg"));
 
             Product product4 = new Product();
@@ -122,6 +132,9 @@ public class DataInitializer implements CommandLineRunner {
             product4.setPrice(349.99);
             product4.setQuantity(100);
             product4.setUserId(SELLER_2);
+         
+            product4.setSalesCount(10);
+            product4.setRevenue(BigDecimal.valueOf(3499.90));
             product4.setImageUrls(Arrays.asList("https://example.com/images/sonywh1000xm5.jpg"));
 
             Product product5 = new Product();
@@ -130,6 +143,9 @@ public class DataInitializer implements CommandLineRunner {
             product5.setPrice(129.99);
             product5.setQuantity(75);
             product5.setUserId(SELLER_1);
+          
+            product5.setSalesCount(12);
+            product5.setRevenue(BigDecimal.valueOf(1559.88));
             product5.setImageUrls(Arrays.asList("https://example.com/images/nikeairmax270.jpg"));
 
             // Save products and get generated IDs
@@ -187,15 +203,6 @@ public class DataInitializer implements CommandLineRunner {
             order.put("created_at", LocalDateTime.now());
             order.put("updated_at", LocalDateTime.now());
             mongoTemplate.insert(order, "orders");
-
-            // Create seller_products analytics entries
-            Map<String, Object> sp1 = new HashMap<>();
-            sp1.put("seller_id", SELLER_1);
-            sp1.put("product_id", product1.getId());
-            sp1.put("sales_count", 1);
-            sp1.put("revenue", product1.getPrice());
-            sp1.put("created_at", LocalDateTime.now());
-            mongoTemplate.insert(sp1, "seller_products");
 
             // Create a sample wishlist for BUYER_1
             Map<String, Object> wish = new HashMap<>();
