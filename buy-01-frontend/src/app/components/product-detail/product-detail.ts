@@ -1,16 +1,19 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ProductService } from '../../services/product.service';
+import { CartService } from '../../services/cart.service';
 import { Product } from '../../models/product.model';
+import { ShoppingCart } from '../../models/cart.model';
 import { Subject } from 'rxjs';
 import { takeUntil, switchMap, tap, filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './product-detail.html',
   styleUrl: './product-detail.scss',
 })
@@ -19,6 +22,9 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   loading = true;
   error: string | null = null;
   notFound = false;
+  cart: ShoppingCart | null = null;
+  selectedQuantity = 1;
+  cartMessage: string | null = null;
 
   selectedImageUrl: string | null = null;
   showImageFullscreen = false;
@@ -28,6 +34,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private productService: ProductService,
+    private cartService: CartService,
     private cdr: ChangeDetectorRef,
   ) {}
 
@@ -37,6 +44,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     console.log('[ProductDetail] ngOnInit - subscribing to route param changes');
+    this.loadCart();
     
     this.route.paramMap
       .pipe(
@@ -150,6 +158,39 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     const img = event.target as HTMLImageElement;
     img.style.opacity = '0.5';
     img.alt = 'Image not available';
+  }
+
+  addToCart(): void {
+    if (!this.product || !this.product.id) {
+      return;
+    }
+
+    const quantity = Math.max(1, Math.floor(this.selectedQuantity || 1));
+
+    this.cartService.addToCart(this.product.id, quantity).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (cart) => {
+        this.cart = cart;
+        this.cartMessage = `${quantity} item${quantity === 1 ? '' : 's'} added to cart`;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  get cartItemCount(): number {
+    return this.cart?.items.reduce((total, item) => total + item.quantity, 0) ?? 0;
+  }
+
+  get cartTotal(): number {
+    return this.cart?.totalAmount ?? 0;
+  }
+
+  private loadCart(): void {
+    this.cartService.getCart().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (cart) => {
+        this.cart = cart;
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   trackByImageUrl(index: number, url: string): string {

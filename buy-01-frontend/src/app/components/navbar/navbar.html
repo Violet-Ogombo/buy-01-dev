@@ -4,6 +4,9 @@
     
     <div class="navbar-menu">
       <a routerLink="/products" class="navbar-link">Products</a>
+      <span class="navbar-link" *ngIf="cart">
+        Cart <span *ngIf="cartItemCount > 0">({{ cartItemCount }})</span>
+      </span>
       
       <ng-container *ngIf="user; else loggedOut">
         <a routerLink="/profile" class="navbar-link">Profile</a>

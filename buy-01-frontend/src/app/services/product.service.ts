@@ -1,9 +1,18 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { tap, catchError, timeout } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { Product } from '../models/product.model';
+
+export interface ProductSearchParams {
+  keyword?: string;
+  category?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  page?: number;
+  pageSize?: number;
+}
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
@@ -11,9 +20,10 @@ export class ProductService {
 
   constructor(private http: HttpClient) {}
 
-  getAllProducts(): Observable<Product[]> {
-    console.log('[ProductService] getAllProducts - URL:', this.apiUrl);
-    return this.http.get<Product[]>(this.apiUrl).pipe(
+  getAllProducts(filters: ProductSearchParams = {}): Observable<Product[]> {
+    const params = this.buildHttpParams(filters);
+    console.log('[ProductService] getAllProducts - URL:', this.apiUrl, 'params:', params.toString());
+    return this.http.get<Product[]>(this.apiUrl, { params }).pipe(
       timeout(10000),
       tap(products => console.log('[ProductService] Products loaded:', products?.length || 0)),
       catchError(err => {
@@ -48,5 +58,17 @@ export class ProductService {
 
   deleteProduct(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  private buildHttpParams(filters: ProductSearchParams): HttpParams {
+    let params = new HttpParams();
+
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        params = params.set(key, String(value));
+      }
+    });
+
+    return params;
   }
 }

@@ -1,13 +1,58 @@
 <div class="product-list-container">
   <h1>Products</h1>
-  
+
+  <section class="filters-panel" [formGroup]="filtersForm">
+    <div class="filters-header">
+      <div>
+        <h2>Search Catalog</h2>
+        <p>Use keyword, category, and price filters to narrow the product grid.</p>
+      </div>
+      <button type="button" class="btn-secondary-main" (click)="resetFilters()" [disabled]="activeFiltersCount === 0">
+        Reset Filters
+      </button>
+    </div>
+
+    <div class="filters-grid">
+      <label class="filter-field">
+        <span>Keyword</span>
+        <input type="text" formControlName="keyword" placeholder="Search products" />
+      </label>
+
+      <label class="filter-field">
+        <span>Category</span>
+        <select formControlName="category">
+          <option *ngFor="let option of categoryOptions" [value]="option.value">{{ option.label }}</option>
+        </select>
+      </label>
+
+      <label class="filter-field range-field">
+        <span>Minimum Price: {{ formatPrice(minPrice) }}</span>
+        <input type="range" formControlName="minPrice" [min]="priceBounds.min" [max]="priceBounds.max" step="10" />
+      </label>
+
+      <label class="filter-field range-field">
+        <span>Maximum Price: {{ formatPrice(maxPrice) }}</span>
+        <input type="range" formControlName="maxPrice" [min]="priceBounds.min" [max]="priceBounds.max" step="10" />
+      </label>
+    </div>
+
+    <div class="filters-meta">
+      <span>{{ activeFiltersCount }} active filter{{ activeFiltersCount === 1 ? '' : 's' }}</span>
+      <span>Showing {{ paginatedProducts.length }} of {{ filteredProducts.length }} products</span>
+    </div>
+  </section>
+
   <div *ngIf="error" class="error">
     {{ error }}
-    <button class="btn-secondary-main ms-2" type="button" (click)="loadProducts()">Retry</button>
+    <button class="btn-secondary-main ms-2" type="button" (click)="loadProducts(false)">Retry</button>
   </div>
-  
-  <ng-container *ngIf="!error">
-    <div *ngIf="products.length > 0" class="products-grid">
+
+  <div *ngIf="loading && !error" class="loading">
+    Loading products...
+  </div>
+
+  <ng-container *ngIf="!error && !loading">
+    <div *ngIf="paginatedProducts.length > 0; else noResults" class="products-grid">
       <div *ngFor="let product of paginatedProducts; trackBy: trackByProductId" class="product-card" [routerLink]="['/products', product.id]">
         <img
           *ngIf="product.imageUrls && product.imageUrls.length"
@@ -29,14 +74,16 @@
       </div>
     </div>
 
-    <div *ngIf="products.length === 0" class="no-products">
-      No products available
-    </div>
+    <ng-template #noResults>
+      <div class="no-products">
+        No products match the current filters.
+      </div>
+    </ng-template>
 
-    <div *ngIf="products.length > 0" class="pagination">
-      <button (click)="changePage(-1)" [disabled]="currentPage === 1">Previous</button>
+    <div *ngIf="filteredProducts.length > 0" class="pagination">
+      <button type="button" (click)="changePage(-1)" [disabled]="currentPage === 1">Previous</button>
       <span>Page {{ currentPage }} of {{ totalPages }}</span>
-      <button (click)="changePage(1)" [disabled]="currentPage === totalPages">Next</button>
+      <button type="button" (click)="changePage(1)" [disabled]="currentPage === totalPages">Next</button>
     </div>
   </ng-container>
 </div>

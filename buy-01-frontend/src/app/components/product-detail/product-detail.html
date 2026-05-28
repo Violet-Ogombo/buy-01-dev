@@ -52,6 +52,28 @@
 
       <p class="description">{{ product.description }}</p>
 
+      <div class="cart-summary" *ngIf="cart">
+        <h3>Cart Preview</h3>
+        <p>{{ cartItemCount }} item(s) in cart</p>
+        <p>Total: ${{ cartTotal.toFixed(2) }}</p>
+      </div>
+
+      <div class="cart-actions">
+        <label for="quantity">Quantity</label>
+        <input
+          id="quantity"
+          type="number"
+          min="1"
+          [max]="product.quantity || 1"
+          [(ngModel)]="selectedQuantity"
+        />
+        <button type="button" class="btn-primary-main" (click)="addToCart()" [disabled]="product.quantity === 0">
+          Add to Cart
+        </button>
+      </div>
+
+      <p *ngIf="cartMessage" class="cart-message">{{ cartMessage }}</p>
+
       <div class="seller" *ngIf="product.userId">
         <h3>Seller</h3>
         <p>Seller ID: {{ product.userId }}</p>
