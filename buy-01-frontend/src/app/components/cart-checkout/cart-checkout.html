@@ -1,0 +1,115 @@
+<div class="checkout-container page-container">
+  <div class="back-nav">
+    <a routerLink="/cart" class="btn-back">&larr; Back to Cart</a>
+  </div>
+
+  <h1 class="checkout-title">Secure Checkout</h1>
+
+  <div *ngIf="loadingCart" class="loading-wrapper">
+    <div class="spinner"></div>
+    <p>Preparing checkout summary...</p>
+  </div>
+
+  <div *ngIf="!loadingCart && cart" class="checkout-layout">
+    <!-- Billing/Shipping Form Section -->
+    <div class="checkout-form-section">
+      <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()" class="checkout-form">
+        <h2 class="section-title">Shipping & Payment Information</h2>
+
+        <!-- Phone Number Field -->
+        <div class="form-field">
+          <label for="phoneNumber">Phone Number</label>
+          <input
+            type="tel"
+            id="phoneNumber"
+            formControlName="phoneNumber"
+            placeholder="e.g. +1234567890"
+            [class.input-error]="isFieldInvalid('phoneNumber')"
+          />
+          <div *ngIf="isFieldInvalid('phoneNumber')" class="form-error-text">
+            <span *ngIf="checkoutForm.get('phoneNumber')?.errors?.['required']">Phone number is required.</span>
+            <span *ngIf="checkoutForm.get('phoneNumber')?.errors?.['pattern']">Please enter a valid phone format.</span>
+          </div>
+        </div>
+
+        <!-- Payment Method Dropdown -->
+        <div class="form-field">
+          <label for="paymentMethod">Payment Method</label>
+          <select
+            id="paymentMethod"
+            formControlName="paymentMethod"
+            [class.input-error]="isFieldInvalid('paymentMethod')"
+          >
+            <option *ngFor="let method of paymentMethods" [value]="method.value">
+              {{ method.label }}
+            </option>
+          </select>
+          <div *ngIf="isFieldInvalid('paymentMethod')" class="form-error-text">
+            Payment method is required.
+          </div>
+        </div>
+
+        <!-- Shipping Address Textarea -->
+        <div class="form-field">
+          <label for="shippingAddress">Shipping Address</label>
+          <textarea
+            id="shippingAddress"
+            formControlName="shippingAddress"
+            rows="4"
+            placeholder="Enter your full street address, city, state, and zip code..."
+            [class.input-error]="isFieldInvalid('shippingAddress')"
+          ></textarea>
+          <div *ngIf="isFieldInvalid('shippingAddress')" class="form-error-text">
+            <span *ngIf="checkoutForm.get('shippingAddress')?.errors?.['required']">Shipping address is required.</span>
+            <span *ngIf="checkoutForm.get('shippingAddress')?.errors?.['minlength']">Address must be at least 10 characters long.</span>
+          </div>
+        </div>
+
+        <button type="submit" [disabled]="loading || checkoutForm.invalid" class="btn-submit-order">
+          <span *ngIf="!loading">Place Order & Pay</span>
+          <span *ngIf="loading" class="spinner-inline"><div class="spinner spinner-sm"></div> Processing...</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- Side Order Summary Section -->
+    <div class="checkout-summary-section">
+      <div class="summary-card">
+        <h2>Order Items</h2>
+        <div class="summary-items-list">
+          <div *ngFor="let item of cart.items" class="summary-item-row">
+            <div class="item-name-qty">
+              <span class="item-qty">{{ item.quantity }}x</span>
+              <span class="item-name">{{ item.productName }}</span>
+            </div>
+            <span class="item-subtotal">${{ item.subtotal | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <hr />
+
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span>${{ cart.totalPrice | number:'1.2-2' }}</span>
+        </div>
+        <div class="summary-row">
+          <span>Shipping & Handling</span>
+          <span class="status-free">FREE</span>
+        </div>
+        <div class="summary-row">
+          <span>Estimated Tax</span>
+          <span>$0.00</span>
+        </div>
+        <hr />
+        <div class="summary-row grand-total">
+          <span>Total</span>
+          <span>${{ cart.totalPrice | number:'1.2-2' }}</span>
+        </div>
+
+        <div class="secure-checkout-badge">
+          <span>🔒 256-Bit SSL Secured Encryption</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

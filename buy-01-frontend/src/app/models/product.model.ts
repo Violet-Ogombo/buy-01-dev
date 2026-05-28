@@ -7,3 +7,15 @@ export interface Product {
   userId?: string;
   imageUrls?: string[];
 }
+
+export interface ProductSearchDTO {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  quantity: number;
+  imageUrls: string[];
+  salesCount?: number;
+  rating?: number;
+}
+

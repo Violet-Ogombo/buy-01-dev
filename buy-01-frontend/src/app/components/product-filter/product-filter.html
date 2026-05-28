@@ -1,0 +1,41 @@
+<div class="filter-card">
+  <h2>Filters & Sorting</h2>
+
+  <!-- Sort Dropdown -->
+  <div class="filter-group">
+    <label for="filterSortBy">Sort By</label>
+    <select id="filterSortBy" [(ngModel)]="sortBy" (change)="applyFilters()">
+      <option *ngFor="let opt of sortOptions" [value]="opt.value">
+        {{ opt.label }}
+      </option>
+    </select>
+  </div>
+
+  <!-- Price Filter -->
+  <div class="filter-group">
+    <label>Price Range</label>
+    <div class="price-inputs">
+      <input
+        type="number"
+        placeholder="Min ($)"
+        [(ngModel)]="minPrice"
+        (ngModelChange)="applyFilters()"
+        min="0"
+      />
+      <span class="range-divider">to</span>
+      <input
+        type="number"
+        placeholder="Max ($)"
+        [(ngModel)]="maxPrice"
+        (ngModelChange)="applyFilters()"
+        min="0"
+      />
+    </div>
+  </div>
+
+  <div class="filter-actions">
+    <button (click)="clearFilters()" class="btn-clear-filters">
+      Reset Filters
+    </button>
+  </div>
+</div>

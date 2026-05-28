@@ -1,15 +1,15 @@
-<div class="product-detail-container" *ngIf="loading">
+<div class="product-detail-container page-container" *ngIf="loading">
   <div class="full-page-center">
     <div class="spinner"></div>
     <p style="margin-top: 1rem; text-align: center; color: #666;">Loading product details...</p>
   </div>
 </div>
 
-<div class="product-detail-container" *ngIf="!loading && error">
-  <div class="error" style="margin: 2rem auto; max-width: 500px; padding: 1.5rem; background: #ffebee; border-radius: 8px; border-left: 4px solid #d32f2f;">
-    <h2 style="color: #d32f2f; margin-top: 0;">{{ notFound ? 'Product Not Found' : 'Error Loading Product' }}</h2>
-    <p style="color: #555;">{{ error }}</p>
-    <div style="display: flex; gap: 1rem;">
+<div class="product-detail-container page-container" *ngIf="!loading && error">
+  <div class="error-wrapper">
+    <h2>{{ notFound ? 'Product Not Found' : 'Error Loading Product' }}</h2>
+    <p>{{ error }}</p>
+    <div class="error-actions">
       <a routerLink="/products" class="btn-secondary-main">Back to products</a>
       <button type="button" class="btn-primary-main" (click)="loadProduct(product?.id || routeRef.snapshot.paramMap.get('id') || '')">
         Try Again
@@ -18,8 +18,9 @@
   </div>
 </div>
 
-<div class="product-detail-container" *ngIf="!loading && !error && product">
+<div class="product-detail-container page-container" *ngIf="!loading && !error && product">
   <div class="detail-layout">
+    <!-- Gallery Section -->
     <div class="gallery" *ngIf="product.imageUrls && product.imageUrls.length; else noImage">
       <div class="main-image-wrapper" (click)="openFullscreen()">
         <img [src]="selectedImageUrl || product.imageUrls[0]" alt="Product image" class="main-image" (error)="onImageLoadError($event)" />
@@ -40,27 +41,56 @@
       <div class="no-image">No image available</div>
     </ng-template>
 
+    <!-- Details Section -->
     <div class="info">
+      <div class="brand-rating-header">
+        <span class="category-tag">Premium Collection</span>
+        <button
+          *ngIf="product.id"
+          (click)="toggleWishlist()"
+          class="btn-wishlist-toggle"
+          [class.active]="isInWishlist(product.id)"
+          [title]="isInWishlist(product.id) ? 'Remove from Wishlist' : 'Add to Wishlist'"
+        >
+          ❤️ Wishlist
+        </button>
+      </div>
+
       <h1>{{ product.name }}</h1>
-      <div class="price">${{ product.price }}</div>
-      <div class="quantity" [class.out-of-stock]="product.quantity === 0">
-        <ng-container *ngIf="product.quantity === 0; else available">
-          Out of Stock
-        </ng-container>
-        <ng-template #available>In stock: {{ product.quantity }}</ng-template>
+      
+      <div class="price-row">
+        <span class="price">${{ product.price }}</span>
+        <span class="status-badge" [class.out]="product.quantity === 0">
+          {{ product.quantity > 0 ? 'In Stock' : 'Out of Stock' }}
+        </span>
       </div>
 
       <p class="description">{{ product.description }}</p>
 
-      <div class="seller" *ngIf="product.userId">
-        <h3>Seller</h3>
-        <p>Seller ID: {{ product.userId }}</p>
-        <p class="seller-note">(Name & avatar require an additional user endpoint and are not available yet.)</p>
+      <!-- Cart Purchase Card -->
+      <div class="purchase-box-card" *ngIf="product.quantity > 0 && isUserLoggedIn()">
+        <div class="qty-select-group">
+          <label for="qtySelect">Quantity</label>
+          <select id="qtySelect" (change)="selectQuantity($event)" class="qty-dropdown">
+            <option *ngFor="let q of [1,2,3,4,5,6,7,8,9,10]" [value]="q" [disabled]="q > product.quantity">
+              {{ q }}
+            </option>
+          </select>
+        </div>
+
+        <button type="button" (click)="addToCart()" class="btn-detail-add-to-cart">
+          Add to Cart
+        </button>
       </div>
 
-      <button type="button" class="contact" disabled>
-        Contact Seller (coming soon)
-      </button>
+      <div class="login-notice-card" *ngIf="!isUserLoggedIn()">
+        <p>🔒 <a routerLink="/login">Log in</a> to save this product or add it to your shopping cart.</p>
+      </div>
+
+      <div class="seller" *ngIf="product.userId">
+        <h3>Seller Identification</h3>
+        <p class="seller-id">ID: {{ product.userId }}</p>
+      </div>
     </div>
   </div>
 
@@ -70,6 +100,6 @@
 <div class="fullscreen-backdrop" *ngIf="showImageFullscreen" (click)="closeFullscreen()">
   <div class="fullscreen-modal" (click)="$event.stopPropagation()">
     <img *ngIf="selectedImageUrl" [src]="selectedImageUrl" alt="Fullscreen image" (error)="onImageLoadError($event)" />
-    <button type="button" (click)="closeFullscreen()">Close</button>
+    <button type="button" class="btn-close-fullscreen" (click)="closeFullscreen()">Close</button>
   </div>
 </div>

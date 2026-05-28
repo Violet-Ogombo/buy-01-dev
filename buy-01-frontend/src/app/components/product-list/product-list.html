@@ -1,31 +1,57 @@
-<div class="product-list-container">
-  <h1>Products</h1>
+<div class="product-list-container page-container">
+  <h1 class="page-title">Featured Products</h1>
   
-  <div *ngIf="error" class="error">
-    {{ error }}
-    <button class="btn-secondary-main ms-2" type="button" (click)="loadProducts()">Retry</button>
+  <div *ngIf="error" class="error-container">
+    <p>{{ error }}</p>
+    <button class="btn-primary-main" type="button" (click)="loadProducts()">Retry</button>
   </div>
   
   <ng-container *ngIf="!error">
     <div *ngIf="products.length > 0" class="products-grid">
       <div *ngFor="let product of paginatedProducts; trackBy: trackByProductId" class="product-card" [routerLink]="['/products', product.id]">
-        <img
-          *ngIf="product.imageUrls && product.imageUrls.length"
-          [src]="product.imageUrls[0]"
-          alt="Product image"
-          class="product-image"
-          (error)="onImageLoadError($event)"
-        />
-        <h3>{{ product.name }}</h3>
-        <p class="description">{{ product.description }}</p>
-        <p class="price">${{ product.price }}</p>
-        <p class="quantity">
-          <ng-container *ngIf="product.quantity === 0; else inStock">
-            Out of Stock
-          </ng-container>
-          <ng-template #inStock>In stock: {{ product.quantity }}</ng-template>
-        </p>
-        <span class="view-details">View Details</span>
+        <!-- Wishlist toggle heart button -->
+        <button
+          *ngIf="product.id"
+          (click)="toggleWishlist(product, $event)"
+          class="wishlist-btn"
+          [class.active]="isInWishlist(product.id)"
+          [title]="isInWishlist(product.id) ? 'Remove from Wishlist' : 'Add to Wishlist'"
+        >
+          ❤️
+        </button>
+
+        <div class="image-wrapper">
+          <img
+            *ngIf="product.imageUrls && product.imageUrls.length"
+            [src]="product.imageUrls[0]"
+            alt="Product image"
+            class="product-image"
+            (error)="onImageLoadError($event)"
+          />
+          <div *ngIf="!product.imageUrls || product.imageUrls.length === 0" class="no-image-placeholder">📦</div>
+        </div>
+
+        <div class="card-body">
+          <h3>{{ product.name }}</h3>
+          <p class="description">{{ product.description }}</p>
+          <p class="price">${{ product.price }}</p>
+          
+          <div class="stock-status-row">
+            <span class="status-badge" [class.out]="product.quantity === 0">
+              {{ product.quantity > 0 ? 'In Stock (' + product.quantity + ')' : 'Out of Stock' }}
+            </span>
+          </div>
+
+          <!-- Quick Cart Actions -->
+          <div class="quick-add-section" *ngIf="product.quantity > 0 && isUserLoggedIn()">
+            <select #qtySelect (click)="$event.stopPropagation()" class="qty-select">
+              <option *ngFor="let q of [1,2,3,4,5]" [value]="q">{{ q }}</option>
+            </select>
+            <button (click)="addToCart(product, $event, qtySelect.value)" class="btn-quick-add">Add</button>
+          </div>
+
+          <span class="view-details">View Details &rarr;</span>
+        </div>
       </div>
     </div>
 
@@ -33,7 +59,7 @@
       No products available
     </div>
 
-    <div *ngIf="products.length > 0" class="pagination">
+    <div *ngIf="products.length > 0 && totalPages > 1" class="pagination">
       <button (click)="changePage(-1)" [disabled]="currentPage === 1">Previous</button>
       <span>Page {{ currentPage }} of {{ totalPages }}</span>
       <button (click)="changePage(1)" [disabled]="currentPage === totalPages">Next</button>

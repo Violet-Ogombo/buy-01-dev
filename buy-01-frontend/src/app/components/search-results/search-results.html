@@ -1,0 +1,92 @@
+<div class="search-container page-container">
+  <div class="search-title-section">
+    <h1 *ngIf="keyword">Search Results for "{{ keyword }}"</h1>
+    <h1 *ngIf="!keyword">Product Catalog</h1>
+    <p class="results-count" *ngIf="!loading">{{ products.length }} item(s) found</p>
+  </div>
+
+  <div class="search-layout">
+    <!-- Sidebar Filters -->
+    <div class="sidebar-section">
+      <app-product-filter
+        [currentFilters]="filters"
+        (filterChange)="onFilterChange($event)"
+      ></app-product-filter>
+    </div>
+
+    <!-- Product Listing Results -->
+    <div class="results-section">
+      <div *ngIf="loading" class="loading-wrapper">
+        <div class="spinner"></div>
+        <p>Searching premium catalog...</p>
+      </div>
+
+      <div *ngIf="error" class="error-container">
+        <h2>Search Query Failed</h2>
+        <p>{{ error }}</p>
+        <button class="btn-primary-main" (click)="loadSearchResults()">Retry</button>
+      </div>
+
+      <ng-container *ngIf="!loading && !error">
+        <div *ngIf="products.length === 0" class="empty-results">
+          <div class="empty-icon">🔍</div>
+          <h2>No matching items found</h2>
+          <p>We couldn't find any products fitting that keyword or price boundary. Try clearing some filters.</p>
+        </div>
+
+        <div *ngIf="products.length > 0" class="products-grid">
+          <div *ngFor="let prod of products; trackBy: trackByProductId" class="product-card">
+            <!-- Wishlist Toggle Heart -->
+            <button
+              (click)="toggleWishlist(prod.id)"
+              class="btn-wishlist-toggle"
+              [class.active]="isInWishlist(prod.id)"
+              [title]="isInWishlist(prod.id) ? 'Remove from Wishlist' : 'Add to Wishlist'"
+            >
+              ❤️
+            </button>
+
+            <!-- Product Image -->
+            <div class="image-wrapper" [routerLink]="['/products', prod.id]">
+              <img
+                *ngIf="prod.imageUrls && prod.imageUrls.length"
+                [src]="prod.imageUrls[0]"
+                alt="Catalog product image"
+                (error)="onImageLoadError($event)"
+              />
+              <div *ngIf="!prod.imageUrls || prod.imageUrls.length === 0" class="no-image">📦</div>
+            </div>
+
+            <!-- Card Body -->
+            <div class="card-body">
+              <h3 [routerLink]="['/products', prod.id]">{{ prod.name }}</h3>
+              <p class="description">{{ prod.description }}</p>
+              
+              <div class="rating-sales" *ngIf="prod.rating || prod.salesCount">
+                <span class="rating-stars" *ngIf="prod.rating">★ {{ prod.rating | number:'1.1-1' }}</span>
+                <span class="sales-count" *ngIf="prod.salesCount">{{ prod.salesCount }} sold</span>
+              </div>
+
+              <div class="price-stock-row">
+                <span class="price">${{ prod.price | number:'1.2-2' }}</span>
+                <span class="stock-status" [class.out]="prod.quantity === 0">
+                  {{ prod.quantity > 0 ? 'In Stock' : 'Out of Stock' }}
+                </span>
+              </div>
+
+              <!-- Quick Cart Controls -->
+              <div class="cart-actions-row" *ngIf="prod.quantity > 0">
+                <select #qtySelect class="qty-select">
+                  <option *ngFor="let q of [1,2,3,4,5,6,7,8,9,10]" [value]="q">{{ q }}</option>
+                </select>
+                <button (click)="addToCart(prod.id, qtySelect.value)" class="btn-quick-add">
+                  Add
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

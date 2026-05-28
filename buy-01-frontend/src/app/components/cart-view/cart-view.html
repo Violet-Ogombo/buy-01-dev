@@ -1,0 +1,101 @@
+<div class="cart-container page-container">
+  <h1 class="cart-title">Your Shopping Cart</h1>
+
+  <div *ngIf="loading && !cart" class="loading-wrapper">
+    <div class="spinner"></div>
+    <p>Refreshing your cart...</p>
+  </div>
+
+  <div *ngIf="error" class="error-container">
+    <h2>Could Not Retrieve Cart</h2>
+    <p>{{ error }}</p>
+    <button class="btn-primary-main" (click)="loadCart()">Try Again</button>
+  </div>
+
+  <ng-container *ngIf="!error && !loading">
+    <div *ngIf="!cart || cart.items.length === 0" class="empty-cart">
+      <div class="empty-icon">🛒</div>
+      <h2>Your cart feels a bit light!</h2>
+      <p>Explore our premium collections and add products to your cart.</p>
+      <a routerLink="/products" class="btn-primary-main">Browse Products</a>
+    </div>
+
+    <div *ngIf="cart && cart.items.length > 0" class="cart-layout">
+      <!-- Cart Items List -->
+      <div class="cart-items-section">
+        <div class="cart-header-row">
+          <span>Product</span>
+          <span>Price</span>
+          <span>Quantity</span>
+          <span>Total</span>
+          <span></span>
+        </div>
+
+        <div *ngFor="let item of cart.items" class="cart-item-card">
+          <div class="item-product-info">
+            <div class="item-avatar">📦</div>
+            <div class="item-details">
+              <h3>{{ item.productName }}</h3>
+              <p class="item-sub-id">Product ID: {{ item.productId }}</p>
+            </div>
+          </div>
+
+          <div class="item-price">
+            <span class="mobile-label">Price:</span>
+            ${{ item.price | number:'1.2-2' }}
+          </div>
+
+          <div class="item-quantity">
+            <span class="mobile-label">Qty:</span>
+            <div class="quantity-controller">
+              <button (click)="updateQuantity(item.id, item.quantity, -1)" class="btn-qty">-</button>
+              <span class="qty-display">{{ item.quantity }}</span>
+              <button (click)="updateQuantity(item.id, item.quantity, 1)" class="btn-qty">+</button>
+            </div>
+          </div>
+
+          <div class="item-total">
+            <span class="mobile-label">Subtotal:</span>
+            ${{ item.subtotal | number:'1.2-2' }}
+          </div>
+
+          <div class="item-actions">
+            <button (click)="removeItem(item.id)" class="btn-remove" title="Remove item">✕</button>
+          </div>
+        </div>
+
+        <div class="cart-footer-actions">
+          <a routerLink="/products" class="btn-continue">&larr; Continue Shopping</a>
+          <button (click)="clearCart()" class="btn-clear">Clear Cart</button>
+        </div>
+      </div>
+
+      <!-- Order Summary Card -->
+      <div class="cart-summary-section">
+        <div class="summary-card">
+          <h2>Order Summary</h2>
+          <div class="summary-row">
+            <span>Total Items</span>
+            <span>{{ cart.itemCount }}</span>
+          </div>
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <span>${{ cart.totalPrice | number:'1.2-2' }}</span>
+          </div>
+          <div class="summary-row">
+            <span>Shipping</span>
+            <span class="status-free">FREE</span>
+          </div>
+          <hr />
+          <div class="summary-row grand-total">
+            <span>Estimated Total</span>
+            <span>${{ cart.totalPrice | number:'1.2-2' }}</span>
+          </div>
+          <button (click)="checkout()" class="btn-checkout">
+            Proceed to Checkout
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>

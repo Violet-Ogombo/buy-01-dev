@@ -1,0 +1,49 @@
+<div class="wishlist-container page-container">
+  <h1 class="wishlist-title">My Wishlist</h1>
+
+  <div *ngIf="loading && items.length === 0" class="loading-wrapper">
+    <div class="spinner"></div>
+    <p>Loading your saved items...</p>
+  </div>
+
+  <div *ngIf="error" class="error-container">
+    <h2>Error Loading Wishlist</h2>
+    <p>{{ error }}</p>
+    <button class="btn-primary-main" (click)="loadWishlist()">Try Again</button>
+  </div>
+
+  <ng-container *ngIf="!error && !loading">
+    <div *ngIf="items.length === 0" class="empty-wishlist">
+      <div class="empty-icon">💖</div>
+      <h2>Your wishlist is empty</h2>
+      <p>Save items you like here to track pricing or buy them later!</p>
+      <a routerLink="/products" class="btn-primary-main">Browse Products</a>
+    </div>
+
+    <div *ngIf="items.length > 0" class="wishlist-grid">
+      <div *ngFor="let item of items; trackBy: trackByItemId" class="wishlist-card">
+        <button (click)="removeFromWishlist(item.productId)" class="btn-wishlist-remove" title="Remove item">&times;</button>
+        
+        <div class="card-image-wrapper" [routerLink]="['/products', item.productId]">
+          <img
+            *ngIf="item.imageUrl"
+            [src]="item.imageUrl"
+            alt="Saved item image"
+            class="wishlist-image"
+            (error)="onImageLoadError($event)"
+          />
+          <div *ngIf="!item.imageUrl" class="no-image-placeholder">📦</div>
+        </div>
+
+        <div class="wishlist-card-body">
+          <h3 [routerLink]="['/products', item.productId]">{{ item.productName }}</h3>
+          <p class="wishlist-price">${{ item.price | number:'1.2-2' }}</p>
+          
+          <button (click)="addToCart(item.productId)" class="btn-add-to-cart">
+            Add to Cart
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>

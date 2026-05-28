@@ -2,12 +2,36 @@
   <div class="navbar-container">
     <a routerLink="/" class="navbar-brand">Buy01</a>
     
+    <!-- Embedded Search Bar -->
+    <div class="navbar-search">
+      <input
+        #searchInput
+        type="text"
+        placeholder="Search premium products..."
+        (keyup.enter)="searchProducts(searchInput.value)"
+      />
+      <button (click)="searchProducts(searchInput.value)" class="btn-search-nav">🔍</button>
+    </div>
+
     <div class="navbar-menu">
       <a routerLink="/products" class="navbar-link">Products</a>
       
       <ng-container *ngIf="user; else loggedOut">
+        <!-- Wishlist link with badge -->
+        <a routerLink="/wishlist" class="navbar-link nav-badge-link" title="Wishlist">
+          💖 <span class="badge" *ngIf="wishlistCount > 0">{{ wishlistCount }}</span>
+        </a>
+
+        <!-- Cart link with badge -->
+        <a routerLink="/cart" class="navbar-link nav-badge-link" title="Shopping Cart">
+          🛒 <span class="badge" *ngIf="cartCount > 0">{{ cartCount }}</span>
+        </a>
+
+        <!-- My Orders link -->
+        <a routerLink="/orders" class="navbar-link">Orders</a>
         <a routerLink="/profile" class="navbar-link">Profile</a>
-        <a *ngIf="user.role === 'SELLER'" routerLink="/seller" class="navbar-link">My Dashboard</a>
+        <a *ngIf="user.role === 'SELLER'" routerLink="/seller" class="navbar-link">Seller Panel</a>
+        
         <span class="navbar-user">
           {{ user.name }}
         </span>

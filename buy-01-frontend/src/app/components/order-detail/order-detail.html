@@ -1,0 +1,138 @@
+<div class="detail-container page-container">
+  <div class="back-nav">
+    <a routerLink="/orders" class="btn-back">&larr; Back to My Orders</a>
+  </div>
+
+  <div *ngIf="loading" class="loading-wrapper">
+    <div class="spinner"></div>
+    <p>Loading order details...</p>
+  </div>
+
+  <div *ngIf="error" class="error-container">
+    <h2>Details Not Available</h2>
+    <p>{{ error }}</p>
+    <a routerLink="/orders" class="btn-primary-main">Return to Orders</a>
+  </div>
+
+  <div *ngIf="!loading && !error && order" class="detail-layout">
+    <!-- Header Summary Details -->
+    <div class="detail-header-card">
+      <div class="header-meta">
+        <h1>Order #{{ order.orderNumber }}</h1>
+        <p class="order-date">Placed on {{ order.createdAt | date:'medium' }}</p>
+      </div>
+
+      <div class="header-status-badge">
+        <span class="status-badge" [class]="order.status.toLowerCase()">
+          {{ order.status }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Tracking Timeline Flow -->
+    <div class="timeline-card" *ngIf="order.status !== 'CANCELLED'">
+      <h2>Track Progress</h2>
+      <div class="timeline-flow">
+        <div
+          *ngFor="let step of statuses; let idx = index"
+          class="timeline-step"
+          [class.completed]="isStepCompleted(idx)"
+          [class.active]="order.status === step"
+        >
+          <div class="step-circle">
+            <span *ngIf="isStepCompleted(idx)">✓</span>
+            <span *ngIf="!isStepCompleted(idx)">{{ idx + 1 }}</span>
+          </div>
+          <span class="step-label">{{ step }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="timeline-card cancelled-notice" *ngIf="order.status === 'CANCELLED'">
+      <h2>🚫 Order Cancelled</h2>
+      <p>This order was cancelled on {{ order.updatedAt | date:'medium' }}. None of the items will be processed.</p>
+    </div>
+
+    <div class="grid-content">
+      <!-- Order Items Detail Card -->
+      <div class="items-card">
+        <h2>Order Items</h2>
+        <div class="items-header">
+          <span>Item</span>
+          <span>Price</span>
+          <span>Qty</span>
+          <span>Subtotal</span>
+        </div>
+        <div class="items-list">
+          <div *ngFor="let item of order.items" class="item-row">
+            <div class="item-details">
+              <span class="item-icon">📦</span>
+              <div>
+                <h3>{{ item.productName }}</h3>
+                <p class="item-id">ID: {{ item.productId }}</p>
+              </div>
+            </div>
+            <span>${{ item.price | number:'1.2-2' }}</span>
+            <span>{{ item.quantity }}</span>
+            <span class="text-bold">${{ item.subtotal | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <div class="order-total-bar">
+          <div class="total-row">
+            <span>Subtotal</span>
+            <span>${{ order.total | number:'1.2-2' }}</span>
+          </div>
+          <div class="total-row">
+            <span>Shipping</span>
+            <span class="text-green">FREE</span>
+          </div>
+          <hr />
+          <div class="total-row total-grand">
+            <span>Total Paid</span>
+            <span>${{ order.total | number:'1.2-2' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shipping & Billing Side Cards -->
+      <div class="billing-shipping-cards">
+        <div class="info-card">
+          <h2>Shipping Address</h2>
+          <p class="address-text">{{ order.shippingAddress }}</p>
+        </div>
+
+        <div class="info-card">
+          <h2>Contact & Billing</h2>
+          <div class="info-row">
+            <span>Phone</span>
+            <span>{{ order.phoneNumber }}</span>
+          </div>
+          <div class="info-row">
+            <span>Payment Method</span>
+            <span class="text-capitalize">{{ order.paymentMethod.replace('_', ' ') }}</span>
+          </div>
+        </div>
+
+        <!-- Quick Detail Actions -->
+        <div class="action-card">
+          <h2>Order Actions</h2>
+          <button
+            *ngIf="order.status === 'PENDING' || order.status === 'PROCESSING'"
+            (click)="cancelOrder()"
+            class="btn-detail-cancel"
+          >
+            Cancel Order
+          </button>
+          <button
+            *ngIf="order.status === 'DELIVERED' || order.status === 'CANCELLED'"
+            (click)="redoOrder()"
+            class="btn-detail-redo"
+          >
+            Buy These Items Again
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -8,10 +8,11 @@
   .navbar-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 1rem 2rem;
+    padding: 0.75rem 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 1.5rem;
   }
 
   .navbar-brand {
@@ -23,6 +24,47 @@
 
     &:hover {
       opacity: 0.9;
+    }
+  }
+
+  /* Embedded Search */
+  .navbar-search {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 0.25rem 0.5rem;
+    max-width: 320px;
+    width: 100%;
+    transition: all 0.2s;
+
+    &:focus-within {
+      background: rgba(255, 255, 255, 0.25);
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+    }
+
+    input {
+      border: none;
+      background: transparent;
+      color: white;
+      font-size: 0.9rem;
+      padding: 0.4rem;
+      width: 100%;
+
+      &:focus {
+        outline: none;
+      }
+
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.7);
+      }
+    }
+
+    .btn-search-nav {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 0.95rem;
     }
   }
 
@@ -40,6 +82,30 @@
 
     &:hover {
       opacity: 0.8;
+    }
+  }
+
+  /* Badge styling */
+  .nav-badge-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+
+    .badge {
+      position: absolute;
+      top: -8px;
+      right: -10px;
+      background: #ef4444;
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 700;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
   }
 
@@ -85,28 +151,25 @@
       color: white;
     }
   }
-
-  .navbar-avatar {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    object-fit: cover;
-  }
 }
 
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 900px) {
   .navbar {
     .navbar-container {
+      flex-direction: column;
       padding: 1rem;
+      gap: 1rem;
+    }
+
+    .navbar-search {
+      max-width: 100%;
     }
 
     .navbar-menu {
-      gap: 0.75rem;
-      font-size: 0.9rem;
-    }
-
-    .navbar-brand {
-      font-size: 1.25rem;
+      width: 100%;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 1rem;
     }
   }
 }

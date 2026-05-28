@@ -1,0 +1,133 @@
+<div class="orders-container page-container">
+  <h1 class="orders-title">Your Orders</h1>
+
+  <!-- Filter & Search Panel -->
+  <div class="orders-control-panel">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        placeholder="Search by order number..."
+        [value]="searchTerm"
+        (input)="onSearch($event)"
+      />
+    </div>
+
+    <!-- Status Tabs -->
+    <div class="status-tabs-container">
+      <button
+        *ngFor="let tab of statusTabs"
+        (click)="selectStatus(tab.value)"
+        class="status-tab"
+        [class.active]="selectedStatus === tab.value"
+      >
+        {{ tab.label }}
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="loading && orders.length === 0" class="loading-wrapper">
+    <div class="spinner"></div>
+    <p>Loading your orders...</p>
+  </div>
+
+  <div *ngIf="error" class="error-container">
+    <h2>Something went wrong</h2>
+    <p>{{ error }}</p>
+    <button class="btn-primary-main" (click)="loadOrders()">Try Again</button>
+  </div>
+
+  <ng-container *ngIf="!error && !loading">
+    <div *ngIf="orders.length === 0" class="empty-orders">
+      <div class="empty-icon">📦</div>
+      <h2>No orders found</h2>
+      <p *ngIf="searchTerm">No orders match your search keyword "{{ searchTerm }}".</p>
+      <p *ngIf="!searchTerm && selectedStatus !== 'ALL'">No orders currently in {{ selectedStatus.toLowerCase() }} state.</p>
+      <p *ngIf="!searchTerm && selectedStatus === 'ALL'">You haven't placed any orders yet.</p>
+      <a routerLink="/products" class="btn-primary-main">Start Shopping</a>
+    </div>
+
+    <div *ngIf="orders.length > 0" class="orders-list">
+      <div
+        *ngFor="let order of orders; trackBy: trackByOrderId"
+        [routerLink]="['/orders', order.id]"
+        class="order-card"
+      >
+        <div class="order-card-header">
+          <div class="order-meta">
+            <div>
+              <span class="meta-label">Order Number</span>
+              <span class="meta-value">#{{ order.orderNumber }}</span>
+            </div>
+            <div>
+              <span class="meta-label">Date Placed</span>
+              <span class="meta-value">{{ order.createdAt | date:'mediumDate' }}</span>
+            </div>
+            <div>
+              <span class="meta-label">Total Amount</span>
+              <span class="meta-value text-primary">${{ order.total | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          <div class="order-status-actions">
+            <!-- Order Status Badge -->
+            <span class="status-badge" [class]="order.status.toLowerCase()">
+              {{ order.status }}
+            </span>
+          </div>
+        </div>
+
+        <div class="order-card-body">
+          <div class="items-preview">
+            <span class="preview-label">Items:</span>
+            <span class="preview-list">
+              <span *ngFor="let item of order.items; let last = last" class="preview-item">
+                {{ item.quantity }}x {{ item.productName }}{{ !last ? ', ' : '' }}
+              </span>
+            </span>
+          </div>
+
+          <!-- Card Specific Quick Actions -->
+          <div class="order-quick-actions">
+            <button
+              *ngIf="order.status === 'PENDING' || order.status === 'PROCESSING'"
+              (click)="cancelOrder($event, order.id)"
+              class="btn-quick-cancel"
+            >
+              Cancel Order
+            </button>
+            <button
+              *ngIf="order.status === 'DELIVERED' || order.status === 'CANCELLED'"
+              (click)="redoOrder($event, order.id)"
+              class="btn-quick-redo"
+            >
+              Buy Again
+            </button>
+            <span class="btn-view-details">View Details &rarr;</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div *ngIf="orders.length > 0 && totalPages > 1" class="pagination-section">
+      <button
+        (click)="changePage(-1)"
+        [disabled]="currentPage === 0"
+        class="btn-pagination"
+      >
+        &larr; Previous
+      </button>
+      <span class="pagination-info">
+        Page <strong>{{ currentPage + 1 }}</strong> of <strong>{{ totalPages }}</strong>
+      </span>
+      <button
+        (click)="changePage(1)"
+        [disabled]="lastPage"
+        class="btn-pagination"
+      >
+        Next &rarr;
+      </button>
+    </div>
+  </ng-container>
+</div>
