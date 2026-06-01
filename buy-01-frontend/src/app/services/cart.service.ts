@@ -26,7 +26,10 @@ export class CartService {
   }
 
   addToCart(productId: string, quantity: number): Observable<CartItemDTO> {
-    return this.http.post<CartItemDTO>(`${this.apiUrl}/items`, { productId, quantity }).pipe(
+   return this.http.post<CartItemDTO>(
+  `${this.apiUrl}/items?productId=${productId}&quantity=${quantity}`,
+  null
+).pipe(
       timeout(10000),
       tap(() => this.getCart().subscribe()),
       catchError(err => {
