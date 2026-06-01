@@ -1,41 +1,67 @@
-<div class="filter-card">
-  <h2>Filters & Sorting</h2>
-
-  <!-- Sort Dropdown -->
-  <div class="filter-group">
-    <label for="filterSortBy">Sort By</label>
-    <select id="filterSortBy" [(ngModel)]="sortBy" (change)="applyFilters()">
-      <option *ngFor="let opt of sortOptions" [value]="opt.value">
-        {{ opt.label }}
-      </option>
-    </select>
-  </div>
-
-  <!-- Price Filter -->
-  <div class="filter-group">
-    <label>Price Range</label>
-    <div class="price-inputs">
-      <input
-        type="number"
-        placeholder="Min ($)"
-        [(ngModel)]="minPrice"
-        (ngModelChange)="applyFilters()"
-        min="0"
-      />
-      <span class="range-divider">to</span>
-      <input
-        type="number"
-        placeholder="Max ($)"
-        [(ngModel)]="maxPrice"
-        (ngModelChange)="applyFilters()"
-        min="0"
-      />
+<div class="search-filter-container">
+  <div class="filter-card">
+    <!-- Header -->
+    <div class="filter-header">
+      <div>
+        <h2>Search Catalog</h2>
+        <p class="filter-description">Use keyword, category, and price filters to narrow the product grid.</p>
+      </div>
+      <button (click)="resetFilters()" class="btn-reset-filters">Reset Filters</button>
     </div>
-  </div>
 
-  <div class="filter-actions">
-    <button (click)="clearFilters()" class="btn-clear-filters">
-      Reset Filters
-    </button>
+    <!-- Keyword Search -->
+    <div class="filter-row">
+      <div class="filter-group">
+        <label>Keyword</label>
+        <input
+          type="text"
+          placeholder="Search products"
+          [(ngModel)]="keyword"
+          (ngModelChange)="onFilterChange()"
+          class="search-input"
+        />
+      </div>
+
+      <!-- Category Dropdown -->
+      <div class="filter-group">
+        <label>Category</label>
+        <select [(ngModel)]="category" (ngModelChange)="onFilterChange()" class="category-select">
+          <option *ngFor="let cat of categories" [value]="cat.value">{{ cat.label }}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Price Range Sliders -->
+    <div class="filter-row price-row">
+      <div class="price-group">
+        <label>Minimum Price: ${{ minPrice }}</label>
+        <input
+          type="range"
+          min="0"
+          max="5000"
+          [(ngModel)]="minPrice"
+          (ngModelChange)="onFilterChange()"
+          class="price-slider"
+        />
+      </div>
+
+      <div class="price-group">
+        <label>Maximum Price: ${{ maxPrice }}</label>
+        <input
+          type="range"
+          min="0"
+          max="5000"
+          [(ngModel)]="maxPrice"
+          (ngModelChange)="onFilterChange()"
+          class="price-slider"
+        />
+      </div>
+    </div>
+
+    <!-- Filter Summary -->
+    <div class="filter-summary">
+      <span class="active-filters">{{ activeFilterCount }} active filters</span>
+      <span class="product-count">Showing {{ filteredProducts }} of {{ totalProducts }} products</span>
+    </div>
   </div>
 </div>
