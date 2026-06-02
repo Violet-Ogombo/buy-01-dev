@@ -96,6 +96,7 @@ public class DataInitializer implements CommandLineRunner {
             Product product1 = new Product();
             product1.setName("iPhone 15 Pro");
             product1.setDescription("Latest Apple iPhone with advanced camera system");
+            product1.setCategory("electronics");
             product1.setPrice(999.99);
             product1.setQuantity(50);
             product1.setUserId(SELLER_1);
@@ -107,6 +108,7 @@ public class DataInitializer implements CommandLineRunner {
             Product product2 = new Product();
             product2.setName("Samsung Galaxy S24");
             product2.setDescription("Flagship Android smartphone with AI features");
+            product2.setCategory("electronics");
             product2.setPrice(899.99);
             product2.setQuantity(30);
             product2.setUserId(SELLER_1);
@@ -118,6 +120,7 @@ public class DataInitializer implements CommandLineRunner {
             Product product3 = new Product();
             product3.setName("MacBook Air M3");
             product3.setDescription("Lightweight laptop with Apple M3 chip");
+            product3.setCategory("electronics");
             product3.setPrice(1299.99);
             product3.setQuantity(25);
             product3.setUserId(SELLER_2);
@@ -129,6 +132,7 @@ public class DataInitializer implements CommandLineRunner {
             Product product4 = new Product();
             product4.setName("Sony WH-1000XM5");
             product4.setDescription("Premium noise-canceling headphones");
+            product4.setCategory("electronics");
             product4.setPrice(349.99);
             product4.setQuantity(100);
             product4.setUserId(SELLER_2);
@@ -140,6 +144,7 @@ public class DataInitializer implements CommandLineRunner {
             Product product5 = new Product();
             product5.setName("Nike Air Max 270");
             product5.setDescription("Comfortable running shoes with air cushioning");
+            product5.setCategory("fashion");
             product5.setPrice(129.99);
             product5.setQuantity(75);
             product5.setUserId(SELLER_1);

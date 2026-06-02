@@ -32,20 +32,83 @@
           </div>
         </div>
 
-        <!-- Payment Method Dropdown -->
-        <div class="form-field">
-          <label for="paymentMethod">Payment Method</label>
-          <select
-            id="paymentMethod"
-            formControlName="paymentMethod"
-            [class.input-error]="isFieldInvalid('paymentMethod')"
-          >
-            <option *ngFor="let method of paymentMethods" [value]="method.value">
-              {{ method.label }}
-            </option>
-          </select>
-          <div *ngIf="isFieldInvalid('paymentMethod')" class="form-error-text">
-            Payment method is required.
+        <!-- Pay on Delivery Checkbox -->
+        <div class="form-field-checkbox">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              id="payOnDelivery"
+              formControlName="payOnDelivery"
+              (change)="onPayOnDeliveryChange()"
+            />
+            <span>Pay on Delivery</span>
+          </label>
+        </div>
+
+        <!-- Card Payment Form Section -->
+        <div class="card-details-section" [class.disabled]="checkoutForm.get('payOnDelivery')?.value">
+          <h3 class="subsection-title">Card Details</h3>
+          
+          <div class="form-field">
+            <label for="cardNumber">Card Number</label>
+            <input
+              type="text"
+              id="cardNumber"
+              formControlName="cardNumber"
+              placeholder="1234 5678 1234 5678"
+              [class.input-error]="isFieldInvalid('cardNumber')"
+            />
+            <div *ngIf="isFieldInvalid('cardNumber')" class="form-error-text">
+              <span *ngIf="checkoutForm.get('cardNumber')?.errors?.['required']">Card number is required.</span>
+              <span *ngIf="checkoutForm.get('cardNumber')?.errors?.['pattern']">Please enter a valid 16-digit card number.</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field double-input-field">
+              <label>Expiry Date (MM/YY)</label>
+              <div class="expiry-inputs-row">
+                <input
+                  type="text"
+                  id="expiryMonth"
+                  formControlName="expiryMonth"
+                  placeholder="MM"
+                  maxlength="2"
+                  (input)="onExpiryMonthInput($event, expiryYear)"
+                  [class.input-error]="isFieldInvalid('expiryMonth')"
+                />
+                <span class="expiry-divider">/</span>
+                <input
+                  type="text"
+                  id="expiryYear"
+                  #expiryYear
+                  formControlName="expiryYear"
+                  placeholder="YY"
+                  maxlength="2"
+                  [class.input-error]="isFieldInvalid('expiryYear')"
+                />
+              </div>
+              <div *ngIf="isFieldInvalid('expiryMonth') || isFieldInvalid('expiryYear')" class="form-error-text">
+                <span *ngIf="checkoutForm.get('expiryMonth')?.errors?.['required'] || checkoutForm.get('expiryYear')?.errors?.['required']">Expiry is required.</span>
+                <span *ngIf="checkoutForm.get('expiryMonth')?.errors?.['pattern'] || checkoutForm.get('expiryYear')?.errors?.['pattern']">Use MM and YY digits.</span>
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label for="securityNumber">Security Number (CVV)</label>
+              <input
+                type="password"
+                id="securityNumber"
+                formControlName="securityNumber"
+                placeholder="123"
+                maxlength="4"
+                [class.input-error]="isFieldInvalid('securityNumber')"
+              />
+              <div *ngIf="isFieldInvalid('securityNumber')" class="form-error-text">
+                <span *ngIf="checkoutForm.get('securityNumber')?.errors?.['required']">Security number is required.</span>
+                <span *ngIf="checkoutForm.get('securityNumber')?.errors?.['pattern']">Enter 3 or 4 digits.</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -63,6 +126,11 @@
             <span *ngIf="checkoutForm.get('shippingAddress')?.errors?.['required']">Shipping address is required.</span>
             <span *ngIf="checkoutForm.get('shippingAddress')?.errors?.['minlength']">Address must be at least 10 characters long.</span>
           </div>
+        </div>
+
+        <!-- Error Banner -->
+        <div *ngIf="errorMessage" class="checkout-error-banner">
+          {{ errorMessage }}
         </div>
 
         <button type="submit" [disabled]="loading || checkoutForm.invalid" class="btn-submit-order">
@@ -104,10 +172,6 @@
         <div class="summary-row grand-total">
           <span>Total</span>
           <span>${{ cart.totalPrice | number:'1.2-2' }}</span>
-        </div>
-
-        <div class="secure-checkout-badge">
-          <span>🔒 256-Bit SSL Secured Encryption</span>
         </div>
       </div>
     </div>

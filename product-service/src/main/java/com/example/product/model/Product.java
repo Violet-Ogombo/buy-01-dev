@@ -37,6 +37,9 @@ public class Product {
 	@Field("userId")
 	private String userId;
 
+	@Field("category")
+	private String category;
+
 
 
 	@Field("sales_count")
@@ -152,5 +155,13 @@ public class Product {
 
 	public void setUpdatedAt(LocalDateTime updatedAt) {
 		this.updatedAt = updatedAt;
+	}
+
+	public String getCategory() {
+		return category;
+	}
+
+	public void setCategory(String category) {
+		this.category = category;
 	}
 }

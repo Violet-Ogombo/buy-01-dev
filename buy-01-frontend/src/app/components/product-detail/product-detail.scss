@@ -229,8 +229,14 @@
       font-size: 0.95rem;
     }
 
+    .qty-select-wrapper {
+      position: relative;
+      width: 100px;
+      height: 38px;
+    }
+
     .qty-dropdown {
-      padding: 0.5rem 2rem 0.5rem 1rem;
+      padding: 0.5rem 1rem;
       border: 1px solid #cbd5e1;
       border-radius: 8px;
       font-size: 0.95rem;
@@ -238,11 +244,22 @@
       color: #1e293b;
       background-color: #f8fafc;
       cursor: pointer;
-      appearance: none;
-      background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 0.75rem center;
-      background-size: 1rem;
+      box-sizing: border-box;
+    }
+
+    .scrollable-select {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 10;
+      
+      &:focus {
+        height: 150px;
+        overflow-y: auto;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        background-color: white;
+      }
     }
   }
 

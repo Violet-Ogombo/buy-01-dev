@@ -35,8 +35,8 @@ export class OrderList implements OnInit, OnDestroy {
 
   statusTabs: { value: OrderStatus | 'ALL'; label: string }[] = [
     { value: 'ALL', label: 'All Orders' },
-    { value: 'PENDING', label: 'Pending' },
-    { value: 'PROCESSING', label: 'Processing' },
+    { value: 'PENDING', label: 'Purchased' },
+    { value: 'PROCESSING', label: 'Preparing' },
     { value: 'SHIPPED', label: 'Shipped' },
     { value: 'DELIVERED', label: 'Delivered' },
     { value: 'CANCELLED', label: 'Cancelled' }

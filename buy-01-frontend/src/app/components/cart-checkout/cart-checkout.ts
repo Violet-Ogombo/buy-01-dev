@@ -20,6 +20,7 @@ export class CartCheckoutComponent implements OnInit, OnDestroy {
   checkoutForm!: FormGroup;
   loading = false;
   loadingCart = true;
+  errorMessage: string | null = null;
 
   private destroy$ = new Subject<void>();
 
@@ -62,10 +63,55 @@ export class CartCheckoutComponent implements OnInit, OnDestroy {
 
   initForm() {
     this.checkoutForm = this.fb.group({
-      paymentMethod: ['CREDIT_CARD', [Validators.required]],
+      payOnDelivery: [false],
+      cardNumber: ['', [Validators.required, Validators.pattern('^\\d{16}$')]],
+      expiryMonth: ['', [Validators.required, Validators.pattern('^(0[1-9]|1[0-2])$')]],
+      expiryYear: ['', [Validators.required, Validators.pattern('^\\d{2}$')]],
+      securityNumber: ['', [Validators.required, Validators.pattern('^\\d{3,4}$')]],
       shippingAddress: ['', [Validators.required, Validators.minLength(10)]],
       phoneNumber: ['', [Validators.required, Validators.pattern('^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\\s\\./0-9]*$')]]
     });
+
+    this.checkoutForm.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (this.errorMessage) {
+          this.errorMessage = null;
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  onPayOnDeliveryChange() {
+    const payOnDelivery = this.checkoutForm.get('payOnDelivery')?.value;
+    const cardNumberControl = this.checkoutForm.get('cardNumber');
+    const expiryMonthControl = this.checkoutForm.get('expiryMonth');
+    const expiryYearControl = this.checkoutForm.get('expiryYear');
+    const securityNumberControl = this.checkoutForm.get('securityNumber');
+
+    if (payOnDelivery) {
+      cardNumberControl?.disable();
+      expiryMonthControl?.disable();
+      expiryYearControl?.disable();
+      securityNumberControl?.disable();
+
+      cardNumberControl?.setValue('');
+      expiryMonthControl?.setValue('');
+      expiryYearControl?.setValue('');
+      securityNumberControl?.setValue('');
+    } else {
+      cardNumberControl?.enable();
+      expiryMonthControl?.enable();
+      expiryYearControl?.enable();
+      securityNumberControl?.enable();
+    }
+  }
+
+  onExpiryMonthInput(event: Event, nextInput: HTMLInputElement) {
+    const input = event.target as HTMLInputElement;
+    if (input.value.length === 2) {
+      nextInput.focus();
+    }
   }
 
   loadCart() {
@@ -86,6 +132,8 @@ export class CartCheckoutComponent implements OnInit, OnDestroy {
   }
 
   onSubmit() {
+    this.errorMessage = null;
+
     if (this.checkoutForm.invalid) {
       this.checkoutForm.markAllAsTouched();
       this.toast.error('Please fix validation errors in the form.');
@@ -98,7 +146,12 @@ export class CartCheckoutComponent implements OnInit, OnDestroy {
     }
 
     this.loading = true;
-    const request = this.checkoutForm.value;
+    const formVal = this.checkoutForm.getRawValue();
+    const request = {
+      paymentMethod: formVal.payOnDelivery ? 'PAY_ON_DELIVERY' : 'CARD_PAYMENT',
+      shippingAddress: formVal.shippingAddress,
+      phoneNumber: formVal.phoneNumber
+    };
     
     this.cartService.checkout(request)
       .subscribe({
@@ -110,7 +163,9 @@ export class CartCheckoutComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.loading = false;
-          this.toast.error(err.error?.message || 'Failed to place order. Please try again.');
+          const msg = err.error?.message || err.error?.error || 'Failed to place order. Please try again.';
+          this.errorMessage = msg;
+          this.toast.error(msg);
           this.cdr.markForCheck();
         }
       });

@@ -220,6 +220,11 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     img.alt = 'Image not available';
   }
 
+  getQtyRange(quantity: number): number[] {
+    const max = Math.max(1, Math.min(quantity, 100));
+    return Array.from({ length: max }, (_, i) => i + 1);
+  }
+
   trackByImageUrl(index: number, url: string): string {
     return url || index.toString();
   }

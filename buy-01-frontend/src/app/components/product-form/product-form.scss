@@ -36,7 +36,7 @@
         font-weight: 500;
       }
 
-      input, textarea {
+      input, textarea, select {
         width: 100%;
         padding: 0.75rem;
         border: 1px solid #ddd;
@@ -44,6 +44,7 @@
         font-size: 1rem;
         transition: border-color 0.2s;
         box-sizing: border-box;
+        background-color: white;
 
         &:focus {
           outline: none;

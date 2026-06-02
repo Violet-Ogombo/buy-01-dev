@@ -10,6 +10,9 @@
     <div class="sidebar-section">
       <app-product-filter
         [currentFilters]="filters"
+        [isSidebar]="true"
+        [totalProducts]="totalProductsCount"
+        [filteredProducts]="products.length"
         (filterChange)="onFilterChange($event)"
       ></app-product-filter>
     </div>
@@ -49,12 +52,12 @@
             <!-- Product Image -->
             <div class="image-wrapper" [routerLink]="['/products', prod.id]">
               <img
-                *ngIf="prod.imageUrls && prod.imageUrls.length"
+                *ngIf="prod.imageUrls && prod.imageUrls.length && !prod.imageError"
                 [src]="prod.imageUrls[0]"
                 alt="Catalog product image"
-                (error)="onImageLoadError($event)"
+                (error)="prod.imageError = true"
               />
-              <div *ngIf="!prod.imageUrls || prod.imageUrls.length === 0" class="no-image">📦</div>
+              <div *ngIf="!prod.imageUrls || prod.imageUrls.length === 0 || prod.imageError" class="no-image">📦</div>
             </div>
 
             <!-- Card Body -->
@@ -76,9 +79,15 @@
 
               <!-- Quick Cart Controls -->
               <div class="cart-actions-row" *ngIf="prod.quantity > 0">
-                <select #qtySelect class="qty-select">
-                  <option *ngFor="let q of [1,2,3,4,5,6,7,8,9,10]" [value]="q">{{ q }}</option>
-                </select>
+                <div class="qty-select-wrapper">
+                  <select #qtySelect
+                          (focus)="qtySelect.size=5"
+                          (blur)="qtySelect.size=1"
+                          (change)="qtySelect.size=1; qtySelect.blur()"
+                          class="qty-select scrollable-select">
+                    <option *ngFor="let q of getQtyRange(prod.quantity)" [value]="q">{{ q }}</option>
+                  </select>
+                </div>
                 <button (click)="addToCart(prod.id, qtySelect.value)" class="btn-quick-add">
                   Add
                 </button>

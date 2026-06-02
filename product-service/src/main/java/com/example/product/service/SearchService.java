@@ -53,7 +53,7 @@ public class SearchService {
                 .collect(Collectors.toList());
     }
 
-    public List<ProductSearchDTO> filterAndSearch(String keyword, BigDecimal minPrice, BigDecimal maxPrice) {
+    public List<ProductSearchDTO> filterAndSearch(String keyword, String category, BigDecimal minPrice, BigDecimal maxPrice) {
         String lowerKeyword = keyword != null ? keyword.toLowerCase() : "";
         List<Product> products = productRepository.findAll();
 
@@ -62,6 +62,12 @@ public class SearchService {
                     // Keyword filter
                     if (!lowerKeyword.isEmpty() && !matchesKeyword(product, lowerKeyword)) {
                         return false;
+                    }
+                    // Category filter
+                    if (category != null && !category.isEmpty() && !"all".equalsIgnoreCase(category)) {
+                        if (product.getCategory() == null || !category.equalsIgnoreCase(product.getCategory())) {
+                            return false;
+                        }
                     }
                     // Price range filter
                     BigDecimal price = BigDecimal.valueOf(product.getPrice());
@@ -78,27 +84,48 @@ public class SearchService {
                 .collect(Collectors.toList());
     }
 
-    public List<ProductSearchDTO> getFilteredAndSorted(BigDecimal minPrice, BigDecimal maxPrice, String sortBy) {
-        List<ProductSearchDTO> products = filterProducts(minPrice, maxPrice);
+    public List<ProductSearchDTO> getFilteredAndSorted(String category, BigDecimal minPrice, BigDecimal maxPrice, String sortBy) {
+        List<Product> products = productRepository.findAll();
+
+        List<ProductSearchDTO> filteredList = products.stream()
+                .filter(product -> {
+                    // Category filter
+                    if (category != null && !category.isEmpty() && !"all".equalsIgnoreCase(category)) {
+                        if (product.getCategory() == null || !category.equalsIgnoreCase(product.getCategory())) {
+                            return false;
+                        }
+                    }
+                    // Price range filter
+                    BigDecimal price = BigDecimal.valueOf(product.getPrice());
+                    if (minPrice != null && price.compareTo(minPrice) < 0) {
+                        return false;
+                    }
+                    if (maxPrice != null && price.compareTo(maxPrice) > 0) {
+                        return false;
+                    }
+                    return true;
+                })
+                .map(this::convertToSearchDTO)
+                .collect(Collectors.toList());
 
         switch (sortBy != null ? sortBy.toLowerCase() : "popularity") {
             case "price_asc":
-                return products.stream()
+                return filteredList.stream()
                         .sorted((p1, p2) -> p1.getPrice().compareTo(p2.getPrice()))
                         .collect(Collectors.toList());
             case "price_desc":
-                return products.stream()
+                return filteredList.stream()
                         .sorted((p1, p2) -> p2.getPrice().compareTo(p1.getPrice()))
                         .collect(Collectors.toList());
             case "name":
-                return products.stream()
+                return filteredList.stream()
                         .sorted((p1, p2) -> p1.getName().compareTo(p2.getName()))
                         .collect(Collectors.toList());
             case "newest":
-                return products;
+                return filteredList;
             case "popularity":
             default:
-                return products.stream()
+                return filteredList.stream()
                         .sorted((p1, p2) -> Long.compare(p2.getSalesCount(), p1.getSalesCount()))
                         .collect(Collectors.toList());
         }
@@ -120,11 +147,12 @@ public class SearchService {
                 product.getId(),
                 product.getName(),
                 product.getDescription(),
+                product.getCategory(),
                 BigDecimal.valueOf(product.getPrice()),
                 product.getQuantity(),
                 product.getImageUrls(),
                 product.getSalesCount(),
-                BigDecimal.ZERO // Rating can be added later
+                BigDecimal.ZERO
         );
     }
 }

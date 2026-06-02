@@ -38,9 +38,10 @@ export class SearchService {
     );
   }
 
-  searchAndFilter(keyword?: string, minPrice?: number, maxPrice?: number): Observable<ProductSearchDTO[]> {
+  searchAndFilter(keyword?: string, category?: string, minPrice?: number, maxPrice?: number): Observable<ProductSearchDTO[]> {
     let params = new HttpParams();
     if (keyword) params = params.set('keyword', keyword);
+    if (category && category !== 'all') params = params.set('category', category);
     if (minPrice !== undefined && minPrice !== null) params = params.set('minPrice', minPrice.toString());
     if (maxPrice !== undefined && maxPrice !== null) params = params.set('maxPrice', maxPrice.toString());
 
@@ -53,8 +54,9 @@ export class SearchService {
     );
   }
 
-  getFilteredAndSorted(minPrice?: number, maxPrice?: number, sortBy: string = 'popularity'): Observable<ProductSearchDTO[]> {
+  getFilteredAndSorted(category?: string, minPrice?: number, maxPrice?: number, sortBy: string = 'popularity'): Observable<ProductSearchDTO[]> {
     let params = new HttpParams().set('sortBy', sortBy);
+    if (category && category !== 'all') params = params.set('category', category);
     if (minPrice !== undefined && minPrice !== null) params = params.set('minPrice', minPrice.toString());
     if (maxPrice !== undefined && maxPrice !== null) params = params.set('maxPrice', maxPrice.toString());
 

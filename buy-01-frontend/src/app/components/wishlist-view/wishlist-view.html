@@ -26,13 +26,13 @@
         
         <div class="card-image-wrapper" [routerLink]="['/products', item.productId]">
           <img
-            *ngIf="item.imageUrl"
+            *ngIf="item.imageUrl && !item.imageError"
             [src]="item.imageUrl"
             alt="Saved item image"
             class="wishlist-image"
-            (error)="onImageLoadError($event)"
+            (error)="item.imageError = true"
           />
-          <div *ngIf="!item.imageUrl" class="no-image-placeholder">📦</div>
+          <div *ngIf="!item.imageUrl || item.imageError" class="no-image-placeholder">📦</div>
         </div>
 
         <div class="wishlist-card-body">

@@ -3,9 +3,11 @@ package com.example.product.service;
 import com.example.product.dto.OrderDTO;
 import com.example.product.dto.OrderItemDTO;
 import com.example.product.exception.ResourceNotFoundException;
+import com.example.product.model.Product;
 import com.example.product.model.Order;
 import com.example.product.model.OrderStatus;
 import com.example.product.repository.OrderRepository;
+import com.example.product.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,10 +20,12 @@ import java.util.stream.Collectors;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
 
     @Autowired
-    public OrderService(OrderRepository orderRepository) {
+    public OrderService(OrderRepository orderRepository, ProductRepository productRepository) {
         this.orderRepository = orderRepository;
+        this.productRepository = productRepository;
     }
 
     public OrderDTO getOrderById(String orderId) {
@@ -107,8 +111,13 @@ public class OrderService {
 
     private OrderDTO convertToDTO(Order order) {
         List<OrderItemDTO> itemDTOs = order.getItems().stream()
-                .map(item -> new OrderItemDTO(item.getProductId(), item.getProductId(),
-                        item.getQuantity(), item.getUnitPrice(), item.getTotalPrice()))
+                .map(item -> {
+                    String productName = productRepository.findById(item.getProductId())
+                            .map(Product::getName)
+                            .orElse("Unknown Product");
+                    return new OrderItemDTO(item.getProductId(), productName,
+                            item.getQuantity(), item.getUnitPrice(), item.getTotalPrice());
+                })
                 .collect(Collectors.toList());
 
         return new OrderDTO(order.getId(), order.getOrderNumber(), order.getUserId(), itemDTOs,

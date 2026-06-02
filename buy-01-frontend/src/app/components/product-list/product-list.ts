@@ -99,9 +99,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
 
     // Filter by category
     if (this.currentFilters.category && this.currentFilters.category !== 'all') {
-      // If you have a category field on products, filter by it
-      // Otherwise, this is a placeholder for future category filtering
-      // filtered = filtered.filter(p => p.category === this.currentFilters.category);
+      filtered = filtered.filter(p => p.category === this.currentFilters.category);
     }
 
     // Filter by price range
@@ -184,6 +182,11 @@ export class ProductListComponent implements OnInit, OnDestroy {
 
   trackByProductId(index: number, product: any): string {
     return product.id || product._id || index.toString();
+  }
+
+  getQtyRange(quantity: number): number[] {
+    const max = Math.max(1, Math.min(quantity, 100));
+    return Array.from({ length: max }, (_, i) => i + 1);
   }
 
   get products(): Product[] {

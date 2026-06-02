@@ -5,4 +5,5 @@ export interface WishlistItemDTO {
   price: number;
   imageUrl?: string;
   addedAt?: string;
+  imageError?: boolean;
 }

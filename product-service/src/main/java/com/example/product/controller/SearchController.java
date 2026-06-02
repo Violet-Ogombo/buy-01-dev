@@ -42,19 +42,21 @@ public class SearchController {
     @PreAuthorize("permitAll()")
     public ResponseEntity<List<ProductSearchDTO>> searchAndFilter(
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String category,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice) {
-        List<ProductSearchDTO> results = searchService.filterAndSearch(keyword, minPrice, maxPrice);
+        List<ProductSearchDTO> results = searchService.filterAndSearch(keyword, category, minPrice, maxPrice);
         return ResponseEntity.ok(results);
     }
 
     @GetMapping("/filter-and-sort")
     @PreAuthorize("permitAll()")
     public ResponseEntity<List<ProductSearchDTO>> filterAndSort(
+            @RequestParam(required = false) String category,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(defaultValue = "popularity") String sortBy) {
-        List<ProductSearchDTO> results = searchService.getFilteredAndSorted(minPrice, maxPrice, sortBy);
+        List<ProductSearchDTO> results = searchService.getFilteredAndSorted(category, minPrice, maxPrice, sortBy);
         return ResponseEntity.ok(results);
     }
 }

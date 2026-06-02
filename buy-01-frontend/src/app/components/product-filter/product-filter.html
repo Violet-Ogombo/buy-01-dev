@@ -1,5 +1,5 @@
 <div class="search-filter-container">
-  <div class="filter-card">
+  <div class="filter-card" [class.is-sidebar]="isSidebar">
     <!-- Header -->
     <div class="filter-header">
       <div>
@@ -9,8 +9,8 @@
       <button (click)="resetFilters()" class="btn-reset-filters">Reset Filters</button>
     </div>
 
-    <!-- Keyword Search -->
-    <div class="filter-row">
+    <div class="filter-grid">
+      <!-- Keyword Search -->
       <div class="filter-group">
         <label>Keyword</label>
         <input
@@ -29,32 +29,29 @@
           <option *ngFor="let cat of categories" [value]="cat.value">{{ cat.label }}</option>
         </select>
       </div>
-    </div>
 
-    <!-- Price Range Sliders -->
-    <div class="filter-row price-row">
-      <div class="price-group">
-        <label>Minimum Price: ${{ minPrice }}</label>
-        <input
-          type="range"
-          min="0"
-          max="5000"
-          [(ngModel)]="minPrice"
-          (ngModelChange)="onFilterChange()"
-          class="price-slider"
-        />
-      </div>
-
-      <div class="price-group">
-        <label>Maximum Price: ${{ maxPrice }}</label>
-        <input
-          type="range"
-          min="0"
-          max="5000"
-          [(ngModel)]="maxPrice"
-          (ngModelChange)="onFilterChange()"
-          class="price-slider"
-        />
+      <!-- Price Range Dual-Slider -->
+      <div class="filter-group price-range-wrapper">
+        <label>Price Range: ${{ minPrice }} - ${{ maxPrice >= 5000 ? '5000+' : maxPrice }}</label>
+        <div class="slider-container">
+          <div class="slider-track" [style.left.%]="(minPrice / 5000) * 100" [style.right.%]="100 - (maxPrice / 5000) * 100"></div>
+          <input
+            type="range"
+            min="0"
+            max="5000"
+            [(ngModel)]="minPrice"
+            (ngModelChange)="onMinPriceChange()"
+            class="range-input min-range"
+          />
+          <input
+            type="range"
+            min="0"
+            max="5000"
+            [(ngModel)]="maxPrice"
+            (ngModelChange)="onMaxPriceChange()"
+            class="range-input max-range"
+          />
+        </div>
       </div>
     </div>
 

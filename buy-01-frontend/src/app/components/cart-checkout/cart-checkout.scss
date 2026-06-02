@@ -287,3 +287,88 @@
     padding: 1.5rem;
   }
 }
+
+.form-field-checkbox {
+  margin-bottom: 1.75rem;
+
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #334155;
+    font-size: 0.95rem;
+    cursor: pointer;
+
+    input[type="checkbox"] {
+      width: 1.2rem;
+      height: 1.2rem;
+      cursor: pointer;
+    }
+  }
+}
+
+.card-details-section {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.75rem;
+  transition: all 0.3s ease;
+
+  .subsection-title {
+    margin-top: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1.25rem;
+  }
+
+  &.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    background-color: #f1f5f9;
+
+    input {
+      background-color: #e2e8f0;
+      color: #94a3b8;
+    }
+  }
+}
+
+.expiry-inputs-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  input {
+    width: 60px !important;
+    text-align: center;
+  }
+
+  .expiry-divider {
+    color: #475569;
+    font-weight: 600;
+    font-size: 1.2rem;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.checkout-error-banner {
+  background-color: #fef2f2;
+  border: 1px solid #fee2e2;
+  color: #ef4444;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+  box-sizing: border-box;
+  animation: fadeIn 0.3s ease-out;
+  border-left: 4px solid #ef4444;
+}

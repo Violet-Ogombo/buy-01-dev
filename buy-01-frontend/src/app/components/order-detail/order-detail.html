@@ -110,7 +110,7 @@
           </div>
           <div class="info-row">
             <span>Payment Method</span>
-            <span class="text-capitalize">{{ order.paymentMethod.replace('_', ' ') }}</span>
+            <span class="text-capitalize">{{ order.paymentMethod.replace(/_/g, ' ') }}</span>
           </div>
         </div>
 

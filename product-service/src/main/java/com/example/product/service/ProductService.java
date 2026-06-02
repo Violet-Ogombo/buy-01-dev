@@ -63,6 +63,7 @@ public class ProductService {
         Product product = new Product();
         product.setName(request.getName());
         product.setDescription(request.getDescription());
+        product.setCategory(request.getCategory());
         product.setPrice(request.getPrice());
         product.setQuantity(request.getQuantity());
         product.setUserId(userId);
@@ -90,6 +91,7 @@ public class ProductService {
             }
             existingProduct.setName(request.getName());
             existingProduct.setDescription(request.getDescription());
+            existingProduct.setCategory(request.getCategory());
             existingProduct.setPrice(request.getPrice());
             existingProduct.setQuantity(request.getQuantity());
             existingProduct.setUpdatedAt(LocalDateTime.now());

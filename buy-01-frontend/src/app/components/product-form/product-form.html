@@ -30,6 +30,23 @@
       <span class="error-message" *ngIf="getFieldError('description')">{{ getFieldError('description') }}</span>
     </div>
 
+    <div class="form-group">
+      <label for="category">Category *</label>
+      <select 
+        id="category"
+        formControlName="category"
+        [class.invalid]="productForm.get('category')?.touched && productForm.get('category')?.invalid"
+      >
+        <option value="" disabled>Select a category</option>
+        <option value="electronics">Electronics</option>
+        <option value="fashion">Fashion</option>
+        <option value="home">Home & Garden</option>
+        <option value="sports">Sports</option>
+        <option value="books">Books</option>
+      </select>
+      <span class="error-message" *ngIf="getFieldError('category')">{{ getFieldError('category') }}</span>
+    </div>
+
     <div class="form-row">
       <div class="form-group">
         <label for="price">Price ($) *</label>

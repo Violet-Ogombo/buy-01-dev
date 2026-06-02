@@ -88,11 +88,6 @@ export class WishlistViewComponent implements OnInit, OnDestroy {
       });
   }
 
-  onImageLoadError(event: Event) {
-    const img = event.target as HTMLImageElement;
-    img.style.opacity = '0.5';
-    img.alt = 'No image';
-  }
 
   trackByItemId(index: number, item: WishlistItemDTO): string {
     return item.id;

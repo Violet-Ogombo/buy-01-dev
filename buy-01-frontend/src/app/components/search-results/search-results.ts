@@ -21,6 +21,7 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
   products: ProductSearchDTO[] = [];
   loading = true;
   error: string | null = null;
+  totalProductsCount: number = 0;
 
   // Search/Filter parameters
   keyword: string = '';
@@ -47,11 +48,14 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(params => {
         this.keyword = params.get('keyword') || '';
+        const category = params.get('category');
         const min = params.get('minPrice');
         const max = params.get('maxPrice');
         const sort = params.get('sortBy');
 
         this.filters = {
+          keyword: this.keyword,
+          category: category || undefined,
           minPrice: min ? Number(min) : undefined,
           maxPrice: max ? Number(max) : undefined,
           sortBy: sort || 'popularity'
@@ -70,12 +74,31 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.error = null;
 
+    const hasFilters = this.filters.minPrice !== undefined || 
+                       this.filters.maxPrice !== undefined || 
+                       (this.filters.category !== undefined && this.filters.category !== 'all');
+
     // Determine which API endpoint to consume based on search parameters
     if (this.keyword) {
-      this.searchService.searchAndFilter(this.keyword, this.filters.minPrice, this.filters.maxPrice)
+      if (hasFilters) {
+        this.searchService.searchAndFilter(this.keyword, undefined, undefined, undefined)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: (allKeywordProds) => {
+              this.totalProductsCount = allKeywordProds.length;
+              this.cdr.markForCheck();
+            }
+          });
+      }
+
+      this.searchService.searchAndFilter(this.keyword, this.filters.category, this.filters.minPrice, this.filters.maxPrice)
+        .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (res) => {
             this.products = res;
+            if (!hasFilters) {
+              this.totalProductsCount = res.length;
+            }
             this.sortProductsLocally();
             this.loading = false;
             this.cdr.markForCheck();
@@ -87,10 +110,25 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
           }
         });
     } else {
-      this.searchService.getFilteredAndSorted(this.filters.minPrice, this.filters.maxPrice, this.filters.sortBy)
+      if (hasFilters) {
+        this.searchService.getFilteredAndSorted(undefined, undefined, undefined, this.filters.sortBy)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: (allCatalogProds) => {
+              this.totalProductsCount = allCatalogProds.length;
+              this.cdr.markForCheck();
+            }
+          });
+      }
+
+      this.searchService.getFilteredAndSorted(this.filters.category, this.filters.minPrice, this.filters.maxPrice, this.filters.sortBy)
+        .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (res) => {
             this.products = res;
+            if (!hasFilters) {
+              this.totalProductsCount = res.length;
+            }
             this.loading = false;
             this.cdr.markForCheck();
           },
@@ -107,7 +145,8 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {
-        keyword: this.keyword || null,
+        keyword: newFilters.keyword !== undefined ? newFilters.keyword : null,
+        category: newFilters.category !== undefined ? newFilters.category : null,
         minPrice: newFilters.minPrice !== undefined ? newFilters.minPrice : null,
         maxPrice: newFilters.maxPrice !== undefined ? newFilters.maxPrice : null,
         sortBy: newFilters.sortBy !== 'popularity' ? newFilters.sortBy : null
@@ -164,6 +203,11 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
     const img = event.target as HTMLImageElement;
     img.style.opacity = '0.5';
     img.alt = 'Image unavailable';
+  }
+
+  getQtyRange(quantity: number): number[] {
+    const max = Math.max(1, Math.min(quantity, 100));
+    return Array.from({ length: max }, (_, i) => i + 1);
   }
 
   trackByProductId(index: number, product: ProductSearchDTO): string {

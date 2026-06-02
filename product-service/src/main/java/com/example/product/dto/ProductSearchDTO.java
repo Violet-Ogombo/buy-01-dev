@@ -12,6 +12,7 @@ public class ProductSearchDTO {
     private List<String> imageUrls;
     private long salesCount;
     private BigDecimal rating;
+    private String category;
 
     public ProductSearchDTO() {}
 
@@ -20,6 +21,19 @@ public class ProductSearchDTO {
         this.id = id;
         this.name = name;
         this.description = description;
+        this.price = price;
+        this.quantity = quantity;
+        this.imageUrls = imageUrls;
+        this.salesCount = salesCount;
+        this.rating = rating;
+    }
+
+    public ProductSearchDTO(String id, String name, String description, String category, BigDecimal price,
+                           int quantity, List<String> imageUrls, long salesCount, BigDecimal rating) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.category = category;
         this.price = price;
         this.quantity = quantity;
         this.imageUrls = imageUrls;
@@ -89,5 +103,13 @@ public class ProductSearchDTO {
 
     public void setRating(BigDecimal rating) {
         this.rating = rating;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 }

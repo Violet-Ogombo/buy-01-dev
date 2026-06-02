@@ -133,7 +133,10 @@ public class CartService {
             Product product = productRepository.findById(item.getProductId())
                     .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + item.getProductId()));
             if (product.getQuantity() < item.getQuantity()) {
-                throw new IllegalArgumentException("Insufficient stock for product: " + product.getName());
+                throw new IllegalArgumentException(String.format(
+                        "Insufficient stock for product: %s. Only %d units left.",
+                        product.getName(), product.getQuantity()
+                ));
             }
         }
 
@@ -211,7 +214,10 @@ public class CartService {
         List<CartItemDTO> itemDTOs = cart.getItems().stream()
                 .map(item -> {
                     BigDecimal subtotal = item.getPriceAtTime().multiply(BigDecimal.valueOf(item.getQuantity()));
-                    return new CartItemDTO(item.getProductId(), item.getProductId(), item.getProductId(),
+                    String productName = productRepository.findById(item.getProductId())
+                            .map(Product::getName)
+                            .orElse("Unknown Product");
+                    return new CartItemDTO(item.getProductId(), item.getProductId(), productName,
                             item.getQuantity(), item.getPriceAtTime(), subtotal);
                 })
                 .collect(Collectors.toList());
@@ -227,8 +233,13 @@ public class CartService {
 
     private OrderDTO convertOrderToDTO(Order order) {
         List<OrderItemDTO> itemDTOs = order.getItems().stream()
-                .map(item -> new OrderItemDTO(item.getProductId(), item.getProductId(),
-                        item.getQuantity(), item.getUnitPrice(), item.getTotalPrice()))
+                .map(item -> {
+                    String productName = productRepository.findById(item.getProductId())
+                            .map(Product::getName)
+                            .orElse("Unknown Product");
+                    return new OrderItemDTO(item.getProductId(), productName,
+                            item.getQuantity(), item.getUnitPrice(), item.getTotalPrice());
+                })
                 .collect(Collectors.toList());
 
         return new OrderDTO(order.getId(), order.getOrderNumber(), order.getUserId(), itemDTOs,

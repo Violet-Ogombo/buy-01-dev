@@ -30,13 +30,13 @@
 
         <div class="image-wrapper">
           <img
-            *ngIf="product.imageUrls && product.imageUrls.length"
+            *ngIf="product.imageUrls && product.imageUrls.length && !product.imageError"
             [src]="product.imageUrls[0]"
             alt="Product image"
             class="product-image"
-            (error)="onImageLoadError($event)"
+            (error)="product.imageError = true"
           />
-          <div *ngIf="!product.imageUrls || product.imageUrls.length === 0" class="no-image-placeholder">📦</div>
+          <div *ngIf="!product.imageUrls || product.imageUrls.length === 0 || product.imageError" class="no-image-placeholder">📦</div>
         </div>
 
         <div class="card-body">
@@ -52,9 +52,15 @@
 
           <!-- Quick Cart Actions -->
           <div class="quick-add-section" *ngIf="product.quantity > 0 && isUserLoggedIn()">
-            <select #qtySelect (click)="$event.stopPropagation()" class="qty-select">
-              <option *ngFor="let q of [1,2,3,4,5]" [value]="q">{{ q }}</option>
-            </select>
+            <div class="qty-select-wrapper">
+              <select #qtySelect (click)="$event.stopPropagation()"
+                      (focus)="qtySelect.size=5"
+                      (blur)="qtySelect.size=1"
+                      (change)="qtySelect.size=1; qtySelect.blur()"
+                      class="qty-select scrollable-select">
+                <option *ngFor="let q of getQtyRange(product.quantity)" [value]="q">{{ q }}</option>
+              </select>
+            </div>
             <button (click)="addToCart(product, $event, qtySelect.value)" class="btn-quick-add">Add</button>
           </div>
 
