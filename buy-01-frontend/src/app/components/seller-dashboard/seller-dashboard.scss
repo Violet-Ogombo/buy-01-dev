@@ -101,6 +101,224 @@
       }
     }
 
+    // Earnings Overview Card
+    .earnings-overview-card {
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      border-radius: 8px;
+      padding: 2rem;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+      margin-bottom: 2.5rem;
+      color: white;
+
+      .earnings-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+
+        .earnings-title {
+          margin: 0;
+          font-size: 1.5rem;
+          font-weight: 700;
+          letter-spacing: 0.5px;
+        }
+
+        .earnings-icon {
+          width: 50px;
+          height: 50px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 50%;
+
+          svg {
+            width: 28px;
+            height: 28px;
+            stroke: currentColor;
+            stroke-width: 2;
+          }
+        }
+      }
+
+      .earnings-content {
+        .earnings-amount {
+          margin: 0;
+          font-size: 2.8rem;
+          font-weight: 800;
+          text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .earnings-label {
+          margin: 0.75rem 0 0 0;
+          font-size: 0.95rem;
+          font-weight: 500;
+          opacity: 0.9;
+          letter-spacing: 0.3px;
+        }
+      }
+    }
+
+    // Sales Tracking Table Section
+    .sales-tracking-section {
+      margin-top: 2.5rem;
+
+      .sales-tracking-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #1d3e1f;
+        margin: 0 0 1.5rem 0;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #2e7d32;
+      }
+
+      .sales-table-wrapper {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+
+        .sales-tracking-table {
+          width: 100%;
+          border-collapse: collapse;
+
+          thead {
+            background: #f5f7fa;
+            border-bottom: 2px solid #e0e0e0;
+
+            th {
+              padding: 1.2rem 1rem;
+              text-align: left;
+              font-weight: 700;
+              color: #2c3e50;
+              font-size: 0.95rem;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+
+              &.text-center {
+                text-align: center;
+              }
+            }
+          }
+
+          tbody {
+            tr {
+              border-bottom: 1px solid #e8e8e8;
+              transition: background-color 0.2s ease;
+
+              &:hover {
+                background-color: #f9fafb;
+              }
+
+              td {
+                padding: 1rem;
+                font-size: 0.95rem;
+
+                &.text-center {
+                  text-align: center;
+                }
+
+                .product-cell {
+                  min-width: 250px;
+
+                  .product-display {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+
+                    .product-thumb {
+                      width: 56px;
+                      height: 56px;
+                      object-fit: cover;
+                      border-radius: 6px;
+                      border: 1px solid #e0e0e0;
+                      flex-shrink: 0;
+                      transition: transform 0.2s ease;
+
+                      &:hover {
+                        transform: scale(1.05);
+                      }
+                    }
+
+                    .product-thumb-placeholder {
+                      width: 56px;
+                      height: 56px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      background: #e8e8e8;
+                      border-radius: 6px;
+                      color: #999;
+                      font-size: 0.8rem;
+                      font-weight: 500;
+                      flex-shrink: 0;
+                    }
+
+                    .product-name-text {
+                      font-weight: 600;
+                      color: #2c3e50;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                      display: -webkit-box;
+                      -webkit-line-clamp: 2;
+                      -webkit-box-orient: vertical;
+                      line-height: 1.3;
+                    }
+                  }
+                }
+
+                &.revenue-cell {
+                  font-weight: 700;
+                  color: #2e7d32;
+                }
+
+                .status-badge {
+                  display: inline-block;
+                  padding: 0.4rem 0.9rem;
+                  border-radius: 20px;
+                  font-size: 0.85rem;
+                  font-weight: 600;
+                  text-transform: uppercase;
+                  letter-spacing: 0.3px;
+                  white-space: nowrap;
+
+                  &.badge-no-sales {
+                    background: #e8e8e8;
+                    color: #757575;
+                  }
+
+                  &.badge-active-sales {
+                    background: #c8e6c9;
+                    color: #1b5e20;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .no-sales-data {
+        text-align: center;
+        padding: 2.5rem;
+        background: #f9f9f9;
+        border-radius: 8px;
+        border: 1px dashed #ddd;
+
+        p {
+          margin: 0.5rem 0;
+          color: #888;
+          font-size: 0.95rem;
+
+          &.hint {
+            font-size: 0.85rem;
+            color: #aaa;
+            font-style: italic;
+          }
+        }
+      }
+    }
+
     .top-products-section {
       .subsection-title {
         font-size: 1.3rem;
@@ -383,5 +601,189 @@
     justify-content: center;
     align-items: center;
     gap: 0.75rem;
+  }
+
+  // Utility classes
+  .text-center {
+    text-align: center;
+  }
+
+  .me-2 {
+    margin-right: 0.5rem;
+  }
+
+  .ms-2 {
+    margin-left: 0.5rem;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 1rem;
+
+    .seller-performance-section {
+      padding: 1rem;
+
+      .earnings-overview-card {
+        padding: 1.5rem;
+
+        .earnings-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 1rem;
+
+          .earnings-icon {
+            align-self: flex-end;
+          }
+        }
+
+        .earnings-content {
+          .earnings-amount {
+            font-size: 2.2rem;
+          }
+        }
+      }
+
+      .sales-tracking-section {
+        .sales-table-wrapper {
+          overflow-x: auto;
+
+          .sales-tracking-table {
+            min-width: 600px;
+
+            thead th,
+            tbody td {
+              padding: 0.8rem 0.6rem;
+              font-size: 0.85rem;
+            }
+          }
+        }
+      }
+    }
+
+    .products-table {
+      table {
+        font-size: 0.9rem;
+
+        th, td {
+          padding: 0.75rem;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .dashboard-container {
+    padding: 0.75rem;
+
+    .header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      .btn-primary {
+        width: 100%;
+      }
+    }
+
+    .seller-performance-section {
+      margin-bottom: 2rem;
+      padding: 1rem;
+      border-left-width: 3px;
+
+      .earnings-overview-card {
+        padding: 1.25rem;
+
+        .earnings-header {
+          .earnings-title {
+            font-size: 1.25rem;
+          }
+
+          .earnings-icon {
+            width: 40px;
+            height: 40px;
+
+            svg {
+              width: 24px;
+              height: 24px;
+            }
+          }
+        }
+
+        .earnings-content {
+          .earnings-amount {
+            font-size: 1.8rem;
+          }
+        }
+      }
+
+      .sales-tracking-section {
+        .sales-tracking-title {
+          font-size: 1.1rem;
+        }
+
+        .sales-table-wrapper {
+          .sales-tracking-table {
+            thead th {
+              padding: 0.6rem 0.4rem;
+              font-size: 0.75rem;
+            }
+
+            tbody td {
+              padding: 0.6rem 0.4rem;
+
+              .product-cell .product-display {
+                flex-direction: column;
+                gap: 0.5rem;
+
+                .product-thumb,
+                .product-thumb-placeholder {
+                  width: 48px;
+                  height: 48px;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .products-table {
+      table {
+        thead th {
+          padding: 0.6rem 0.5rem;
+          font-size: 0.8rem;
+        }
+
+        tbody td {
+          padding: 0.6rem 0.5rem;
+          font-size: 0.85rem;
+
+          &.description {
+            display: none;
+          }
+
+          .thumb {
+            width: 40px;
+            height: 40px;
+          }
+        }
+      }
+    }
+
+    .pagination {
+      flex-direction: column;
+      gap: 0.5rem;
+
+      button {
+        width: 100%;
+      }
+    }
   }
 }
