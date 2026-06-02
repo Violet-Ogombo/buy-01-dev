@@ -6,6 +6,8 @@ export interface Product {
   quantity: number;
   userId?: string;
   imageUrls?: string[];
+  salesCount?: number;
+  revenue?: number;
 }
 
 export interface ProductSearchDTO {
@@ -17,5 +19,15 @@ export interface ProductSearchDTO {
   imageUrls: string[];
   salesCount?: number;
   rating?: number;
+}
+
+export interface SellerProduct {
+  id?: string;
+  sellerId?: string;
+  productId: string;
+  productName: string;
+  salesCount: number;
+  revenue: number;
+  imageUrl?: string;
 }
 

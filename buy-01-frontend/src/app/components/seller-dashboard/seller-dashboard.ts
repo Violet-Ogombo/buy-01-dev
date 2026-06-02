@@ -5,7 +5,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ProductService } from '../../services/product.service';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
-import { Product } from '../../models/product.model';
+import { Product, SellerProduct } from '../../models/product.model';
+import { User } from '../../models/user.model';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -17,6 +18,10 @@ import { takeUntil } from 'rxjs/operators';
 })
 export class SellerDashboardComponent implements OnInit, OnDestroy {
   products: Product[] = [];
+  currentUser: User | null = null;
+  topPerformingProducts: SellerProduct[] = [];
+  totalSellerRevenue = 0;
+  loadingPerformance = true;
   loading = true;
   error: string | null = null;
 
@@ -33,7 +38,11 @@ export class SellerDashboardComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
+    this.currentUser = this.authService.getCurrentUser();
     this.loadMyProducts();
+    if (this.currentUser?.isSeller) {
+      this.loadSellerPerformance();
+    }
   }
 
   ngOnDestroy() {
@@ -73,6 +82,52 @@ export class SellerDashboardComponent implements OnInit, OnDestroy {
       });
   }
 
+  loadSellerPerformance() {
+    this.loadingPerformance = true;
+    this.cdr.markForCheck();
+    
+    // Calculate seller performance metrics from products
+    this.calculateSellerMetrics();
+  }
+
+  calculateSellerMetrics() {
+    try {
+      // Calculate total revenue from all products with sales data
+      this.totalSellerRevenue = 0;
+      const performanceMap = new Map<string, SellerProduct>();
+
+      this.products.forEach(product => {
+        if (product.revenue && product.salesCount) {
+          this.totalSellerRevenue += product.revenue;
+          performanceMap.set(product.id || '', {
+            productId: product.id || '',
+            productName: product.name,
+            salesCount: product.salesCount,
+            revenue: product.revenue,
+            imageUrl: product.imageUrls?.[0]
+          });
+        }
+      });
+
+      // Sort by revenue descending and get top 5 performing products
+      this.topPerformingProducts = Array.from(performanceMap.values())
+        .sort((a, b) => b.revenue - a.revenue)
+        .slice(0, 5);
+
+      // Update total revenue from user profile if available
+      if (this.currentUser?.sellerRevenue !== undefined) {
+        this.totalSellerRevenue = this.currentUser.sellerRevenue;
+      }
+
+      this.loadingPerformance = false;
+      this.cdr.markForCheck();
+    } catch (err) {
+      console.error('Error calculating seller metrics:', err);
+      this.loadingPerformance = false;
+      this.cdr.markForCheck();
+    }
+  }
+
   createProduct() {
     this.router.navigate(['/seller/products/new']);
   }
@@ -86,6 +141,9 @@ export class SellerDashboardComponent implements OnInit, OnDestroy {
       this.productService.deleteProduct(id).subscribe({
         next: () => {
           this.loadMyProducts();
+          if (this.currentUser?.isSeller) {
+            this.loadSellerPerformance();
+          }
           this.toast.success('Product deleted');
           this.cdr.markForCheck();
         },
@@ -97,6 +155,13 @@ export class SellerDashboardComponent implements OnInit, OnDestroy {
         }
       });
     }
+  }
+
+  formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount);
   }
 
   changePage(delta: number) {

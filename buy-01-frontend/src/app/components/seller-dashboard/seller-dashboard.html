@@ -1,4 +1,79 @@
 <div class="dashboard-container">
+  <!-- Seller Performance Profile Section (Conditional: Only for Sellers) -->
+  @if (currentUser?.isSeller) {
+    <div class="seller-performance-section">
+      <h2 class="section-title">Seller Performance Profile</h2>
+      
+      <!-- Revenue Insights Card -->
+      <div class="performance-metrics">
+        <div class="metric-card revenue-card">
+          <div class="metric-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"></path>
+              <path d="M12 6v12M8 10h8M8 14h8"></path>
+            </svg>
+          </div>
+          <div class="metric-content">
+            <h3>Revenue Insights</h3>
+            <p class="metric-label">Total Money Gained</p>
+            <p class="metric-value" *ngIf="!loadingPerformance">
+              {{ formatCurrency(totalSellerRevenue) }}
+            </p>
+            <div *ngIf="loadingPerformance" class="spinner spinner-sm spinner-inline"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Performing Products Section -->
+      <div class="top-products-section">
+        <h3 class="subsection-title">Top Performing Products</h3>
+        
+        <div *ngIf="loadingPerformance" class="loading">
+          <div class="spinner spinner-sm spinner-inline me-2"></div>
+          <span>Loading performance data...</span>
+        </div>
+
+        <div *ngIf="!loadingPerformance && topPerformingProducts.length > 0" class="products-grid">
+          <div *ngFor="let product of topPerformingProducts; trackBy: trackByProductId" class="product-card">
+            <div class="product-image-wrapper">
+              <img
+                *ngIf="product.imageUrl"
+                [src]="product.imageUrl"
+                [alt]="product.productName"
+                class="product-image"
+                (error)="onImageLoadError($event)"
+              />
+              <div *ngIf="!product.imageUrl" class="no-image">
+                <span>No Image</span>
+              </div>
+            </div>
+            
+            <div class="product-info">
+              <h4 class="product-name">{{ product.productName }}</h4>
+              
+              <div class="product-stats">
+                <div class="stat">
+                  <span class="stat-label">Sales</span>
+                  <span class="stat-value">{{ product.salesCount }}</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-label">Revenue</span>
+                  <span class="stat-value revenue">{{ formatCurrency(product.revenue) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="!loadingPerformance && topPerformingProducts.length === 0" class="no-products-performance">
+          <p>No product sales data available yet.</p>
+          <p class="hint">Once your products start selling, performance metrics will appear here.</p>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Inventory Management Section -->
   <div class="header">
     <h1>My Products</h1>
     <button class="btn-primary" (click)="createProduct()">+ Add New Product</button>

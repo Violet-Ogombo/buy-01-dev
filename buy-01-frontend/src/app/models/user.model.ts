@@ -5,4 +5,6 @@ export interface User {
   role: 'CLIENT' | 'SELLER';
   token: string;
   avatar?: string;
+  isSeller?: boolean;
+  sellerRevenue?: number;
 }
