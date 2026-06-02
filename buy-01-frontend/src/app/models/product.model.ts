@@ -31,3 +31,13 @@ export interface SellerProduct {
   imageUrl?: string;
 }
 
+export interface TrendingProduct {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  salesCount: number;
+  rating?: number;
+  imageUrls?: string[];
+}
+

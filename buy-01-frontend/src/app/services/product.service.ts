@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { tap, catchError, timeout } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
-import { Product } from '../models/product.model';
+import { Product, TrendingProduct } from '../models/product.model';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
@@ -18,6 +18,18 @@ export class ProductService {
       tap(products => console.log('[ProductService] Products loaded:', products?.length || 0)),
       catchError(err => {
         console.error('[ProductService] Error loading products:', err);
+        throw err;
+      })
+    );
+  }
+
+  getTrendingProducts(limit: number = 5): Observable<TrendingProduct[]> {
+    const url = `${this.apiUrl}/trending?limit=${limit}`;
+    return this.http.get<TrendingProduct[]>(url).pipe(
+      timeout(10000),
+      tap(products => console.log('[ProductService] Trending products loaded:', products?.length || 0)),
+      catchError(err => {
+        console.error('[ProductService] Error loading trending products:', err);
         throw err;
       })
     );

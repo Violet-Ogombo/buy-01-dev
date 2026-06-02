@@ -1,10 +1,14 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
-import { User } from '../../models/user.model';
+import { ProductService } from '../../services/product.service';
+import { User, ProductHistoryItem } from '../../models/user.model';
+import { TrendingProduct } from '../../models/product.model';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-profile',
@@ -14,19 +18,28 @@ import { User } from '../../models/user.model';
   styleUrl: './profile.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProfileComponent implements OnInit {
+export class ProfileComponent implements OnInit, OnDestroy {
   form: FormGroup;
   user: User | null = null;
-  loading = true;
-  saving = false;
+  mostBoughtProducts: ProductHistoryItem[] = [];
+  trendingProducts: TrendingProduct[] = [];
+  totalMoneySpent: number = 0;
+  
+  loading: boolean = true;
+  loadingAnalytics: boolean = true;
+  loadingTrending: boolean = true;
+  saving: boolean = false;
   error: string | null = null;
   success: string | null = null;
-  isEditMode = false;
+  isEditMode: boolean = false;
+
+  private destroy$: Subject<void> = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
     private userService: UserService,
     private authService: AuthService,
+    private productService: ProductService,
     private toast: ToastService,
     private cdr: ChangeDetectorRef
   ) {
@@ -41,36 +54,90 @@ export class ProfileComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadProfile();
+    this.loadUserAnalytics();
+    this.loadTrendingProducts();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private loadProfile(): void {
     this.loading = true;
     this.error = null;
+    this.cdr.markForCheck();
 
-    this.userService.getProfile().subscribe({
-      next: (user) => {
-        this.user = user;
-        this.form.patchValue({ 
-          name: user.name,
-          email: user.email
-        });
-        this.loading = false;
-        this.isEditMode = false;
-        this.cdr.markForCheck();
+    this.userService.getProfile()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (user: User) => {
+          this.user = user;
+          this.form.patchValue({ 
+            name: user.name,
+            email: user.email
+          });
+          this.loading = false;
+          this.isEditMode = false;
+          this.cdr.markForCheck();
 
-        const current = this.authService.getCurrentUser();
-        if (current) {
-          this.authService.setUser({ ...current, name: user.name });
-        } else {
-          this.authService.setUser(user);
+          const current = this.authService.getCurrentUser();
+          if (current) {
+            this.authService.setUser({ ...current, name: user.name });
+          } else {
+            this.authService.setUser(user);
+          }
+        },
+        error: () => {
+          this.error = 'Failed to load profile';
+          this.loading = false;
+          this.cdr.markForCheck();
         }
-      },
-      error: () => {
-        this.error = 'Failed to load profile';
-        this.loading = false;
-        this.cdr.markForCheck();
-      }
-    });
+      });
+  }
+
+  private loadUserAnalytics(): void {
+    this.loadingAnalytics = true;
+    this.cdr.markForCheck();
+
+    this.userService.getUserAnalytics()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (analyticsData: { totalSpent: number; mostBoughtProducts: ProductHistoryItem[] }) => {
+          this.totalMoneySpent = analyticsData.totalSpent ?? 0;
+          this.mostBoughtProducts = analyticsData.mostBoughtProducts ?? [];
+          this.loadingAnalytics = false;
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          console.error('Failed to load user analytics:', err);
+          this.totalMoneySpent = this.user?.totalSpent ?? 0;
+          this.mostBoughtProducts = this.user?.mostBoughtProducts ?? [];
+          this.loadingAnalytics = false;
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  private loadTrendingProducts(): void {
+    this.loadingTrending = true;
+    this.cdr.markForCheck();
+
+    this.productService.getTrendingProducts(5)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (products: TrendingProduct[]) => {
+          this.trendingProducts = products ?? [];
+          this.loadingTrending = false;
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          console.error('Failed to load trending products:', err);
+          this.trendingProducts = [];
+          this.loadingTrending = false;
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   toggleEditMode(): void {
@@ -105,7 +172,7 @@ export class ProfileComponent implements OnInit {
     this.cdr.markForCheck();
 
     const formValue = this.form.value;
-    const payload: any = {};
+    const payload: Record<string, unknown> = {};
 
     // Check what changed
     if (formValue.name && formValue.name !== this.user.name) {
@@ -135,31 +202,33 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
-    this.userService.updateProfile(payload).subscribe({
-      next: (updated) => {
-        this.user = updated;
-        const current = this.authService.getCurrentUser() ?? updated;
-        this.authService.setUser({ ...current, ...updated });
-        this.success = 'Profile updated successfully';
-        this.toast.success('Profile updated successfully');
-        this.saving = false;
-        this.isEditMode = false;
-        
-        // Reset password fields
-        this.form.patchValue({
-          oldPassword: '',
-          newPassword: '',
-          confirmPassword: ''
-        });
-        
-        this.cdr.markForCheck();
-      },
-      error: (err) => {
-        this.error = err.error?.error || 'Failed to update profile';
-        this.saving = false;
-        this.cdr.markForCheck();
-      }
-    });
+    this.userService.updateProfile(payload as { name?: string; email?: string; oldPassword?: string; newPassword?: string })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (updated: User) => {
+          this.user = updated;
+          const current = this.authService.getCurrentUser() ?? updated;
+          this.authService.setUser({ ...current, ...updated });
+          this.success = 'Profile updated successfully';
+          this.toast.success('Profile updated successfully');
+          this.saving = false;
+          this.isEditMode = false;
+          
+          // Reset password fields
+          this.form.patchValue({
+            oldPassword: '',
+            newPassword: '',
+            confirmPassword: ''
+          });
+          
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          this.error = err.error?.error || 'Failed to update profile';
+          this.saving = false;
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   private passwordValidator(group: AbstractControl): ValidationErrors | null {
@@ -194,5 +263,26 @@ export class ProfileComponent implements OnInit {
     if (errors?.['passwordMismatch']) return 'New password and confirm password do not match';
     if (errors?.['passwordTooShort']) return 'New password must be at least 8 characters';
     return '';
+  }
+
+  formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount);
+  }
+
+  trackByProductId(index: number, product: ProductHistoryItem): string {
+    return product.productId || index.toString();
+  }
+
+  trackByTrendingProductId(index: number, product: TrendingProduct): string {
+    return product.id || index.toString();
+  }
+
+  onImageLoadError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.style.opacity = '0.5';
+    img.alt = 'Image not available';
   }
 }

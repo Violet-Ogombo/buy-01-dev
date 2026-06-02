@@ -14,6 +14,16 @@ export class UserService {
     return this.http.get<User>(`${this.apiUrl}/me`);
   }
 
+  getUserAnalytics(): Observable<{
+    totalSpent: number;
+    mostBoughtProducts: Array<{ productId: string; productName: string; quantity: number; price: number; imageUrl?: string }>;
+  }> {
+    return this.http.get<{
+      totalSpent: number;
+      mostBoughtProducts: Array<{ productId: string; productName: string; quantity: number; price: number; imageUrl?: string }>;
+    }>(`${this.apiUrl}/me/analytics`);
+  }
+
   updateProfile(payload: { 
     name?: string; 
     email?: string; 

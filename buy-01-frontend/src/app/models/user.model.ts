@@ -7,4 +7,15 @@ export interface User {
   avatar?: string;
   isSeller?: boolean;
   sellerRevenue?: number;
+  totalSpent?: number;
+  mostBoughtProducts?: ProductHistoryItem[];
+}
+
+export interface ProductHistoryItem {
+  productId: string;
+  productName: string;
+  quantity: number;
+  price: number;
+  imageUrl?: string;
+  purchaseDate?: string;
 }
