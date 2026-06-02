@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { User } from '../models/user.model';
+import { SellerProfile } from '../models/seller-profile.model';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
@@ -21,5 +22,9 @@ export class UserService {
     newPassword?: string 
   }): Observable<User> {
     return this.http.put<User>(`${this.apiUrl}/me`, payload);
+  }
+
+  getSellerProfile(sellerId: string): Observable<SellerProfile> {
+    return this.http.get<SellerProfile>(`/api/v1/sellers/${sellerId}/profile`);
   }
 }

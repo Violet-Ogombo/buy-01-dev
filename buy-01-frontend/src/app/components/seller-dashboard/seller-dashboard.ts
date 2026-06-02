@@ -50,6 +50,26 @@ export class SellerDashboardComponent implements OnInit, OnDestroy {
     return this.products.slice(start, start + this.pageSize);
   }
 
+  get totalRevenue(): number {
+    return this.products.reduce((sum, p) => sum + (p.revenue || 0), 0);
+  }
+
+  get totalSalesCount(): number {
+    return this.products.reduce((sum, p) => sum + (p.salesCount || 0), 0);
+  }
+
+  get activeProductsCount(): number {
+    return this.products.filter(p => (p.quantity || 0) > 0).length;
+  }
+
+  get bestSellingProduct(): Product | null {
+    if (!this.products || this.products.length === 0) return null;
+    const sorted = [...this.products]
+      .filter(p => (p.salesCount || 0) > 0)
+      .sort((a, b) => (b.salesCount || 0) - (a.salesCount || 0));
+    return sorted.length > 0 ? sorted[0] : null;
+  }
+
   loadMyProducts() {
     this.loading = true;
     this.error = null;

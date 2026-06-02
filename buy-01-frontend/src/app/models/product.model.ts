@@ -6,6 +6,8 @@ export interface Product {
   quantity: number;
   userId?: string;
   imageUrls?: string[];
+  salesCount?: number;
+  revenue?: number;
 }
 
 export interface ProductSearchDTO {
