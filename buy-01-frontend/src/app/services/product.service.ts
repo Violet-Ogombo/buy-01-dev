@@ -12,7 +12,7 @@ export class ProductService {
   constructor(private http: HttpClient) {}
 
   getAllProducts(): Observable<Product[]> {
-    console.log('[ProductService] getAllProducts - URL:', this.apiUrl);
+    
     return this.http.get<Product[]>(this.apiUrl).pipe(
       timeout(10000),
       tap(products => console.log('[ProductService] Products loaded:', products?.length || 0)),
@@ -25,7 +25,7 @@ export class ProductService {
 
   getProduct(id: string): Observable<Product> {
     const url = `${this.apiUrl}/${id}`;
-    console.log('[ProductService] getProduct - URL:', url);
+   
     const request$ = this.http.get<Product>(url);
     console.log('[ProductService] Observable created, about to subscribe');
     return request$.pipe(

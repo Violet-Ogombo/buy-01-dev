@@ -7,14 +7,14 @@
   margin-bottom: 1.5rem;
 
   .btn-back {
-    color: #475569;
+    color: var(--text-muted);
     text-decoration: none;
     font-weight: 600;
     font-size: 0.95rem;
     transition: color 0.2s;
 
     &:hover {
-      color: #1976d2;
+      color: var(--primary-color);
     }
   }
 }
@@ -22,7 +22,7 @@
 .checkout-title {
   font-size: 2.25rem;
   font-weight: 800;
-  color: #1e293b;
+  color: var(--text-main);
   margin-bottom: 2.5rem;
   letter-spacing: -0.025em;
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
@@ -36,7 +36,7 @@
   align-items: center;
   justify-content: center;
   padding: 4rem 0;
-  color: #64748b;
+  color: var(--text-muted);
   font-weight: 500;
 }
 
@@ -48,7 +48,7 @@
 }
 
 .checkout-form-section {
-  background: #ffffff;
+  background: var(--card-bg) !important; backdrop-filter: blur(12px); border: var(--card-border); color: var(--text-main);
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
   padding: 2.5rem;
@@ -57,10 +57,10 @@
     margin-top: 0;
     font-size: 1.5rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--text-main);
     margin-bottom: 2rem;
     padding-bottom: 0.75rem;
-    border-bottom: 2px solid #f1f5f9;
+    border-bottom: var(--card-border);
   }
 }
 
@@ -71,7 +71,7 @@
     label {
       display: block;
       font-weight: 600;
-      color: #334155;
+      color: var(--text-main);
       margin-bottom: 0.5rem;
       font-size: 0.95rem;
     }
@@ -79,18 +79,18 @@
     input, textarea, select {
       width: 100%;
       padding: 0.75rem 1rem;
-      border: 1px solid #cbd5e1;
+      border: var(--card-border);
       border-radius: 8px;
       font-size: 1rem;
-      color: #1e293b;
-      background-color: #f8fafc;
+      color: var(--text-main);
+      background-color: var(--input-bg);
       box-sizing: border-box;
       transition: all 0.2s;
 
       &:focus {
         outline: none;
-        border-color: #1976d2;
-        background-color: #ffffff;
+        border-color: var(--primary-color);
+        background-color: var(--card-bg) !important; backdrop-filter: blur(12px); border: var(--card-border); color: var(--text-main);
         box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.15);
       }
     }
@@ -110,7 +110,7 @@
 
     .input-error {
       border-color: #ef4444;
-      background-color: #fff5f5;
+      background-color: rgba(239, 68, 68, 0.15);
 
       &:focus {
         border-color: #ef4444;
@@ -158,7 +158,7 @@
 
 .checkout-summary-section {
   .summary-card {
-    background: #ffffff;
+    background: var(--card-bg) !important; backdrop-filter: blur(12px); border: var(--card-border); color: var(--text-main);
     border-radius: 16px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
     padding: 2rem;
@@ -167,7 +167,7 @@
       margin-top: 0;
       font-size: 1.35rem;
       font-weight: 700;
-      color: #1e293b;
+      color: var(--text-main);
       margin-bottom: 1.5rem;
     }
 
@@ -199,7 +199,7 @@
 
         .item-qty {
           font-weight: 700;
-          color: #1976d2;
+          color: var(--primary-color);
           background: rgba(25, 118, 210, 0.08);
           padding: 0.1rem 0.4rem;
           border-radius: 4px;
@@ -207,13 +207,13 @@
         }
 
         .item-name {
-          color: #475569;
+          color: var(--text-muted);
           font-weight: 500;
         }
       }
 
       .item-subtotal {
-        color: #1e293b;
+        color: var(--text-main);
         font-weight: 600;
       }
     }
@@ -222,12 +222,12 @@
       display: flex;
       justify-content: space-between;
       margin-bottom: 0.85rem;
-      color: #64748b;
+      color: var(--text-muted);
       font-weight: 500;
       font-size: 0.95rem;
 
       span:last-child {
-        color: #1e293b;
+        color: var(--text-main);
         font-weight: 600;
       }
 
@@ -239,7 +239,7 @@
 
     hr {
       border: 0;
-      border-top: 1px solid #e2e8f0;
+      border-top: var(--card-border);
       margin: 1.25rem 0;
     }
 
@@ -248,12 +248,12 @@
       margin-bottom: 1.5rem;
 
       span:first-child {
-        color: #1e293b;
+        color: var(--text-main);
         font-weight: 700;
       }
 
       span:last-child {
-        color: #1976d2;
+        color: var(--primary-color);
         font-weight: 800;
       }
     }
@@ -262,13 +262,13 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #f8fafc;
+      background-color: var(--input-bg);
       border: 1px dashed #cbd5e1;
       padding: 0.75rem;
       border-radius: 8px;
       font-size: 0.8rem;
       font-weight: 600;
-      color: #64748b;
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
@@ -296,7 +296,7 @@
     align-items: center;
     gap: 0.5rem;
     font-weight: 600;
-    color: #334155;
+    color: var(--text-main);
     font-size: 0.95rem;
     cursor: pointer;
 
@@ -309,8 +309,8 @@
 }
 
 .card-details-section {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background-color: var(--input-bg);
+  border: var(--card-border);
   border-radius: 12px;
   padding: 1.5rem;
   margin-bottom: 1.75rem;
@@ -320,18 +320,18 @@
     margin-top: 0;
     font-size: 1.1rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--text-main);
     margin-bottom: 1.25rem;
   }
 
   &.disabled {
     opacity: 0.5;
     pointer-events: none;
-    background-color: #f1f5f9;
+    background-color: rgba(255, 255, 255, 0.05);
 
     input {
-      background-color: #e2e8f0;
-      color: #94a3b8;
+      background-color: rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
     }
   }
 }
@@ -347,7 +347,7 @@
   }
 
   .expiry-divider {
-    color: #475569;
+    color: var(--text-muted);
     font-weight: 600;
     font-size: 1.2rem;
   }

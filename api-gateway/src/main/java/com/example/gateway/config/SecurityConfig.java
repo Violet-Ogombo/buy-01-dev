@@ -24,6 +24,8 @@ public class SecurityConfig {
         corsConfig.addAllowedOrigin("https://localhost:443");
         corsConfig.addAllowedOrigin("http://localhost");
         corsConfig.addAllowedOrigin("http://localhost:80");
+        // GitHub Pages deployment origin
+        corsConfig.addAllowedOrigin("https://violet-ogombo.github.io");
         
         // Allow specific HTTP methods
         corsConfig.addAllowedMethod(HttpMethod.GET);

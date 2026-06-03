@@ -6,7 +6,7 @@
 .wishlist-title {
   font-size: 2.25rem;
   font-weight: 800;
-  color: #1e293b;
+  color: var(--text-main);
   margin-bottom: 2.5rem;
   letter-spacing: -0.025em;
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
@@ -20,7 +20,7 @@
   align-items: center;
   justify-content: center;
   padding: 4rem 0;
-  color: #64748b;
+  color: var(--text-muted);
   font-weight: 500;
 }
 
@@ -47,7 +47,7 @@
 .empty-wishlist {
   text-align: center;
   padding: 5rem 2rem;
-  background: #ffffff;
+  background: var(--card-bg) !important; backdrop-filter: blur(12px); border: var(--card-border); color: var(--text-main);
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
   max-width: 600px;
@@ -60,14 +60,14 @@
   }
 
   h2 {
-    color: #1e293b;
+    color: var(--text-main);
     font-size: 1.75rem;
     font-weight: 700;
     margin-bottom: 0.75rem;
   }
 
   p {
-    color: #64748b;
+    color: var(--text-muted);
     margin-bottom: 2rem;
     font-size: 1.1rem;
   }
@@ -80,10 +80,10 @@
 }
 
 .wishlist-card {
-  background: #ffffff;
+  background: var(--card-bg) !important; backdrop-filter: blur(12px); border: var(--card-border); color: var(--text-main);
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-  border: 1px solid #f1f5f9;
+  border: var(--card-border);
   position: relative;
   overflow: hidden;
   display: flex;
@@ -93,8 +93,7 @@
   &:hover {
     transform: translateY(-5px);
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
-    border-color: #cbd5e1;
-  }
+    border-color: rgba(255, 255, 255, 0.08);}
 }
 
 .btn-wishlist-remove {
@@ -109,7 +108,7 @@
   border-radius: 50%;
   font-size: 1.25rem;
   font-weight: bold;
-  color: #94a3b8;
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -162,7 +161,7 @@
     margin: 0;
     font-size: 1.1rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--text-main);
     cursor: pointer;
     line-height: 1.4;
     margin-bottom: 0.5rem;
@@ -173,20 +172,20 @@
     height: 3.1rem;
 
     &:hover {
-      color: #1976d2;
+      color: var(--primary-color);
     }
   }
 
   .wishlist-price {
     font-size: 1.25rem;
     font-weight: 800;
-    color: #1976d2;
+    color: var(--primary-color);
     margin: 0 0 1.25rem 0;
   }
 
   .btn-add-to-cart {
     width: 100%;
-    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
     color: white;
     border: none;
     padding: 0.75rem;
@@ -197,7 +196,7 @@
     margin-top: auto;
 
     &:hover {
-      background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+      background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary-hover-dark) 100%);
       box-shadow: 0 4px 12px rgba(25, 118, 210, 0.2);
     }
   }

@@ -2,19 +2,19 @@
   max-width: 600px;
   margin: 2rem auto;
   padding: 2rem;
-  background: white;
+  background: var(--card-bg) !important; backdrop-filter: blur(12px); border: var(--card-border); color: var(--text-main);
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
   h1 {
     margin-bottom: 2rem;
-    color: #333;
+    color: var(--text-main);
   }
 
   .loading {
     text-align: center;
     padding: 2rem;
-    color: #757575;
+    color: var(--text-muted);
   }
 
   .error {
@@ -32,23 +32,23 @@
       label {
         display: block;
         margin-bottom: 0.5rem;
-        color: #555;
+        color: var(--text-muted);
         font-weight: 500;
       }
 
       input, textarea, select {
         width: 100%;
         padding: 0.75rem;
-        border: 1px solid #ddd;
+        border: var(--card-border);
         border-radius: 4px;
         font-size: 1rem;
         transition: border-color 0.2s;
         box-sizing: border-box;
-        background-color: white;
+        background-color: var(--card-bg) !important; backdrop-filter: blur(12px); border: var(--card-border); color: var(--text-main);
 
         &:focus {
           outline: none;
-          border-color: #1976d2;
+          border-color: var(--primary-color);
         }
 
         &.invalid {
@@ -81,30 +81,30 @@
       border: 2px dashed #ccc;
       border-radius: 6px;
       text-align: center;
-      color: #666;
+      color: var(--text-muted);
 
       &.drag-over {
-        border-color: #1976d2;
+        border-color: var(--primary-color);
         background: #e3f2fd;
       }
     }
 
     .uploading {
       margin-top: 0.5rem;
-      color: #1976d2;
+      color: var(--primary-color);
       font-size: 0.9rem;
     }
 
     .pending-images {
       margin-top: 0.75rem;
       padding: 1rem;
-      background: #f5f5f5;
+      background-color: rgba(255, 255, 255, 0.05);
       border-radius: 4px;
 
       .pending-label {
         margin: 0 0 0.75rem 0;
         font-weight: 500;
-        color: #555;
+        color: var(--text-muted);
         font-size: 0.9rem;
       }
 
@@ -120,7 +120,7 @@
       .uploaded-label {
         margin: 0 0 0.75rem 0;
         font-weight: 500;
-        color: #555;
+        color: var(--text-muted);
         font-size: 0.9rem;
       }
 
@@ -130,7 +130,7 @@
     }
 
     .image-preview {
-      border: 1px solid #eee;
+      border: var(--card-border);
       border-radius: 4px;
       padding: 0.5rem;
       display: flex;
@@ -153,7 +153,7 @@
         button {
           padding: 0.25rem 0.5rem;
           font-size: 0.8rem;
-          background: #1976d2;
+          background: var(--primary-color);
           color: white;
           border: none;
           border-radius: 3px;
@@ -161,7 +161,7 @@
           transition: background 0.2s;
 
           &:hover {
-            background: #1565c0;
+            background: var(--primary-hover);
           }
 
           &.btn-remove {
@@ -175,7 +175,7 @@
 
         .primary-badge {
           padding: 0.15rem 0.4rem;
-          background: #1976d2;
+          background: var(--primary-color);
           color: #fff;
           border-radius: 3px;
           font-size: 0.75rem;
@@ -208,7 +208,7 @@
       }
 
       .btn-primary {
-        background: #1976d2;
+        background: var(--primary-color);
         color: white;
       }
 

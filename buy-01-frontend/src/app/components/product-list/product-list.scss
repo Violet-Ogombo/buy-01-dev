@@ -6,7 +6,7 @@
 .page-title {
   font-size: 2.25rem;
   font-weight: 800;
-  color: #1e293b;
+  color: var(--text-main);
   margin-bottom: 2rem;
   letter-spacing: -0.025em;
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
@@ -31,10 +31,10 @@
 }
 
 .product-card {
-  background: #ffffff;
+  background: var(--card-bg) !important; backdrop-filter: blur(12px); border: var(--card-border); color: var(--text-main);
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-  border: 1px solid #f1f5f9;
+  border: var(--card-border);
   position: relative;
   overflow: hidden;
   display: flex;
@@ -45,9 +45,7 @@
   &:hover {
     transform: translateY(-5px);
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
-    border-color: #cbd5e1;
-
-    .product-image {
+    border-color: rgba(255, 255, 255, 0.08);.product-image {
       transform: scale(1.03);
     }
   }
@@ -112,7 +110,7 @@
     margin: 0;
     font-size: 1.1rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--text-main);
     line-height: 1.4;
     margin-bottom: 0.5rem;
     display: -webkit-box;
@@ -124,7 +122,7 @@
 
   .description {
     font-size: 0.875rem;
-    color: #64748b;
+    color: var(--text-muted);
     margin: 0 0 1rem 0;
     line-height: 1.5;
     display: -webkit-box;
@@ -137,7 +135,7 @@
   .price {
     font-size: 1.3rem;
     font-weight: 800;
-    color: #1976d2;
+    color: var(--primary-color);
     margin: 0 0 0.75rem 0;
   }
 }
@@ -176,10 +174,10 @@
 
   .qty-select {
     padding: 0.5rem;
-    border: 1px solid #cbd5e1;
+    border: var(--card-border);
     border-radius: 6px;
-    background-color: #f8fafc;
-    color: #1e293b;
+    background-color: var(--input-bg);
+    color: var(--text-main);
     font-weight: 500;
     font-size: 0.875rem;
     cursor: pointer;
@@ -187,7 +185,7 @@
 
     &:focus {
       outline: none;
-      border-color: #1976d2;
+      border-color: var(--primary-color);
     }
   }
 
@@ -202,12 +200,12 @@
       height: 150px;
       overflow-y: auto;
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      background-color: white;
+      background-color: var(--card-bg) !important; backdrop-filter: blur(12px); border: var(--card-border); color: var(--text-main);
     }
   }
 
   .btn-quick-add {
-    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
     color: white;
     border: none;
     padding: 0.5rem 1rem;
@@ -218,7 +216,7 @@
     transition: all 0.2s;
 
     &:hover {
-      background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+      background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary-hover-dark) 100%);
       box-shadow: 0 4px 8px rgba(25, 118, 210, 0.15);
     }
   }
@@ -227,19 +225,19 @@
 .view-details {
   font-size: 0.9rem;
   font-weight: 700;
-  color: #64748b;
+  color: var(--text-muted);
   margin-top: auto;
   transition: color 0.2s;
 
   &:hover {
-    color: #1976d2;
+    color: var(--primary-color);
   }
 }
 
 .no-products {
   text-align: center;
   padding: 4rem 2rem;
-  color: #64748b;
+  color: var(--text-muted);
   font-weight: 500;
 }
 
@@ -251,9 +249,9 @@
   margin-top: 3rem;
 
   button {
-    background: #ffffff;
-    border: 1px solid #cbd5e1;
-    color: #475569;
+    background: var(--card-bg) !important; backdrop-filter: blur(12px); border: var(--card-border); color: var(--text-main);
+    border: var(--card-border);
+    color: var(--text-muted);
     padding: 0.6rem 1.25rem;
     border-radius: 8px;
     cursor: pointer;
@@ -262,9 +260,9 @@
     transition: all 0.2s;
 
     &:hover:not(:disabled) {
-      background: #f8fafc;
-      border-color: #94a3b8;
-      color: #1e293b;
+      background-color: var(--input-bg);
+      border-color: var(--text-muted);
+      color: var(--text-main);
     }
 
     &:disabled {
@@ -275,6 +273,6 @@
 
   span {
     font-size: 0.95rem;
-    color: #64748b;
+    color: var(--text-muted);
   }
 }

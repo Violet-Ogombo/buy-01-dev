@@ -10,7 +10,7 @@
   justify-content: space-between;
   margin-bottom: 1.5rem;
   padding: 1rem 1.25rem;
-  background: #ffffff;
+  background: var(--card-bg) !important; backdrop-filter: blur(12px); border: var(--card-border); color: var(--text-main);
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
 }
@@ -34,7 +34,7 @@
 
 .seller-role {
   font-size: 0.85rem;
-  color: #666;
+  color: var(--text-muted);
 }
 
 .seller-nav {
@@ -44,12 +44,12 @@
 
 .seller-nav a {
   text-decoration: none;
-  color: #1976d2;
+  color: var(--primary-color);
   font-weight: 500;
 }
 
 .seller-nav a.active {
-  border-bottom: 2px solid #1976d2;
+  border-bottom: 2px solid var(--primary-color);
 }
 
 .seller-logout {
