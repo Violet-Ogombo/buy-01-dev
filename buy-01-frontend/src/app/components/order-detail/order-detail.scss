@@ -152,7 +152,7 @@
   display: flex;
   justify-content: space-between;
   position: relative;
-  align-items: center;
+  align-items: flex-start;
   max-width: 800px;
   margin: 0 auto;
   padding: 1rem 0;
@@ -160,12 +160,11 @@
   &::before {
     content: '';
     position: absolute;
-    top: 50%;
-    left: 40px;
-    right: 40px;
+    top: 24px;
+    left: 12.5%;
+    right: 12.5%;
     height: 4px;
     background-color: rgba(255, 255, 255, 0.08);
-    transform: translateY(-50%);
     z-index: 1;
   }
 }
