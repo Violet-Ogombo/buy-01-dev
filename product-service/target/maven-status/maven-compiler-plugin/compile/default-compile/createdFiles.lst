@@ -30,7 +30,6 @@ com/example/product/controller/SellerProfileController.class
 com/example/product/service/WishlistService.class
 com/example/product/dto/CartDTO.class
 com/example/product/service/OrderService.class
-com/example/product/config/DataInitializer.class
 com/example/product/model/OrderItem.class
 com/example/product/model/OrderStatus.class
 com/example/product/controller/CartController.class

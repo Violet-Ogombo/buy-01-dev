@@ -20,17 +20,8 @@ public class User {
     
     private Role role;
     
-    @Field("phone")
-    private String phone;
-    
-    @Field("address")
-    private String address;
-    
     @Field("total_spent")
     private BigDecimal totalSpent;
-    
-    @Field("is_seller")
-    private boolean isSeller;
     
     @Field("seller_revenue")
     private BigDecimal sellerRevenue;
@@ -45,7 +36,6 @@ public class User {
     public User() {
         this.totalSpent = BigDecimal.ZERO;
         this.sellerRevenue = BigDecimal.ZERO;
-        this.isSeller = false;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -66,17 +56,8 @@ public class User {
     public Role getRole() { return role; }
     public void setRole(Role role) { this.role = role; }
     
-    public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
-    
-    public String getAddress() { return address; }
-    public void setAddress(String address) { this.address = address; }
-    
     public BigDecimal getTotalSpent() { return totalSpent; }
     public void setTotalSpent(BigDecimal totalSpent) { this.totalSpent = totalSpent; }
-    
-    public boolean isSeller() { return isSeller; }
-    public void setIsSeller(boolean seller) { isSeller = seller; }
     
     public BigDecimal getSellerRevenue() { return sellerRevenue; }
     public void setSellerRevenue(BigDecimal sellerRevenue) { this.sellerRevenue = sellerRevenue; }

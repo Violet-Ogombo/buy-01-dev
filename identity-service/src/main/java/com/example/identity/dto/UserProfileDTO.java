@@ -7,27 +7,20 @@ public class UserProfileDTO {
     private String userId;
     private String username;
     private String email;
-    private String phone;
-    private String address;
     private BigDecimal totalSpent;
-    private boolean isSeller;
     private BigDecimal sellerRevenue;
     private List<MostBoughtProductDTO> mostBoughtProducts;
     private int totalOrders;
 
     public UserProfileDTO() {}
 
-    public UserProfileDTO(String userId, String username, String email, String phone, 
-                          String address, BigDecimal totalSpent, boolean isSeller, 
-                          BigDecimal sellerRevenue, List<MostBoughtProductDTO> mostBoughtProducts,
-                          int totalOrders) {
+    public UserProfileDTO(String userId, String username, String email, 
+                          BigDecimal totalSpent, BigDecimal sellerRevenue, 
+                          List<MostBoughtProductDTO> mostBoughtProducts, int totalOrders) {
         this.userId = userId;
         this.username = username;
         this.email = email;
-        this.phone = phone;
-        this.address = address;
         this.totalSpent = totalSpent;
-        this.isSeller = isSeller;
         this.sellerRevenue = sellerRevenue;
         this.mostBoughtProducts = mostBoughtProducts;
         this.totalOrders = totalOrders;
@@ -43,17 +36,8 @@ public class UserProfileDTO {
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
-    public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
-
-    public String getAddress() { return address; }
-    public void setAddress(String address) { this.address = address; }
-
     public BigDecimal getTotalSpent() { return totalSpent; }
     public void setTotalSpent(BigDecimal totalSpent) { this.totalSpent = totalSpent; }
-
-    public boolean isSeller() { return isSeller; }
-    public void setIsSeller(boolean seller) { isSeller = seller; }
 
     public BigDecimal getSellerRevenue() { return sellerRevenue; }
     public void setSellerRevenue(BigDecimal sellerRevenue) { this.sellerRevenue = sellerRevenue; }

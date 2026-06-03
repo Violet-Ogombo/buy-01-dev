@@ -27,7 +27,6 @@
 /Users/aung.min/Desktop/github/buy-01-dev/product-service/src/main/java/com/example/product/dto/CartDTO.java
 /Users/aung.min/Desktop/github/buy-01-dev/product-service/src/main/java/com/example/product/controller/SellerProfileController.java
 /Users/aung.min/Desktop/github/buy-01-dev/product-service/src/main/java/com/example/product/repository/WishlistRepository.java
-/Users/aung.min/Desktop/github/buy-01-dev/product-service/src/main/java/com/example/product/config/DataInitializer.java
 /Users/aung.min/Desktop/github/buy-01-dev/product-service/src/main/java/com/example/product/controller/WishlistController.java
 /Users/aung.min/Desktop/github/buy-01-dev/product-service/src/main/java/com/example/product/model/Order.java
 /Users/aung.min/Desktop/github/buy-01-dev/product-service/src/main/java/com/example/product/model/AddImagesRequest.java

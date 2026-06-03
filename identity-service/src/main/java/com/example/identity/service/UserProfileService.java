@@ -26,10 +26,7 @@ public class UserProfileService {
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
-                user.getPhone(),
-                user.getAddress(),
                 user.getTotalSpent(),
-                user.isSeller(),
                 user.getSellerRevenue(),
                 Collections.emptyList(),  // Buyer analytics come from product-service
                 0  // Total orders come from product-service
