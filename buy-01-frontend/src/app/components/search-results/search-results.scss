@@ -17,7 +17,7 @@
     color: var(--text-main);
     margin: 0;
     letter-spacing: -0.025em;
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    background: linear-gradient(135deg, #ffffff 0%, var(--primary-color) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
@@ -149,7 +149,7 @@
 .image-wrapper {
   position: relative;
   height: 180px;
-  background: #fafbfd;
+  background: rgba(15, 10, 36, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;

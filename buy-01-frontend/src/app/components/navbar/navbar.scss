@@ -49,15 +49,18 @@
     }
 
     input {
-      border: none;
-      background: transparent;
-      color: white;
+      border: none !important;
+      background: transparent !important;
+      color: white !important;
       font-size: 0.9rem;
       padding: 0.4rem;
       width: 100%;
+      box-shadow: none !important;
 
       &:focus {
-        outline: none;
+        outline: none !important;
+        border: none !important;
+        box-shadow: none !important;
       }
 
       &::placeholder {
