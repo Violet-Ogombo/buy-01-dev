@@ -165,13 +165,13 @@
           <span class="status-free">FREE</span>
         </div>
         <div class="summary-row">
-          <span>Estimated Tax</span>
-          <span>$0.00</span>
+          <span>Estimated Tax (25%)</span>
+          <span>${{ (cart.totalPrice * 0.25) | number:'1.2-2' }}</span>
         </div>
         <hr />
         <div class="summary-row grand-total">
           <span>Total</span>
-          <span>${{ cart.totalPrice | number:'1.2-2' }}</span>
+          <span>${{ (cart.totalPrice * 1.25) | number:'1.2-2' }}</span>
         </div>
       </div>
     </div>

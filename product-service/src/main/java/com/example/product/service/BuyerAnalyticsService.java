@@ -49,9 +49,10 @@ public class BuyerAnalyticsService {
                     stats.totalQuantity += item.getQuantity();
                     stats.totalSpent = stats.totalSpent.add(item.getTotalPrice());
                     stats.purchaseCount += 1;
-                    
-                    totalSpent = totalSpent.add(item.getTotalPrice());
                 }
+            }
+            if (order.getTotalAmount() != null) {
+                totalSpent = totalSpent.add(order.getTotalAmount());
             }
         }
 

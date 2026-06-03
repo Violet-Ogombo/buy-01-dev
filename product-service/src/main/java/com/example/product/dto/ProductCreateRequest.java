@@ -3,6 +3,7 @@ package com.example.product.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import java.util.List;
 
 /**
  * DTO for creating/updating products.
@@ -25,6 +26,8 @@ public class ProductCreateRequest {
     private Integer quantity;
 
     private String category;
+
+    private List<String> imageUrls;
 
     public ProductCreateRequest() {
     }
@@ -82,5 +85,13 @@ public class ProductCreateRequest {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public List<String> getImageUrls() {
+        return imageUrls;
+    }
+
+    public void setImageUrls(List<String> imageUrls) {
+        this.imageUrls = imageUrls;
     }
 }

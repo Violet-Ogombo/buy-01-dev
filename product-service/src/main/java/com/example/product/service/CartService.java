@@ -173,7 +173,9 @@ public class CartService {
         }
 
         order.setItems(orderItems);
-        order.setTotalAmount(totalPrice);
+        BigDecimal tax = totalPrice.multiply(new BigDecimal("0.25"));
+        BigDecimal grandTotal = totalPrice.add(tax);
+        order.setTotalAmount(grandTotal);
 
         // Save order
         Order savedOrder = orderRepository.save(order);

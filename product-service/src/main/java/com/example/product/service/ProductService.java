@@ -70,7 +70,9 @@ public class ProductService {
 
         product.setSalesCount(0);
         product.setRevenue(BigDecimal.ZERO);
-        if (product.getImageUrls() == null) {
+        if (request.getImageUrls() != null) {
+            product.setImageUrls(request.getImageUrls());
+        } else if (product.getImageUrls() == null) {
             product.setImageUrls(new ArrayList<>());
         }
         LocalDateTime now = LocalDateTime.now();
@@ -94,6 +96,9 @@ public class ProductService {
             existingProduct.setCategory(request.getCategory());
             existingProduct.setPrice(request.getPrice());
             existingProduct.setQuantity(request.getQuantity());
+            if (request.getImageUrls() != null) {
+                existingProduct.setImageUrls(request.getImageUrls());
+            }
             existingProduct.setUpdatedAt(LocalDateTime.now());
             Product updated = productRepository.save(existingProduct);
             auditService.logWriteOperation(userId, "UPDATE", ENTITY_NAME, id,

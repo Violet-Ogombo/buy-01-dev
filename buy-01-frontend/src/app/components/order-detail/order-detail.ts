@@ -119,4 +119,13 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     const currentIdx = this.getStatusStepIndex(this.order.status);
     return stepIndex <= currentIdx;
   }
+
+  get orderSubtotal(): number {
+    if (!this.order) return 0;
+    return this.order.items.reduce((sum, item) => sum + item.subtotal, 0);
+  }
+
+  get orderTax(): number {
+    return this.orderSubtotal * 0.25;
+  }
 }
