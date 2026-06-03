@@ -6,3 +6,18 @@ export interface User {
   token: string;
   avatar?: string;
 }
+
+export interface MostBoughtProduct {
+  productId: string;
+  productName: string;
+  totalQuantity: number;
+  totalSpent: number;
+  purchaseCount: number;
+}
+
+export interface BuyerAnalytics {
+  userId: string;
+  totalOrders: number;
+  totalSpent: number;
+  mostBoughtProducts: MostBoughtProduct[];
+}

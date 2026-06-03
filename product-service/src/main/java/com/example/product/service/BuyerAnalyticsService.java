@@ -12,13 +12,18 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.example.product.repository.ProductRepository;
+import com.example.product.model.Product;
+
 @Service
 public class BuyerAnalyticsService {
 
     private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
 
-    public BuyerAnalyticsService(OrderRepository orderRepository) {
+    public BuyerAnalyticsService(OrderRepository orderRepository, ProductRepository productRepository) {
         this.orderRepository = orderRepository;
+        this.productRepository = productRepository;
     }
 
     public BuyerAnalyticsDTO getBuyerAnalytics(String userId) {
@@ -55,13 +60,18 @@ public class BuyerAnalyticsService {
                 .stream()
                 .sorted((a, b) -> Integer.compare(b.getValue().totalQuantity, a.getValue().totalQuantity))
                 .limit(5)
-                .map(entry -> new BuyerAnalyticsDTO.MostBoughtProductDTO(
-                        entry.getKey(),
-                        "Product " + entry.getKey().substring(0, Math.min(5, entry.getKey().length())),
-                        entry.getValue().totalQuantity,
-                        entry.getValue().totalSpent,
-                        entry.getValue().purchaseCount
-                ))
+                .map(entry -> {
+                    String name = productRepository.findById(entry.getKey())
+                            .map(Product::getName)
+                            .orElse("Product " + entry.getKey().substring(0, Math.min(5, entry.getKey().length())));
+                    return new BuyerAnalyticsDTO.MostBoughtProductDTO(
+                            entry.getKey(),
+                            name,
+                            entry.getValue().totalQuantity,
+                            entry.getValue().totalSpent,
+                            entry.getValue().purchaseCount
+                    );
+                })
                 .collect(Collectors.toList());
 
         return new BuyerAnalyticsDTO(userId, orders.size(), totalSpent, mostBoughtProducts);
