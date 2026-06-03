@@ -75,13 +75,14 @@
     </div>
 
     <div class="form-group">
-      <label for="images">Product Images</label>
+      <label for="images" class="btn-file-upload">📁 Choose Images</label>
       <input 
         id="images" 
         type="file" 
         accept="image/*"
         multiple
         (change)="onImageUpload($event)"
+        class="file-input-hidden"
       />
       <small>Max 2MB per image, images only. You can add images now and they'll upload when you save.</small>
 

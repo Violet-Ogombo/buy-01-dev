@@ -67,6 +67,51 @@
         color: #d32f2f;
         font-size: 0.875rem;
       }
+
+      .file-input-hidden {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+      }
+
+      .btn-file-upload {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.65rem 1.25rem;
+        background: var(--primary-gradient);
+        color: #ffffff;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+        box-shadow: 0 4px 12px rgba(128, 32, 96, 0.25);
+        margin-bottom: 0.5rem;
+
+        &:hover {
+          background: var(--primary-gradient-hover);
+          transform: translateY(-1px);
+          box-shadow: 0 6px 16px rgba(128, 32, 96, 0.35);
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
+      }
+
+      small {
+        display: block;
+        margin-top: 0.25rem;
+        color: var(--text-muted);
+        font-size: 0.8rem;
+      }
     }
 
     .form-row {
@@ -77,15 +122,17 @@
 
     .drop-zone {
       margin-top: 0.5rem;
-      padding: 1rem;
-      border: 2px dashed #ccc;
-      border-radius: 6px;
+      padding: 1.25rem;
+      border: 2px dashed rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
       text-align: center;
       color: var(--text-muted);
+      transition: all 0.2s;
 
       &.drag-over {
         border-color: var(--primary-color);
-        background: #e3f2fd;
+        background: rgba(0, 203, 212, 0.08);
+        color: var(--primary-color);
       }
     }
 
