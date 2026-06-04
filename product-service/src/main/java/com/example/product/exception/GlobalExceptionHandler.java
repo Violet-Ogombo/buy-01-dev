@@ -13,22 +13,25 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final String ERROR_KEY = "error";
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String, String>> handleResourceNotFound(ResourceNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("error", ex.getMessage()));
+                .body(Map.of(ERROR_KEY, ex.getMessage() != null ? ex.getMessage() : ""));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, String>> handleAccessDenied(AccessDeniedException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(Map.of("error", ex.getMessage()));
+                .body(Map.of(ERROR_KEY, ex.getMessage() != null ? ex.getMessage() : ""));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException ex) {
+        String msg = ex.getMessage() != null ? ex.getMessage() : "";
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("message", ex.getMessage(), "error", ex.getMessage()));
+                .body(Map.of("message", msg, ERROR_KEY, msg));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

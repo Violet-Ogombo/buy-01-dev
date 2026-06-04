@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 @Service
 public class CartService {
 
+    private static final String CART_NOT_FOUND_PREFIX = "Cart not found for user: ";
+
     private final ShoppingCartRepository cartRepository;
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
@@ -81,7 +83,7 @@ public class CartService {
         }
 
         ShoppingCart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cart not found for user: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException(CART_NOT_FOUND_PREFIX + userId));
 
         CartItem item = cart.getItems().stream()
                 .filter(i -> i.getProductId().equals(itemId))
@@ -103,7 +105,7 @@ public class CartService {
 
     public CartDTO removeCartItem(String userId, String itemId) {
         ShoppingCart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cart not found for user: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException(CART_NOT_FOUND_PREFIX + userId));
 
         cart.getItems().removeIf(item -> item.getProductId().equals(itemId));
         recalculateCartTotal(cart);
@@ -113,7 +115,7 @@ public class CartService {
 
     public CartDTO clearCart(String userId) {
         ShoppingCart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cart not found for user: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException(CART_NOT_FOUND_PREFIX + userId));
         cart.getItems().clear();
         cart.setTotalAmount(BigDecimal.ZERO);
         cartRepository.save(cart);
@@ -122,7 +124,7 @@ public class CartService {
 
     public OrderDTO checkoutCart(String userId, CheckoutRequest request) {
         ShoppingCart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cart not found for user: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException(CART_NOT_FOUND_PREFIX + userId));
 
         if (cart.getItems().isEmpty()) {
             throw new IllegalArgumentException("Cannot checkout with empty cart");

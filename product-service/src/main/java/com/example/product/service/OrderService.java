@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 @Service
 public class OrderService {
 
+    private static final String ORDER_NOT_FOUND_PREFIX = "Order not found with id: ";
+
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
 
@@ -30,7 +32,7 @@ public class OrderService {
 
     public OrderDTO getOrderById(String orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+                .orElseThrow(() -> new ResourceNotFoundException(ORDER_NOT_FOUND_PREFIX + orderId));
         return convertToDTO(order);
     }
 
@@ -51,7 +53,7 @@ public class OrderService {
 
     public OrderDTO updateOrderStatus(String orderId, OrderStatus newStatus) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+                .orElseThrow(() -> new ResourceNotFoundException(ORDER_NOT_FOUND_PREFIX + orderId));
 
         validateStatusTransition(order.getStatus(), newStatus);
         order.setStatus(newStatus);
@@ -62,7 +64,7 @@ public class OrderService {
 
     public void cancelOrder(String orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+                .orElseThrow(() -> new ResourceNotFoundException(ORDER_NOT_FOUND_PREFIX + orderId));
 
         if (order.getStatus() == OrderStatus.DELIVERED || order.getStatus() == OrderStatus.CANCELLED) {
             throw new IllegalArgumentException("Cannot cancel order with status: " + order.getStatus());
@@ -75,7 +77,7 @@ public class OrderService {
 
     public OrderDTO redoOrder(String orderId) {
         Order originalOrder = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+                .orElseThrow(() -> new ResourceNotFoundException(ORDER_NOT_FOUND_PREFIX + orderId));
 
         // Create new order with same items
         Order newOrder = new Order();

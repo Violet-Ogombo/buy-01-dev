@@ -59,25 +59,10 @@ public class SearchService {
 
         return products.stream()
                 .filter(product -> {
-                    // Keyword filter
                     if (!lowerKeyword.isEmpty() && !matchesKeyword(product, lowerKeyword)) {
                         return false;
                     }
-                    // Category filter
-                    if (category != null && !category.isEmpty() && !"all".equalsIgnoreCase(category)) {
-                        if (product.getCategory() == null || !category.equalsIgnoreCase(product.getCategory())) {
-                            return false;
-                        }
-                    }
-                    // Price range filter
-                    BigDecimal price = BigDecimal.valueOf(product.getPrice());
-                    if (minPrice != null && price.compareTo(minPrice) < 0) {
-                        return false;
-                    }
-                    if (maxPrice != null && price.compareTo(maxPrice) > 0) {
-                        return false;
-                    }
-                    return true;
+                    return matchesCategory(product, category) && matchesPriceRange(product, minPrice, maxPrice);
                 })
                 .sorted((p1, p2) -> Long.compare(p2.getSalesCount(), p1.getSalesCount()))
                 .map(this::convertToSearchDTO)
@@ -88,44 +73,50 @@ public class SearchService {
         List<Product> products = productRepository.findAll();
 
         List<ProductSearchDTO> filteredList = products.stream()
-                .filter(product -> {
-                    // Category filter
-                    if (category != null && !category.isEmpty() && !"all".equalsIgnoreCase(category)) {
-                        if (product.getCategory() == null || !category.equalsIgnoreCase(product.getCategory())) {
-                            return false;
-                        }
-                    }
-                    // Price range filter
-                    BigDecimal price = BigDecimal.valueOf(product.getPrice());
-                    if (minPrice != null && price.compareTo(minPrice) < 0) {
-                        return false;
-                    }
-                    if (maxPrice != null && price.compareTo(maxPrice) > 0) {
-                        return false;
-                    }
-                    return true;
-                })
+                .filter(product -> matchesCategory(product, category) && matchesPriceRange(product, minPrice, maxPrice))
                 .map(this::convertToSearchDTO)
                 .collect(Collectors.toList());
 
+        return sortProducts(filteredList, sortBy);
+    }
+
+    private boolean matchesCategory(Product product, String category) {
+        if (category == null || category.isEmpty() || "all".equalsIgnoreCase(category)) {
+            return true;
+        }
+        return product.getCategory() != null && category.equalsIgnoreCase(product.getCategory());
+    }
+
+    private boolean matchesPriceRange(Product product, BigDecimal minPrice, BigDecimal maxPrice) {
+        BigDecimal price = BigDecimal.valueOf(product.getPrice());
+        if (minPrice != null && price.compareTo(minPrice) < 0) {
+            return false;
+        }
+        if (maxPrice != null && price.compareTo(maxPrice) > 0) {
+            return false;
+        }
+        return true;
+    }
+
+    private List<ProductSearchDTO> sortProducts(List<ProductSearchDTO> products, String sortBy) {
         switch (sortBy != null ? sortBy.toLowerCase() : "popularity") {
             case "price_asc":
-                return filteredList.stream()
+                return products.stream()
                         .sorted((p1, p2) -> p1.getPrice().compareTo(p2.getPrice()))
                         .collect(Collectors.toList());
             case "price_desc":
-                return filteredList.stream()
+                return products.stream()
                         .sorted((p1, p2) -> p2.getPrice().compareTo(p1.getPrice()))
                         .collect(Collectors.toList());
             case "name":
-                return filteredList.stream()
+                return products.stream()
                         .sorted((p1, p2) -> p1.getName().compareTo(p2.getName()))
                         .collect(Collectors.toList());
             case "newest":
-                return filteredList;
+                return products;
             case "popularity":
             default:
-                return filteredList.stream()
+                return products.stream()
                         .sorted((p1, p2) -> Long.compare(p2.getSalesCount(), p1.getSalesCount()))
                         .collect(Collectors.toList());
         }
