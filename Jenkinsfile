@@ -3,7 +3,6 @@ pipeline {
 
     options {
         timeout(time: 45, unit: 'MINUTES')
-        buildDiscarder(logRotator(numToKeepStr: '10'))
         timestamps()
         // SafeZone: SonarQube security scanning enabled
     }

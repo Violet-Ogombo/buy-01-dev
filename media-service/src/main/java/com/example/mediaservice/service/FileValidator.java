@@ -38,14 +38,13 @@ public class FileValidator {
 
     private boolean isAllowedImageHeader(byte[] header, int length) {
         // JPEG: FF D8 FF
-        if (length >= 3 &&
+        boolean isJpeg = length >= 3 &&
                 (header[0] & 0xFF) == 0xFF &&
                 (header[1] & 0xFF) == 0xD8 &&
-                (header[2] & 0xFF) == 0xFF) {
-            return true;
-        }
+                (header[2] & 0xFF) == 0xFF;
+
         // PNG: 89 50 4E 47 0D 0A 1A 0A
-        if (length >= 8 &&
+        boolean isPng = length >= 8 &&
                 (header[0] & 0xFF) == 0x89 &&
                 header[1] == 0x50 &&
                 header[2] == 0x4E &&
@@ -53,21 +52,19 @@ public class FileValidator {
                 header[4] == 0x0D &&
                 header[5] == 0x0A &&
                 header[6] == 0x1A &&
-                header[7] == 0x0A) {
-            return true;
-        }
+                header[7] == 0x0A;
+
         // GIF: "GIF87a" or "GIF89a"
-        if (length >= 6 &&
+        boolean isGif = length >= 6 &&
                 header[0] == 'G' &&
                 header[1] == 'I' &&
                 header[2] == 'F' &&
                 header[3] == '8' &&
                 (header[4] == '7' || header[4] == '9') &&
-                header[5] == 'a') {
-            return true;
-        }
+                header[5] == 'a';
+
         // WEBP: "RIFF....WEBP"
-        if (length >= 12 &&
+        boolean isWebp = length >= 12 &&
                 header[0] == 'R' &&
                 header[1] == 'I' &&
                 header[2] == 'F' &&
@@ -75,10 +72,9 @@ public class FileValidator {
                 header[8] == 'W' &&
                 header[9] == 'E' &&
                 header[10] == 'B' &&
-                header[11] == 'P') {
-            return true;
-        }
-        return false;
+                header[11] == 'P';
+
+        return isJpeg || isPng || isGif || isWebp;
     }
 
     public String sanitizeAndGenerateNewFilename(String originalFilename) {
