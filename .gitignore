@@ -137,10 +137,11 @@ secrets.json
 config.secret.*
 .aws/
 .gcloud/
-identity-service/target/classes/com/example/identity/IdentityServiceApplication.class
+
 
 # Compiled classes
 *.class
 target/
 build/
 .gradle/
+

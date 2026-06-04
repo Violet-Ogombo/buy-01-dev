@@ -50,6 +50,16 @@ spring:
               args:
                 name: X-Forwarded-Proto
                 value: http
+
+        - id: product-service-v1
+          uri: lb://product-service
+          predicates:
+            - Path=/api/v1/**
+          filters:
+            - name: AddRequestHeader
+              args:
+                name: X-Forwarded-Proto
+                value: http
         
         - id: media-service
           uri: lb://media-service

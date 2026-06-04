@@ -3,6 +3,10 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ProductService } from '../../services/product.service';
+import { CartService } from '../../services/cart.service';
+import { WishlistService } from '../../services/wishlist.service';
+import { AuthService } from '../../services/auth.service';
+import { ToastService } from '../../services/toast.service';
 import { Product } from '../../models/product.model';
 import { Subject } from 'rxjs';
 import { takeUntil, switchMap, tap, filter } from 'rxjs/operators';
@@ -22,12 +26,19 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
 
   selectedImageUrl: string | null = null;
   showImageFullscreen = false;
+  
+  // Selected Quantity
+  selectedQuantity = 1;
 
   private destroy$ = new Subject<void>();
 
   constructor(
     private route: ActivatedRoute,
     private productService: ProductService,
+    private cartService: CartService,
+    private wishlistService: WishlistService,
+    private authService: AuthService,
+    private toast: ToastService,
     private cdr: ChangeDetectorRef,
   ) {}
 
@@ -50,7 +61,6 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
             this.loading = false;
             console.error('[ProductDetail] No product ID provided');
           } else {
-            // Set loading state BEFORE the request
             this.loading = true;
             this.error = null;
             this.notFound = false;
@@ -73,6 +83,11 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
           this.loading = false;
           this.error = null;
           this.cdr.markForCheck();
+
+          // Refresh wishlist so heart is accurate
+          if (this.authService.isAuthenticated()) {
+            this.wishlistService.getUserWishlist().subscribe();
+          }
         },
         error: (err: HttpErrorResponse) => {
           console.error('[ProductDetail] Error loading product:', err);
@@ -133,6 +148,59 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       });
   }
 
+  // Quick Action triggers
+  addToCart() {
+    if (!this.product || !this.product.id) return;
+    if (!this.authService.isAuthenticated()) {
+      this.toast.info('Please log in to add items to your cart.');
+      return;
+    }
+
+    this.cartService.addToCart(this.product.id, this.selectedQuantity)
+      .subscribe({
+        next: () => {
+          this.toast.success(`${this.product?.name} added to cart.`);
+        },
+        error: () => {
+          this.toast.error('Failed to add product to cart.');
+        }
+      });
+  }
+
+  toggleWishlist() {
+    if (!this.product || !this.product.id) return;
+    if (!this.authService.isAuthenticated()) {
+      this.toast.info('Please log in to manage your wishlist.');
+      return;
+    }
+
+    const id = this.product.id;
+    if (this.isInWishlist(id)) {
+      this.wishlistService.removeFromWishlist(id).subscribe({
+        next: () => this.toast.success('Removed from Wishlist'),
+        error: () => this.toast.error('Failed to remove')
+      });
+    } else {
+      this.wishlistService.addToWishlist(id).subscribe({
+        next: () => this.toast.success('Saved to Wishlist'),
+        error: () => this.toast.error('Failed to save')
+      });
+    }
+  }
+
+  isInWishlist(productId: string): boolean {
+    return this.wishlistService.isInWishlist(productId);
+  }
+
+  isUserLoggedIn(): boolean {
+    return this.authService.isAuthenticated();
+  }
+
+  selectQuantity(event: Event) {
+    const select = event.target as HTMLSelectElement;
+    this.selectedQuantity = parseInt(select.value, 10) || 1;
+  }
+
   selectImage(url: string): void {
     this.selectedImageUrl = url;
   }
@@ -150,6 +218,11 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     const img = event.target as HTMLImageElement;
     img.style.opacity = '0.5';
     img.alt = 'Image not available';
+  }
+
+  getQtyRange(quantity: number): number[] {
+    const max = Math.max(1, Math.min(quantity, 100));
+    return Array.from({ length: max }, (_, i) => i + 1);
   }
 
   trackByImageUrl(index: number, url: string): string {

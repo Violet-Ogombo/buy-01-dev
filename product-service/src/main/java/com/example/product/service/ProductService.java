@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.math.BigDecimal;
 
 @Service
 public class ProductService {
@@ -39,7 +40,6 @@ public class ProductService {
     @Value("${media.service.url:http://localhost:8083}")
     private String mediaServiceUrl;
 
-    @Autowired
     public ProductService(ProductRepository productRepository,
                           KafkaTemplate<String, String> kafkaTemplate,
                           RestTemplate restTemplate,
@@ -63,10 +63,16 @@ public class ProductService {
         Product product = new Product();
         product.setName(request.getName());
         product.setDescription(request.getDescription());
+        product.setCategory(request.getCategory());
         product.setPrice(request.getPrice());
         product.setQuantity(request.getQuantity());
         product.setUserId(userId);
-        if (product.getImageUrls() == null) {
+
+        product.setSalesCount(0);
+        product.setRevenue(BigDecimal.ZERO);
+        if (request.getImageUrls() != null) {
+            product.setImageUrls(request.getImageUrls());
+        } else if (product.getImageUrls() == null) {
             product.setImageUrls(new ArrayList<>());
         }
         LocalDateTime now = LocalDateTime.now();
@@ -87,8 +93,12 @@ public class ProductService {
             }
             existingProduct.setName(request.getName());
             existingProduct.setDescription(request.getDescription());
+            existingProduct.setCategory(request.getCategory());
             existingProduct.setPrice(request.getPrice());
             existingProduct.setQuantity(request.getQuantity());
+            if (request.getImageUrls() != null) {
+                existingProduct.setImageUrls(request.getImageUrls());
+            }
             existingProduct.setUpdatedAt(LocalDateTime.now());
             Product updated = productRepository.save(existingProduct);
             auditService.logWriteOperation(userId, "UPDATE", ENTITY_NAME, id,

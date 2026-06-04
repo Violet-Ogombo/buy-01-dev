@@ -40,6 +40,7 @@ export class ProductFormComponent implements OnInit {
     this.productForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
       description: ['', [Validators.maxLength(500)]],
+      category: ['', [Validators.required]],
       price: [0, [Validators.required, Validators.min(0.01)]],
       quantity: [0, [Validators.required, Validators.min(0)]]
     });
@@ -60,6 +61,7 @@ export class ProductFormComponent implements OnInit {
         this.productForm.patchValue({
           name: product.name,
           description: product.description,
+          category: product.category || '',
           price: product.price,
           quantity: product.quantity
         });

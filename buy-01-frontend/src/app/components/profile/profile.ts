@@ -4,7 +4,8 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractContro
 import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
-import { User } from '../../models/user.model';
+import { User, BuyerAnalytics } from '../../models/user.model';
+import { SellerProfile } from '../../models/seller-profile.model';
 
 @Component({
   selector: 'app-profile',
@@ -22,6 +23,8 @@ export class ProfileComponent implements OnInit {
   error: string | null = null;
   success: string | null = null;
   isEditMode = false;
+  buyerAnalytics: BuyerAnalytics | null = null;
+  sellerProfile: SellerProfile | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -54,6 +57,31 @@ export class ProfileComponent implements OnInit {
           name: user.name,
           email: user.email
         });
+
+        // Load buyer analytics
+        this.userService.getBuyerAnalytics(user.id).subscribe({
+          next: (analytics) => {
+            this.buyerAnalytics = analytics;
+            this.cdr.markForCheck();
+          },
+          error: (err) => {
+            console.error('Failed to load buyer analytics', err);
+          }
+        });
+
+        // Load seller profile stats if role is SELLER
+        if (user.role === 'SELLER') {
+          this.userService.getSellerProfile(user.id).subscribe({
+            next: (sellerProf) => {
+              this.sellerProfile = sellerProf;
+              this.cdr.markForCheck();
+            },
+            error: (err) => {
+              console.error('Failed to load seller profile', err);
+            }
+          });
+        }
+
         this.loading = false;
         this.isEditMode = false;
         this.cdr.markForCheck();

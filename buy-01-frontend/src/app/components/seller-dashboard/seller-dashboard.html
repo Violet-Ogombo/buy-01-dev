@@ -15,20 +15,62 @@
   </div>
 
   <div *ngIf="!loading && !error" class="products-table">
-    <table *ngIf="products.length > 0">
-      <thead>
-        <tr>
-          <th>Image</th>
-          <th>Name</th>
-          <th>Description</th>
-          <th>Price</th>
-          <th>Quantity</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let product of paginatedProducts; trackBy: trackByProductId">
-          <td>
+    <!-- Desktop Table View -->
+    <div class="table-responsive-desktop" *ngIf="products.length > 0">
+      <table>
+        <thead>
+          <tr>
+            <th>Image</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Price</th>
+            <th>Available Qty</th>
+            <th>Sold</th>
+            <th>Total Earnings</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let product of paginatedProducts; trackBy: trackByProductId"
+              [class.out-of-stock]="(product.quantity || 0) <= 0">
+            <td>
+              <img
+                *ngIf="product.imageUrls && product.imageUrls.length"
+                [src]="product.imageUrls[0]"
+                alt="Thumbnail"
+                class="thumb"
+                (error)="onImageLoadError($event)"
+              />
+            </td>
+            <td>{{ product.name }}</td>
+            <td class="description">{{ product.description }}</td>
+            <td class="price">${{ product.price }}</td>
+            <td>
+              <div class="qty-status-container">
+                <span class="qty-val">{{ product.quantity }}</span>
+                <span *ngIf="(product.quantity || 0) <= 0" class="badge badge-danger">Out of Stock</span>
+                <span *ngIf="(product.quantity || 0) > 0" class="badge badge-success">Active</span>
+              </div>
+            </td>
+            <td class="sales-count">{{ product.salesCount || 0 }} units</td>
+            <td class="earnings">${{ (product.revenue || 0) | number:'1.2-2' }}</td>
+            <td class="actions">
+              <button class="btn-edit" (click)="editProduct(product.id!)">Edit</button>
+              <button class="btn-delete" (click)="deleteProduct(product.id!)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Mobile Stacked Card View -->
+    <div class="products-cards-mobile" *ngIf="products.length > 0">
+      <div *ngFor="let product of paginatedProducts; trackBy: trackByProductId"
+           class="product-mobile-card"
+           [class.out-of-stock]="(product.quantity || 0) <= 0">
+        
+        <div class="card-header-row">
+          <div class="product-info-wrapper">
             <img
               *ngIf="product.imageUrls && product.imageUrls.length"
               [src]="product.imageUrls[0]"
@@ -36,22 +78,93 @@
               class="thumb"
               (error)="onImageLoadError($event)"
             />
-          </td>
-          <td>{{ product.name }}</td>
-          <td class="description">{{ product.description }}</td>
-          <td class="price">${{ product.price }}</td>
-          <td>{{ product.quantity }}</td>
-          <td class="actions">
-            <button class="btn-edit" (click)="editProduct(product.id!)">Edit</button>
-            <button class="btn-delete" (click)="deleteProduct(product.id!)">Delete</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+            <div class="avatar-placeholder" *ngIf="!product.imageUrls || !product.imageUrls.length">📦</div>
+            <div class="name-desc">
+              <h3 class="product-name">{{ product.name }}</h3>
+              <p class="product-desc">{{ product.description }}</p>
+            </div>
+          </div>
+          <div class="qty-status">
+            <span *ngIf="(product.quantity || 0) <= 0" class="badge badge-danger">Out of Stock</span>
+            <span *ngIf="(product.quantity || 0) > 0" class="badge badge-success">Active</span>
+          </div>
+        </div>
+
+        <div class="card-details-grid">
+          <div class="detail-item">
+            <span class="detail-label">Price</span>
+            <span class="detail-value price-val">${{ product.price }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Available Qty</span>
+            <span class="detail-value">{{ product.quantity }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Sold</span>
+            <span class="detail-value">{{ product.salesCount || 0 }} units</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Earnings</span>
+            <span class="detail-value earnings-val">${{ (product.revenue || 0) | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <div class="card-actions-row">
+          <button class="btn-edit" (click)="editProduct(product.id!)">Edit</button>
+          <button class="btn-delete" (click)="deleteProduct(product.id!)">Delete</button>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="dashboard-summary" *ngIf="products.length > 0">
+      <div class="summary-card">
+        <span class="label">Total Revenue</span>
+        <span class="value">${{ totalRevenue | number:'1.2-2' }}</span>
+      </div>
+      <div class="summary-card">
+        <span class="label">Total Sold</span>
+        <span class="value">{{ totalSalesCount }} units</span>
+      </div>
+      <div class="summary-card">
+        <span class="label">Active Products</span>
+        <span class="value">{{ activeProductsCount }}</span>
+      </div>
+    </div>
 
     <div *ngIf="products.length === 0" class="no-products">
       <p>You haven't created any products yet.</p>
       <button class="btn-primary" (click)="createProduct()">Create Your First Product</button>
+    </div>
+  </div>
+
+  <!-- Best Selling Product Showcase -->
+  <div class="best-seller-showcase" *ngIf="bestSellingProduct && products.length > 0">
+    <div class="showcase-title">
+      <h3>⭐ Best Selling Product</h3>
+    </div>
+    <div class="showcase-content">
+      <div class="showcase-image" *ngIf="bestSellingProduct.imageUrls && bestSellingProduct.imageUrls.length">
+        <img [src]="bestSellingProduct.imageUrls[0]" alt="Best Seller" (error)="onImageLoadError($event)"/>
+      </div>
+      <div class="showcase-details">
+        <h4>{{ bestSellingProduct.name }}</h4>
+        <p class="desc">{{ bestSellingProduct.description }}</p>
+        <div class="stats-row">
+          <div class="stat-item">
+            <span class="lbl">Price</span>
+            <span class="val">${{ bestSellingProduct.price }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="lbl">Total Units Sold</span>
+            <span class="val highlight-blue">{{ bestSellingProduct.salesCount }} units</span>
+          </div>
+          <div class="stat-item">
+            <span class="lbl">Total Revenue</span>
+            <span class="val highlight-green">${{ (bestSellingProduct.revenue || 0) | number:'1.2-2' }}</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 

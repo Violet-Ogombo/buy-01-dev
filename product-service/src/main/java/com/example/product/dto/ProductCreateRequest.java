@@ -3,6 +3,7 @@ package com.example.product.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import java.util.List;
 
 /**
  * DTO for creating/updating products.
@@ -24,12 +25,24 @@ public class ProductCreateRequest {
     @Positive(message = "Quantity must be greater than 0")
     private Integer quantity;
 
+    private String category;
+
+    private List<String> imageUrls;
+
     public ProductCreateRequest() {
     }
 
     public ProductCreateRequest(String name, String description, Double price, Integer quantity) {
         this.name = name;
         this.description = description;
+        this.price = price;
+        this.quantity = quantity;
+    }
+
+    public ProductCreateRequest(String name, String description, String category, Double price, Integer quantity) {
+        this.name = name;
+        this.description = description;
+        this.category = category;
         this.price = price;
         this.quantity = quantity;
     }
@@ -64,5 +77,21 @@ public class ProductCreateRequest {
 
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public List<String> getImageUrls() {
+        return imageUrls;
+    }
+
+    public void setImageUrls(List<String> imageUrls) {
+        this.imageUrls = imageUrls;
     }
 }

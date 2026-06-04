@@ -21,7 +21,6 @@ public class AuthController {
     private static final String EMAIL_KEY = "email";
     private static final String ERROR_KEY = "error";
 
-    @Autowired
     public AuthController(UserService userService, JwtService jwtService) {
         this.userService = userService;
         this.jwtService = jwtService;

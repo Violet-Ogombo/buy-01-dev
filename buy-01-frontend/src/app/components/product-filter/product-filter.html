@@ -1,0 +1,64 @@
+<div class="search-filter-container">
+  <div class="filter-card" [class.is-sidebar]="isSidebar">
+    <!-- Header -->
+    <div class="filter-header">
+      <div>
+        <h2>Search Catalog</h2>
+        <p class="filter-description">Use keyword, category, and price filters to narrow the product grid.</p>
+      </div>
+      <button (click)="resetFilters()" class="btn-reset-filters">Reset Filters</button>
+    </div>
+
+    <div class="filter-grid">
+      <!-- Keyword Search -->
+      <div class="filter-group">
+        <label>Keyword</label>
+        <input
+          type="text"
+          placeholder="Search products"
+          [(ngModel)]="keyword"
+          (ngModelChange)="onFilterChange()"
+          class="search-input"
+        />
+      </div>
+
+      <!-- Category Dropdown -->
+      <div class="filter-group">
+        <label>Category</label>
+        <select [(ngModel)]="category" (ngModelChange)="onFilterChange()" class="category-select">
+          <option *ngFor="let cat of categories" [value]="cat.value">{{ cat.label }}</option>
+        </select>
+      </div>
+
+      <!-- Price Range Dual-Slider -->
+      <div class="filter-group price-range-wrapper">
+        <label>Price Range: ${{ minPrice }} - ${{ maxPrice >= 5000 ? '5000+' : maxPrice }}</label>
+        <div class="slider-container">
+          <div class="slider-track" [style.left.%]="(minPrice / 5000) * 100" [style.right.%]="100 - (maxPrice / 5000) * 100"></div>
+          <input
+            type="range"
+            min="0"
+            max="5000"
+            [(ngModel)]="minPrice"
+            (ngModelChange)="onMinPriceChange()"
+            class="range-input min-range"
+          />
+          <input
+            type="range"
+            min="0"
+            max="5000"
+            [(ngModel)]="maxPrice"
+            (ngModelChange)="onMaxPriceChange()"
+            class="range-input max-range"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Summary -->
+    <div class="filter-summary">
+      <span class="active-filters">{{ activeFilterCount }} active filters</span>
+      <span class="product-count">Showing {{ filteredProducts }} of {{ totalProducts }} products</span>
+    </div>
+  </div>
+</div>

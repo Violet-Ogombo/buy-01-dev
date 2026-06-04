@@ -8,6 +8,15 @@ import { ProductFormComponent } from './components/product-form/product-form';
 import { ProfileComponent } from './components/profile/profile';
 import { SellerLayoutComponent } from './components/seller-layout/seller-layout';
 import { SellerMediaComponent } from './components/seller-media/seller-media';
+
+// New Features Components
+import { CartViewComponent } from './components/cart-view/cart-view';
+import { CartCheckoutComponent } from './components/cart-checkout/cart-checkout';
+import { OrderList } from './components/order-list/order-list';
+import { OrderDetailComponent } from './components/order-detail/order-detail';
+import { WishlistViewComponent } from './components/wishlist-view/wishlist-view';
+import { SearchResultsComponent } from './components/search-results/search-results';
+
 import { authGuard, sellerGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -17,6 +26,15 @@ export const routes: Routes = [
   { path: 'products', component: ProductListComponent },
   { path: 'products/:id', component: ProductDetailComponent },
   { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
+  
+  // New features routes
+  { path: 'cart', component: CartViewComponent, canActivate: [authGuard] },
+  { path: 'cart/checkout', component: CartCheckoutComponent, canActivate: [authGuard] },
+  { path: 'orders', component: OrderList, canActivate: [authGuard] },
+  { path: 'orders/:id', component: OrderDetailComponent, canActivate: [authGuard] },
+  { path: 'wishlist', component: WishlistViewComponent, canActivate: [authGuard] },
+  { path: 'search', component: SearchResultsComponent }, // Public search
+
   {
     path: 'seller',
     component: SellerLayoutComponent,

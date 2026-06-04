@@ -1,0 +1,179 @@
+<div class="checkout-container page-container">
+  <div class="back-nav">
+    <a routerLink="/cart" class="btn-back">&larr; Back to Cart</a>
+  </div>
+
+  <h1 class="checkout-title">Secure Checkout</h1>
+
+  <div *ngIf="loadingCart" class="loading-wrapper">
+    <div class="spinner"></div>
+    <p>Preparing checkout summary...</p>
+  </div>
+
+  <div *ngIf="!loadingCart && cart" class="checkout-layout">
+    <!-- Billing/Shipping Form Section -->
+    <div class="checkout-form-section">
+      <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()" class="checkout-form">
+        <h2 class="section-title">Shipping & Payment Information</h2>
+
+        <!-- Phone Number Field -->
+        <div class="form-field">
+          <label for="phoneNumber">Phone Number</label>
+          <input
+            type="tel"
+            id="phoneNumber"
+            formControlName="phoneNumber"
+            placeholder="e.g. +1234567890"
+            [class.input-error]="isFieldInvalid('phoneNumber')"
+          />
+          <div *ngIf="isFieldInvalid('phoneNumber')" class="form-error-text">
+            <span *ngIf="checkoutForm.get('phoneNumber')?.errors?.['required']">Phone number is required.</span>
+            <span *ngIf="checkoutForm.get('phoneNumber')?.errors?.['pattern']">Please enter a valid phone format.</span>
+          </div>
+        </div>
+
+        <!-- Pay on Delivery Checkbox -->
+        <div class="form-field-checkbox">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              id="payOnDelivery"
+              formControlName="payOnDelivery"
+              (change)="onPayOnDeliveryChange()"
+            />
+            <span>Pay on Delivery</span>
+          </label>
+        </div>
+
+        <!-- Card Payment Form Section -->
+        <div class="card-details-section" [class.disabled]="checkoutForm.get('payOnDelivery')?.value">
+          <h3 class="subsection-title">Card Details</h3>
+          
+          <div class="form-field">
+            <label for="cardNumber">Card Number</label>
+            <input
+              type="text"
+              id="cardNumber"
+              formControlName="cardNumber"
+              placeholder="1234 5678 1234 5678"
+              [class.input-error]="isFieldInvalid('cardNumber')"
+            />
+            <div *ngIf="isFieldInvalid('cardNumber')" class="form-error-text">
+              <span *ngIf="checkoutForm.get('cardNumber')?.errors?.['required']">Card number is required.</span>
+              <span *ngIf="checkoutForm.get('cardNumber')?.errors?.['pattern']">Please enter a valid 16-digit card number.</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field double-input-field">
+              <label>Expiry Date (MM/YY)</label>
+              <div class="expiry-inputs-row">
+                <input
+                  type="text"
+                  id="expiryMonth"
+                  formControlName="expiryMonth"
+                  placeholder="MM"
+                  maxlength="2"
+                  (input)="onExpiryMonthInput($event, expiryYear)"
+                  [class.input-error]="isFieldInvalid('expiryMonth')"
+                />
+                <span class="expiry-divider">/</span>
+                <input
+                  type="text"
+                  id="expiryYear"
+                  #expiryYear
+                  formControlName="expiryYear"
+                  placeholder="YY"
+                  maxlength="2"
+                  [class.input-error]="isFieldInvalid('expiryYear')"
+                />
+              </div>
+              <div *ngIf="isFieldInvalid('expiryMonth') || isFieldInvalid('expiryYear')" class="form-error-text">
+                <span *ngIf="checkoutForm.get('expiryMonth')?.errors?.['required'] || checkoutForm.get('expiryYear')?.errors?.['required']">Expiry is required.</span>
+                <span *ngIf="checkoutForm.get('expiryMonth')?.errors?.['pattern'] || checkoutForm.get('expiryYear')?.errors?.['pattern']">Use MM and YY digits.</span>
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label for="securityNumber">Security Number (CVV)</label>
+              <input
+                type="password"
+                id="securityNumber"
+                formControlName="securityNumber"
+                placeholder="123"
+                maxlength="4"
+                [class.input-error]="isFieldInvalid('securityNumber')"
+              />
+              <div *ngIf="isFieldInvalid('securityNumber')" class="form-error-text">
+                <span *ngIf="checkoutForm.get('securityNumber')?.errors?.['required']">Security number is required.</span>
+                <span *ngIf="checkoutForm.get('securityNumber')?.errors?.['pattern']">Enter 3 or 4 digits.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shipping Address Textarea -->
+        <div class="form-field">
+          <label for="shippingAddress">Shipping Address</label>
+          <textarea
+            id="shippingAddress"
+            formControlName="shippingAddress"
+            rows="4"
+            placeholder="Enter your full street address, city, state, and zip code..."
+            [class.input-error]="isFieldInvalid('shippingAddress')"
+          ></textarea>
+          <div *ngIf="isFieldInvalid('shippingAddress')" class="form-error-text">
+            <span *ngIf="checkoutForm.get('shippingAddress')?.errors?.['required']">Shipping address is required.</span>
+            <span *ngIf="checkoutForm.get('shippingAddress')?.errors?.['minlength']">Address must be at least 10 characters long.</span>
+          </div>
+        </div>
+
+        <!-- Error Banner -->
+        <div *ngIf="errorMessage" class="checkout-error-banner">
+          {{ errorMessage }}
+        </div>
+
+        <button type="submit" [disabled]="loading || checkoutForm.invalid" class="btn-submit-order">
+          <span *ngIf="!loading">Place Order & Pay</span>
+          <span *ngIf="loading" class="spinner-inline"><div class="spinner spinner-sm"></div> Processing...</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- Side Order Summary Section -->
+    <div class="checkout-summary-section">
+      <div class="summary-card">
+        <h2>Order Items</h2>
+        <div class="summary-items-list">
+          <div *ngFor="let item of cart.items" class="summary-item-row">
+            <div class="item-name-qty">
+              <span class="item-qty">{{ item.quantity }}x</span>
+              <span class="item-name">{{ item.productName }}</span>
+            </div>
+            <span class="item-subtotal">${{ item.subtotal | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <hr />
+
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span>${{ cart.totalPrice | number:'1.2-2' }}</span>
+        </div>
+        <div class="summary-row">
+          <span>Shipping & Handling</span>
+          <span class="status-free">FREE</span>
+        </div>
+        <div class="summary-row">
+          <span>Estimated Tax (25%)</span>
+          <span>${{ (cart.totalPrice * 0.25) | number:'1.2-2' }}</span>
+        </div>
+        <hr />
+        <div class="summary-row grand-total">
+          <span>Total</span>
+          <span>${{ (cart.totalPrice * 1.25) | number:'1.2-2' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

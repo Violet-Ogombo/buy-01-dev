@@ -1,5 +1,5 @@
 .media-container {
-  background: #fff;
+  background: var(--card-bg) !important; backdrop-filter: blur(12px); border: var(--card-border); color: var(--text-main);
   padding: 1.5rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
@@ -18,7 +18,7 @@
 }
 
 .filters button.active {
-  background: #1976d2;
+  background: var(--primary-color);
   color: #fff;
 }
 
@@ -33,7 +33,7 @@
   display: inline-block;
   padding: 0.5rem 1rem;
   border-radius: 4px;
-  background: #1976d2;
+  background: var(--primary-color);
   color: #fff;
   cursor: pointer;
 }
@@ -47,11 +47,11 @@
   border: 2px dashed #ccc;
   border-radius: 6px;
   text-align: center;
-  color: #666;
+  color: var(--text-muted);
 }
 
 .drop-zone.drag-over {
-  border-color: #1976d2;
+  border-color: var(--primary-color);
   background: #e3f2fd;
 }
 
@@ -62,7 +62,7 @@
 }
 
 .media-card {
-  border: 1px solid #eee;
+  border: var(--card-border);
   border-radius: 6px;
   overflow: hidden;
   display: flex;
@@ -86,7 +86,7 @@
 
 .media-meta .details {
   font-size: 0.85rem;
-  color: #666;
+  color: var(--text-muted);
   display: flex;
   flex-direction: column;
 }
@@ -113,7 +113,7 @@
 }
 
 .info {
-  color: #1976d2;
+  color: var(--primary-color);
 }
 
 .pagination {
@@ -135,7 +135,7 @@
 }
 
 .preview-modal {
-  background: #fff;
+  background: var(--card-bg) !important; backdrop-filter: blur(12px); border: var(--card-border); color: var(--text-main);
   padding: 1rem;
   border-radius: 6px;
   max-width: 90vw;
