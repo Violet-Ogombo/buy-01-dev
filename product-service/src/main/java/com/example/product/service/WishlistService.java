@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class WishlistService {
@@ -41,7 +40,7 @@ public class WishlistService {
                     return null;
                 })
                 .filter(item -> item != null)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public WishlistItemDTO addToWishlist(String userId, String productId) {

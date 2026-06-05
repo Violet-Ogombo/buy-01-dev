@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class SearchService {
@@ -31,7 +30,7 @@ public class SearchService {
                 .filter(product -> matchesKeyword(product, lowerKeyword))
                 .sorted((p1, p2) -> Long.compare(p2.getSalesCount(), p1.getSalesCount()))
                 .map(this::convertToSearchDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<ProductSearchDTO> filterProducts(BigDecimal minPrice, BigDecimal maxPrice) {
@@ -50,7 +49,7 @@ public class SearchService {
                 })
                 .sorted((p1, p2) -> BigDecimal.valueOf(p1.getPrice()).compareTo(BigDecimal.valueOf(p2.getPrice())))
                 .map(this::convertToSearchDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<ProductSearchDTO> filterAndSearch(String keyword, String category, BigDecimal minPrice, BigDecimal maxPrice) {
@@ -66,7 +65,7 @@ public class SearchService {
                 })
                 .sorted((p1, p2) -> Long.compare(p2.getSalesCount(), p1.getSalesCount()))
                 .map(this::convertToSearchDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<ProductSearchDTO> getFilteredAndSorted(String category, BigDecimal minPrice, BigDecimal maxPrice, String sortBy) {
@@ -75,7 +74,7 @@ public class SearchService {
         List<ProductSearchDTO> filteredList = products.stream()
                 .filter(product -> matchesCategory(product, category) && matchesPriceRange(product, minPrice, maxPrice))
                 .map(this::convertToSearchDTO)
-                .collect(Collectors.toList());
+                .toList();
 
         return sortProducts(filteredList, sortBy);
     }
@@ -103,29 +102,29 @@ public class SearchService {
             case "price_asc":
                 return products.stream()
                         .sorted((p1, p2) -> p1.getPrice().compareTo(p2.getPrice()))
-                        .collect(Collectors.toList());
+                        .toList();
             case "price_desc":
                 return products.stream()
                         .sorted((p1, p2) -> p2.getPrice().compareTo(p1.getPrice()))
-                        .collect(Collectors.toList());
+                        .toList();
             case "name":
                 return products.stream()
                         .sorted((p1, p2) -> p1.getName().compareTo(p2.getName()))
-                        .collect(Collectors.toList());
+                        .toList();
             case "newest":
                 return products;
             case "popularity":
             default:
                 return products.stream()
                         .sorted((p1, p2) -> Long.compare(p2.getSalesCount(), p1.getSalesCount()))
-                        .collect(Collectors.toList());
+                        .toList();
         }
     }
 
     private List<ProductSearchDTO> getAllProducts() {
         return productRepository.findAll().stream()
                 .map(this::convertToSearchDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private boolean matchesKeyword(Product product, String keyword) {

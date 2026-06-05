@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class CartService {
@@ -157,7 +156,8 @@ public class CartService {
         BigDecimal totalPrice = BigDecimal.ZERO;
 
         for (CartItem cartItem : cart.getItems()) {
-            Product product = productRepository.findById(cartItem.getProductId()).get();
+            Product product = productRepository.findById(cartItem.getProductId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + cartItem.getProductId()));
 
             OrderItem orderItem = new OrderItem(cartItem.getProductId(), cartItem.getQuantity(), cartItem.getPriceAtTime());
             orderItems.add(orderItem);
@@ -224,7 +224,7 @@ public class CartService {
                     return new CartItemDTO(item.getProductId(), item.getProductId(), productName,
                             item.getQuantity(), item.getPriceAtTime(), subtotal);
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         CartDTO dto = new CartDTO();
         dto.setId(cart.getId());
@@ -244,7 +244,7 @@ public class CartService {
                     return new OrderItemDTO(item.getProductId(), productName,
                             item.getQuantity(), item.getUnitPrice(), item.getTotalPrice());
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         return new OrderDTO(order.getId(), order.getOrderNumber(), order.getUserId(), itemDTOs,
                 order.getTotalAmount(), order.getStatus(), order.getPaymentMethod(),

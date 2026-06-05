@@ -14,7 +14,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
@@ -120,7 +119,7 @@ public class OrderService {
                     return new OrderItemDTO(item.getProductId(), productName,
                             item.getQuantity(), item.getUnitPrice(), item.getTotalPrice());
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         return new OrderDTO(order.getId(), order.getOrderNumber(), order.getUserId(), itemDTOs,
                 order.getTotalAmount(), order.getStatus(), order.getPaymentMethod(),

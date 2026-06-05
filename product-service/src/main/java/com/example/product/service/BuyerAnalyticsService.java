@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import com.example.product.repository.ProductRepository;
 import com.example.product.model.Product;
@@ -73,7 +72,7 @@ public class BuyerAnalyticsService {
                             entry.getValue().purchaseCount
                     );
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         return new BuyerAnalyticsDTO(userId, orders.size(), totalSpent, mostBoughtProducts);
     }
