@@ -169,129 +169,15 @@ pipeline {
             echo '✓ Build and Deploy Successful!'
             script {
                 catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
-                    def slackCredId = null
-                    try {
-                        withCredentials([string(credentialsId: 'slack-webhook-url', variable: 'DUMMY')]) {
-                            slackCredId = 'slack-webhook-url'
-                        }
-                    } catch (Exception e) {
-                        try {
-                            withCredentials([string(credentialsId: 'slack token bot', variable: 'DUMMY')]) {
-                                slackCredId = 'slack token bot'
-                            }
-                        } catch (Exception ex) {
-                            echo "Slack notification skipped: No credential 'slack-webhook-url' or 'slack token bot' configured."
-                        }
-                    }
-
-                    if (slackCredId != null) {
-                        withCredentials([string(credentialsId: slackCredId, variable: 'SLACK_WEBHOOK_URL')]) {
-                            sh '''
-                                PAYLOAD="{
-                                    \\"text\\": \\"✅ Build SUCCESS\\",
-                                    \\"blocks\\": [
-                                        {
-                                            \\"type\\": \\"header\\",
-                                            \\"text\\": {
-                                                \\"type\\": \\"plain_text\\",
-                                                \\"text\\": \\"✅ Build Successful\\"
-                                            }
-                                        },
-                                        {
-                                            \\"type\\": \\"section\\",
-                                            \\"fields\\": [
-                                                {
-                                                    \\"type\\": \\"mrkdwn\\",
-                                                    \\"text\\": \\"*Repository:*\\\\nbuy-01-dev\\"
-                                                },
-                                                {
-                                                    \\"type\\": \\"mrkdwn\\",
-                                                    \\"text\\": \\"*Branch:*\\\\nmain\\"
-                                                },
-                                                {
-                                                    \\"type\\": \\"mrkdwn\\",
-                                                    \\"text\\": \\"*Commit:*\\\\n''' + "${env.GIT_COMMIT?.take(7) ?: 'N/A'}" + '''\\"
-                                                },
-                                                {
-                                                    \\"type\\": \\"mrkdwn\\",
-                                                    \\"text\\": \\"*Build #:*\\\\n''' + "${env.BUILD_NUMBER}" + '''\\"
-                                                }
-                                            ]
-                                        },
-                                        {
-                                            \\"type\\": \\"actions\\",
-                                            \\"elements\\": [
-                                                {
-                                                    \\"type\\": \\"button\\",
-                                                    \\"text\\": {
-                                                        \\"type\\": \\"plain_text\\",
-                                                        \\"text\\": \\"View Build Details\\"
-                                                    },
-                                                    \\"url\\": \\"''' + "${env.BUILD_URL_DISPLAY ?: ''}" + '''\\",
-                                                    \\"style\\": \\"primary\\"
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }"
-
-                                BLOCKS='[
-                                    {
-                                        "type": "header",
-                                        "text": {
-                                            "type": "plain_text",
-                                            "text": "✅ Build Successful"
-                                        }
-                                    },
-                                    {
-                                        "type": "section",
-                                        "fields": [
-                                            {
-                                                "type": "mrkdwn",
-                                                "text": "*Repository:*\\nbuy-01-dev"
-                                            },
-                                            {
-                                                "type": "mrkdwn",
-                                                "text": "*Branch:*\\nmain"
-                                            },
-                                            {
-                                                "type": "mrkdwn",
-                                                "text": "*Commit:*\\n''' + "${env.GIT_COMMIT?.take(7) ?: 'N/A'}" + '''"
-                                            },
-                                            {
-                                                "type": "mrkdwn",
-                                                "text": "*Build #:*\\n''' + "${env.BUILD_NUMBER}" + '''"
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "type": "actions",
-                                        "elements": [
-                                            {
-                                                "type": "button",
-                                                "text": {
-                                                    "type": "plain_text",
-                                                    "text": "View Build Details"
-                                                },
-                                                "url": "''' + "${env.BUILD_URL_DISPLAY ?: ''}" + '''",
-                                                "style": "primary"
-                                            }
-                                        ]
-                                    }
-                                ]'
-
-                                if [[ "$SLACK_WEBHOOK_URL" == http* ]]; then
-                                    curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" "$SLACK_WEBHOOK_URL" || echo "Slack notification failed"
-                                elif [[ "$SLACK_WEBHOOK_URL" == xoxb-* ]]; then
-                                    curl -X POST -H 'Content-type: application/json' -H "Authorization: Bearer $SLACK_WEBHOOK_URL" \
-                                    --data "{ \\"channel\\": \\"${SLACK_CHANNEL}\\", \\"text\\": \\"✅ Build SUCCESS\\", \\"blocks\\": $BLOCKS }" \
-                                    https://slack.com/api/chat.postMessage || echo "Slack notification failed"
-                                else
-                                    curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" "https://hooks.slack.com/services/$SLACK_WEBHOOK_URL" || echo "Slack notification failed"
-                                fi
-                            '''
-                        }
-                    }
+                    slackSend(
+                        tokenCredentialId: 'slack-webhook-url',
+                        color: 'good',
+                        message: """:white_check_mark: *Build SUCCESS*
+Job: ${env.JOB_NAME}
+Build #: ${env.BUILD_NUMBER}
+Status: SUCCESS
+URL: ${env.BUILD_URL}"""
+                    )
                 }
             }
         }
@@ -311,129 +197,15 @@ pipeline {
             echo '✗ Sending Failure Notifications...'
             script {
                 catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
-                    def slackCredId = null
-                    try {
-                        withCredentials([string(credentialsId: 'slack-webhook-url', variable: 'DUMMY')]) {
-                            slackCredId = 'slack-webhook-url'
-                        }
-                    } catch (Exception e) {
-                        try {
-                            withCredentials([string(credentialsId: 'slack token bot', variable: 'DUMMY')]) {
-                                slackCredId = 'slack token bot'
-                            }
-                        } catch (Exception ex) {
-                            echo "Slack notification skipped: No credential 'slack-webhook-url' or 'slack token bot' configured."
-                        }
-                    }
-
-                    if (slackCredId != null) {
-                        withCredentials([string(credentialsId: slackCredId, variable: 'SLACK_WEBHOOK_URL')]) {
-                            sh '''
-                                PAYLOAD="{
-                                    \\"text\\": \\"❌ Build FAILED\\",
-                                    \\"blocks\\": [
-                                        {
-                                            \\"type\\": \\"header\\",
-                                            \\"text\\": {
-                                                \\"type\\": \\"plain_text\\",
-                                                \\"text\\": \\"❌ Build Failed\\"
-                                            }
-                                        },
-                                        {
-                                            \\"type\\": \\"section\\",
-                                            \\"fields\\": [
-                                                {
-                                                    \\"type\\": \\"mrkdwn\\",
-                                                    \\"text\\": \\"*Repository:*\\\\nbuy-01-dev\\"
-                                                },
-                                                {
-                                                    \\"type\\": \\"mrkdwn\\",
-                                                    \\"text\\": \\"*Branch:*\\\\nmain\\"
-                                                },
-                                                {
-                                                    \\"type\\": \\"mrkdwn\\",
-                                                    \\"text\\": \\"*Commit:*\\\\n''' + "${env.GIT_COMMIT?.take(7) ?: 'N/A'}" + '''\\"
-                                                },
-                                                {
-                                                    \\"type\\": \\"mrkdwn\\",
-                                                    \\"text\\": \\"*Build #:*\\\\n''' + "${env.BUILD_NUMBER}" + '''\\"
-                                                }
-                                            ]
-                                        },
-                                        {
-                                            \\"type\\": \\"actions\\",
-                                            \\"elements\\": [
-                                                {
-                                                    \\"type\\": \\"button\\",
-                                                    \\"text\\": {
-                                                        \\"type\\": \\"plain_text\\",
-                                                        \\"text\\": \\"View Failure Details\\"
-                                                    },
-                                                    \\"url\\": \\"''' + "${env.BUILD_URL_DISPLAY ?: ''}" + '''\\",
-                                                    \\"style\\": \\"danger\\"
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }"
-
-                                BLOCKS='[
-                                    {
-                                        "type": "header",
-                                        "text": {
-                                            "type": "plain_text",
-                                            "text": "❌ Build Failed"
-                                        }
-                                    },
-                                    {
-                                        "type": "section",
-                                        "fields": [
-                                            {
-                                                "type": "mrkdwn",
-                                                "text": "*Repository:*\\nbuy-01-dev"
-                                            },
-                                            {
-                                                "type": "mrkdwn",
-                                                "text": "*Branch:*\\nmain"
-                                            },
-                                            {
-                                                "type": "mrkdwn",
-                                                "text": "*Commit:*\\n''' + "${env.GIT_COMMIT?.take(7) ?: 'N/A'}" + '''"
-                                            },
-                                            {
-                                                "type": "mrkdwn",
-                                                "text": "*Build #:*\\n''' + "${env.BUILD_NUMBER}" + '''"
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "type": "actions",
-                                        "elements": [
-                                            {
-                                                "type": "button",
-                                                "text": {
-                                                    "type": "plain_text",
-                                                    "text": "View Failure Details"
-                                                },
-                                                "url": "''' + "${env.BUILD_URL_DISPLAY ?: ''}" + '''",
-                                                "style": "danger"
-                                            }
-                                        ]
-                                    }
-                                ]'
-
-                                if [[ "$SLACK_WEBHOOK_URL" == http* ]]; then
-                                    curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" "$SLACK_WEBHOOK_URL" || echo "Slack notification failed"
-                                elif [[ "$SLACK_WEBHOOK_URL" == xoxb-* ]]; then
-                                    curl -X POST -H 'Content-type: application/json' -H "Authorization: Bearer $SLACK_WEBHOOK_URL" \
-                                    --data "{ \\"channel\\": \\"${SLACK_CHANNEL}\\", \\"text\\": \\"❌ Build FAILED\\", \\"blocks\\": $BLOCKS }" \
-                                    https://slack.com/api/chat.postMessage || echo "Slack notification failed"
-                                else
-                                    curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" "https://hooks.slack.com/services/$SLACK_WEBHOOK_URL" || echo "Slack notification failed"
-                                fi
-                            '''
-                        }
-                    }
+                    slackSend(
+                        tokenCredentialId: 'slack-webhook-url',
+                        color: 'danger',
+                        message: """:x: *Build FAILED*
+Job: ${env.JOB_NAME}
+Build #: ${env.BUILD_NUMBER}
+Status: FAILED
+URL: ${env.BUILD_URL}"""
+                    )
                 }
             }
         }
