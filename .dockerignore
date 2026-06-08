@@ -1,0 +1,12 @@
+.git/
+.github/
+.vscode/
+buy-01-frontend/node_modules/
+buy-01-frontend/.angular/
+buy-01-frontend/dist/
+**/target/
+uploads/
+*.log
+*.md
+*.txt
+*.pdf

@@ -126,7 +126,7 @@ pipeline {
                         docker tag buy-01-dev-$svc:latest buy-01-dev-$svc:backup 2>/dev/null || true
                     done
 
-                    docker compose build
+                    docker compose build $APP_SERVICES discovery-server
                 '''
             }
         }
@@ -146,8 +146,7 @@ pipeline {
 
                     withEnv(["JWT_SECRET=${jwtSecret}"]) {
                         sh '''
-                            docker compose down -v
-                            docker compose up -d --build
+                            docker compose up -d --build $APP_SERVICES discovery-server
                             sleep 10
                             docker compose ps
                         '''
@@ -251,7 +250,7 @@ pipeline {
                 done
 
                 # Restart using the reverted images (no --build flag)
-                docker compose up -d
+                docker compose up -d $APP_SERVICES discovery-server
             '''
 
             echo '✗ Sending Failure Notifications...'
