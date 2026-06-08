@@ -175,197 +175,205 @@ pipeline {
 
     post {
         always {
-            echo "Collecting test results..."
-            catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                junit '**/target/surefire-reports/*.xml'
+            node('') {
+                echo "Collecting test results..."
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    junit '**/target/surefire-reports/*.xml'
+                }
             }
         }
 
         success {
-            echo '✅ All tests passed!'
-            script {
-                sh '''
-                    curl -X POST -H 'Content-type: application/json' \
-                    --data "{
-                        \\"text\\": \\"✅ Build SUCCESS\\",
-                        \\"blocks\\": [
-                            {
-                                \\"type\\": \\"header\\",
-                                \\"text\\": {
-                                    \\"type\\": \\"plain_text\\",
-                                    \\"text\\": \\"✅ Build Successful\\"
-                                }
-                            },
-                            {
-                                \\"type\\": \\"section\\",
-                                \\"fields\\": [
-                                    {
-                                        \\"type\\": \\"mrkdwn\\",
-                                        \\"text\\": \\"*Repository:*\\nbuy-01-dev\\"
-                                    },
-                                    {
-                                        \\"type\\": \\"mrkdwn\\",
-                                        \\"text\\": \\"*Branch:*\\nmain\\"
-                                    },
-                                    {
-                                        \\"type\\": \\"mrkdwn\\",
-                                        \\"text\\": \\"*Commit:*\\n''' + "${env.GIT_COMMIT?.take(7) ?: 'N/A'}" + '''\\"
-                                    },
-                                    {
-                                        \\"type\\": \\"mrkdwn\\",
-                                        \\"text\\": \\"*Build #:*\\n''' + "${env.BUILD_NUMBER}" + '''\\"
+            node('') {
+                echo '✅ All tests passed!'
+                script {
+                    sh '''
+                        curl -X POST -H 'Content-type: application/json' \
+                        --data "{
+                            \\"text\\": \\"✅ Build SUCCESS\\",
+                            \\"blocks\\": [
+                                {
+                                    \\"type\\": \\"header\\",
+                                    \\"text\\": {
+                                        \\"type\\": \\"plain_text\\",
+                                        \\"text\\": \\"✅ Build Successful\\"
                                     }
-                                ]
-                            },
-                            {
-                                \\"type\\": \\"actions\\",
-                                \\"elements\\": [
-                                    {
-                                        \\"type\\": \\"button\\",
-                                        \\"text\\": {
-                                            \\"type\\": \\"plain_text\\",
-                                            \\"text\\": \\"View Build Details\\"
+                                },
+                                {
+                                    \\"type\\": \\"section\\",
+                                    \\"fields\\": [
+                                        {
+                                            \\"type\\": \\"mrkdwn\\",
+                                            \\"text\\": \\"*Repository:*\\nbuy-01-dev\\"
                                         },
-                                        \\"url\\": \\"''' + "${BUILD_URL_DISPLAY}" + '''\\",
-                                        \\"style\\": \\"primary\\"
-                                    }
-                                ]
-                            }
-                        ]
-                    }" \
-                    $SLACK_WEBHOOK_URL || echo "Slack notification failed (webhook may not be configured yet)"
-                '''
+                                        {
+                                            \\"type\\": \\"mrkdwn\\",
+                                            \\"text\\": \\"*Branch:*\\nmain\\"
+                                        },
+                                        {
+                                            \\"type\\": \\"mrkdwn\\",
+                                            \\"text\\": \\"*Commit:*\\n''' + "${env.GIT_COMMIT?.take(7) ?: 'N/A'}" + '''\\"
+                                        },
+                                        {
+                                            \\"type\\": \\"mrkdwn\\",
+                                            \\"text\\": \\"*Build #:*\\n''' + "${env.BUILD_NUMBER}" + '''\\"
+                                        }
+                                    ]
+                                },
+                                {
+                                    \\"type\\": \\"actions\\",
+                                    \\"elements\\": [
+                                        {
+                                            \\"type\\": \\"button\\",
+                                            \\"text\\": {
+                                                \\"type\\": \\"plain_text\\",
+                                                \\"text\\": \\"View Build Details\\"
+                                            },
+                                            \\"url\\": \\"''' + "${BUILD_URL_DISPLAY}" + '''\\",
+                                            \\"style\\": \\"primary\\"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }" \
+                        $SLACK_WEBHOOK_URL || echo "Slack notification failed (webhook may not be configured yet)"
+                    '''
+                }
             }
         }
 
         failure {
-            echo '❌ Build or tests failed!'
-            script {
-                sh '''
-                    curl -X POST -H 'Content-type: application/json' \
-                    --data "{
-                        \\"text\\": \\"❌ Build FAILED\\",
-                        \\"blocks\\": [
-                            {
-                                \\"type\\": \\"header\\",
-                                \\"text\\": {
-                                    \\"type\\": \\"plain_text\\",
-                                    \\"text\\": \\"❌ Build Failed\\"
-                                }
-                            },
-                            {
-                                \\"type\\": \\"section\\",
-                                \\"fields\\": [
-                                    {
-                                        \\"type\\": \\"mrkdwn\\",
-                                        \\"text\\": \\"*Repository:*\\nbuy-01-dev\\"
-                                    },
-                                    {
-                                        \\"type\\": \\"mrkdwn\\",
-                                        \\"text\\": \\"*Branch:*\\nmain\\"
-                                    },
-                                    {
-                                        \\"type\\": \\"mrkdwn\\",
-                                        \\"text\\": \\"*Commit:*\\n''' + "${env.GIT_COMMIT?.take(7) ?: 'N/A'}" + '''\\"
-                                    },
-                                    {
-                                        \\"type\\": \\"mrkdwn\\",
-                                        \\"text\\": \\"*Build #:*\\n''' + "${env.BUILD_NUMBER}" + '''\\"
+            node('') {
+                echo '❌ Build or tests failed!'
+                script {
+                    sh '''
+                        curl -X POST -H 'Content-type: application/json' \
+                        --data "{
+                            \\"text\\": \\"❌ Build FAILED\\",
+                            \\"blocks\\": [
+                                {
+                                    \\"type\\": \\"header\\",
+                                    \\"text\\": {
+                                        \\"type\\": \\"plain_text\\",
+                                        \\"text\\": \\"❌ Build Failed\\"
                                     }
-                                ]
-                            },
-                            {
-                                \\"type\\": \\"actions\\",
-                                \\"elements\\": [
-                                    {
-                                        \\"type\\": \\"button\\",
-                                        \\"text\\": {
-                                            \\"type\\": \\"plain_text\\",
-                                            \\"text\\": \\"View Failure Details\\"
+                                },
+                                {
+                                    \\"type\\": \\"section\\",
+                                    \\"fields\\": [
+                                        {
+                                            \\"type\\": \\"mrkdwn\\",
+                                            \\"text\\": \\"*Repository:*\\nbuy-01-dev\\"
                                         },
-                                        \\"url\\": \\"''' + "${BUILD_URL_DISPLAY}" + '''\\",
-                                        \\"style\\": \\"danger\\"
-                                    }
-                                ]
-                            }
-                        ]
-                    }" \
-                    $SLACK_WEBHOOK_URL || echo "Slack notification failed (webhook may not be configured yet)"
-                '''
+                                        {
+                                            \\"type\\": \\"mrkdwn\\",
+                                            \\"text\\": \\"*Branch:*\\nmain\\"
+                                        },
+                                        {
+                                            \\"type\\": \\"mrkdwn\\",
+                                            \\"text\\": \\"*Commit:*\\n''' + "${env.GIT_COMMIT?.take(7) ?: 'N/A'}" + '''\\"
+                                        },
+                                        {
+                                            \\"type\\": \\"mrkdwn\\",
+                                            \\"text\\": \\"*Build #:*\\n''' + "${env.BUILD_NUMBER}" + '''\\"
+                                        }
+                                    ]
+                                },
+                                {
+                                    \\"type\\": \\"actions\\",
+                                    \\"elements\\": [
+                                        {
+                                            \\"type\\": \\"button\\",
+                                            \\"text\\": {
+                                                \\"type\\": \\"plain_text\\",
+                                                \\"text\\": \\"View Failure Details\\"
+                                            },
+                                            \\"url\\": \\"''' + "${BUILD_URL_DISPLAY}" + '''\\",
+                                            \\"style\\": \\"danger\\"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }" \
+                        $SLACK_WEBHOOK_URL || echo "Slack notification failed (webhook may not be configured yet)"
+                    '''
+                }
             }
         }
 
         unstable {
-            echo '⚠️  Deployment failed - initiating rollback...'
-            script {
-                sh '''
-                    set +e
+            node('') {
+                echo '⚠️  Deployment failed - initiating rollback...'
+                script {
+                    sh '''
+                        set +e
 
-                    echo "🔄 Rolling back application services only..."
-                    for svc in $APP_SERVICES; do
-                        docker tag buy-01-dev-$svc:previous buy-01-dev-$svc:latest 2>/dev/null || true
-                    done
+                        echo "🔄 Rolling back application services only..."
+                        for svc in $APP_SERVICES; do
+                            docker tag buy-01-dev-$svc:previous buy-01-dev-$svc:latest 2>/dev/null || true
+                        done
 
-                    echo "🔄 Restarting previous application version..."
-                    docker compose up -d --no-deps --force-recreate $APP_SERVICES
+                        echo "🔄 Restarting previous application version..."
+                        docker compose up -d --no-deps --force-recreate $APP_SERVICES
 
-                    echo "⏳ Waiting for services to stabilize..."
-                    sleep 20
+                        echo "⏳ Waiting for services to stabilize..."
+                        sleep 20
 
-                    docker compose ps
+                        docker compose ps
 
-                    echo "✅ Rollback completed!"
-                '''
-            }
+                        echo "✅ Rollback completed!"
+                    '''
+                }
 
-            script {
-                sh '''
-                    curl -X POST -H 'Content-type: application/json' \
-                    --data "{
-                        \\"text\\": \\"⚠️  ROLLBACK EXECUTED\\",
-                        \\"blocks\\": [
-                            {
-                                \\"type\\": \\"header\\",
-                                \\"text\\": {
-                                    \\"type\\": \\"plain_text\\",
-                                    \\"text\\": \\"⚠️  Deployment Failed - Rollback Executed\\"
-                                }
-                            },
-                            {
-                                \\"type\\": \\"section\\",
-                                \\"fields\\": [
-                                    {
-                                        \\"type\\": \\"mrkdwn\\",
-                                        \\"text\\": \\"*Repository:*\\nbuy-01-dev\\"
-                                    },
-                                    {
-                                        \\"type\\": \\"mrkdwn\\",
-                                        \\"text\\": \\"*Action:*\\nReverted to previous stable version\\"
-                                    },
-                                    {
-                                        \\"type\\": \\"mrkdwn\\",
-                                        \\"text\\": \\"*Build #:*\\n''' + "${env.BUILD_NUMBER}" + '''\\"
+                script {
+                    sh '''
+                        curl -X POST -H 'Content-type: application/json' \
+                        --data "{
+                            \\"text\\": \\"⚠️  ROLLBACK EXECUTED\\",
+                            \\"blocks\\": [
+                                {
+                                    \\"type\\": \\"header\\",
+                                    \\"text\\": {
+                                        \\"type\\": \\"plain_text\\",
+                                        \\"text\\": \\"⚠️  Deployment Failed - Rollback Executed\\"
                                     }
-                                ]
-                            },
-                            {
-                                \\"type\\": \\"actions\\",
-                                \\"elements\\": [
-                                    {
-                                        \\"type\\": \\"button\\",
-                                        \\"text\\": {
-                                            \\"type\\": \\"plain_text\\",
-                                            \\"text\\": \\"View Build Log\\"
+                                },
+                                {
+                                    \\"type\\": \\"section\\",
+                                    \\"fields\\": [
+                                        {
+                                            \\"type\\": \\"mrkdwn\\",
+                                            \\"text\\": \\"*Repository:*\\nbuy-01-dev\\"
                                         },
-                                        \\"url\\": \\"''' + "${BUILD_URL_DISPLAY}" + '''\\",
-                                        \\"style\\": \\"danger\\"
-                                    }
-                                ]
-                            }
-                        ]
-                    }" \
-                    $SLACK_WEBHOOK_URL || echo "Slack notification failed"
-                '''
+                                        {
+                                            \\"type\\": \\"mrkdwn\\",
+                                            \\"text\\": \\"*Action:*\\nReverted to previous stable version\\"
+                                        },
+                                        {
+                                            \\"type\\": \\"mrkdwn\\",
+                                            \\"text\\": \\"*Build #:*\\n''' + "${env.BUILD_NUMBER}" + '''\\"
+                                        }
+                                    ]
+                                },
+                                {
+                                    \\"type\\": \\"actions\\",
+                                    \\"elements\\": [
+                                        {
+                                            \\"type\\": \\"button\\",
+                                            \\"text\\": {
+                                                \\"type\\": \\"plain_text\\",
+                                                \\"text\\": \\"View Build Log\\"
+                                            },
+                                            \\"url\\": \\"''' + "${BUILD_URL_DISPLAY}" + '''\\",
+                                            \\"style\\": \\"danger\\"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }" \
+                        $SLACK_WEBHOOK_URL || echo "Slack notification failed"
+                    '''
+                }
             }
         }
     }
