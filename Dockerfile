@@ -12,6 +12,7 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
     docker.io \
+    docker-cli \
     maven \
     git \
     nodejs && \
