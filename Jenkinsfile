@@ -79,8 +79,10 @@ pipeline {
                 stage('Discovery Server') {
                     steps {
                         echo 'Building discovery-server...'
-                        dir('discovery-server') {
-                           sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=discovery-service'
+                        withSonarQubeEnv('SonarQube') {
+                            dir('discovery-server') {
+                                sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=discovery-service'
+                            }
                         }
                     }
                 }
