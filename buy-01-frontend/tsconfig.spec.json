@@ -3,7 +3,10 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "rootDir": "."
+    "rootDir": ".",
+    "types": [
+      "vitest/globals"
+    ]
   },
   "include": [
     "src/**/*.d.ts",

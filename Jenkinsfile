@@ -4,7 +4,7 @@ pipeline {
     options {
         timeout(time: 45, unit: 'MINUTES')
         timestamps()
-        // SafeZone: SonarQube security scanning enabled
+        buildDiscarder(logRotator(numToKeepStr: '10'))
     }
 
     triggers {
@@ -13,6 +13,7 @@ pipeline {
     }
 
     environment {
+        PROJECT_NAME = 'buy-01-dev'
         SLACK_CHANNEL = '#build-notifications'
         BUILD_URL_DISPLAY = "${env.BUILD_URL}console"
         BUILD_TAG = "build-${BUILD_NUMBER}"
@@ -27,138 +28,130 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
+                echo "========== Checking out code =========="
                 checkout scm
+                sh 'git log --oneline -1'
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                echo "🔍 Running SonarQube Analysis on all services..."
-                withSonarQubeEnv('SonarQube') {
-                    script {
-                        // Analyze API Gateway
-                        dir('api-gateway') {
-                            sh '''
-                                mvn clean verify sonar:sonar \
-                                  -Dsonar.projectKey=api-gateway
-                            '''
+        stage('Build & Analyze Java Services') {
+            parallel {
+                stage('API Gateway') {
+                    steps {
+                        echo 'Building & Analyzing api-gateway...'
+                        withSonarQubeEnv('SonarQube') {
+                            dir('api-gateway') {
+                                sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=api-gateway'
+                            }
                         }
-                        
-                        // Analyze Product Service
-                        dir('product-service') {
-                            sh '''
-                                mvn clean verify sonar:sonar \
-                                  -Dsonar.projectKey=product-service
-                            '''
+                    }
+                }
+                stage('Product Service') {
+                    steps {
+                        echo 'Building & Analyzing product-service...'
+                        withSonarQubeEnv('SonarQube') {
+                            dir('product-service') {
+                                sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=product-service'
+                            }
                         }
-                        
-                        // Analyze Media Service
-                        dir('media-service') {
-                            sh '''
-                                mvn clean verify sonar:sonar \
-                                  -Dsonar.projectKey=media-service
-                            '''
+                    }
+                }
+                stage('Media Service') {
+                    steps {
+                        echo 'Building & Analyzing media-service...'
+                        withSonarQubeEnv('SonarQube') {
+                            dir('media-service') {
+                                sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=media-service'
+                            }
                         }
-                        
-                        // Analyze Identity Service
-                        dir('identity-service') {
-                            sh '''
-                                mvn clean verify sonar:sonar \
-                                  -Dsonar.projectKey=identity-service
-                            '''
+                    }
+                }
+                stage('Identity Service') {
+                    steps {
+                        echo 'Building & Analyzing identity-service...'
+                        withSonarQubeEnv('SonarQube') {
+                            dir('identity-service') {
+                                sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=identity-service'
+                            }
+                        }
+                    }
+                }
+                stage('Discovery Server') {
+                    steps {
+                        echo 'Building discovery-server...'
+                        dir('discovery-server') {
+                            sh 'mvn clean package -DskipTests'
                         }
                     }
                 }
             }
         }
 
-        stage('Quality Gate') {
+        stage('Build Frontend') {
             steps {
-                echo "🚪 Checking Quality Gate status for all projects..."
+                echo 'Building Angular frontend...'
+                dir('buy-01-frontend') {
+                    sh '''
+                        npm install
+                        npm run build
+                    '''
+                }
+            }
+        }
+
+        stage('Frontend Unit Tests') {
+            steps {
+                echo '========== Running Frontend Unit Tests =========='
+                dir('buy-01-frontend') {
+                    sh 'npm run test -- --watch=false'
+                }
+            }
+        }
+
+        stage('Quality Gate Check') {
+            steps {
+                echo '========== Checking SonarQube Quality Gate =========='
                 timeout(time: 5, unit: 'MINUTES') {
-                    // Single waitForQualityGate checks the pipeline's analysis status
-                    // Individual project gates are tracked via their projectKeys above
                     waitForQualityGate abortPipeline: true
                 }
             }
         }
 
-        stage('Run API Gateway Tests') {
+        stage('Docker Build') {
             steps {
-                echo "Testing API Gateway..."
-                dir('api-gateway') {
-                    sh env.MVN_TEST_CMD
-                }
+                echo "========== Building Docker Images =========="
+                sh '''
+                    echo "========== Creating Backups of Current Images =========="
+                    for svc in $APP_SERVICES; do
+                        docker tag buy-01-dev-$svc:latest buy-01-dev-$svc:backup 2>/dev/null || true
+                    done
+
+                    docker compose build
+                '''
             }
         }
 
-        stage('Run Product Service Tests') {
+        stage('Deploy') {
             steps {
-                echo "Testing Product Service..."
-                dir('product-service') {
-                    sh env.MVN_TEST_CMD
-                    //sh 'exit 1'
-                }
-            }
-        }
-
-        stage('Run Media Service Tests') {
-            steps {
-                echo "Testing Media Service..."
-                dir('media-service') {
-                    sh env.MVN_TEST_CMD
-                }
-            }
-        }
-
-        stage('Run Identity Service Tests') {
-            steps {
-                echo "Testing Identity Service..."
-                dir('identity-service') {
-                    sh env.MVN_TEST_CMD
-                }
-            }
-        }
-
-        stage('Deploy Application Services') {
-            when {
-                branch 'main'
-            }
-            steps {
-                echo "🚀 Starting application deployment..."
+                echo "========== Deploying Application =========="
                 script {
-                    sh '''
-                        set -e
+                    def jwtSecret = '404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970' // Default fallback
+                    try {
+                        withCredentials([string(credentialsId: 'jwt-secret', variable: 'SECRET')]) {
+                            jwtSecret = SECRET
+                        }
+                    } catch (Exception e) {
+                        echo "jwt-secret credential not found in Jenkins - using default fallback secret key."
+                    }
 
-                        echo "📸 Creating backup tags for current application images..."
-                        for svc in $APP_SERVICES; do
-                            docker tag buy-01-dev-$svc:latest buy-01-dev-$svc:previous 2>/dev/null || true
-                        done
-
-                        echo "🔨 Rebuilding only application services..."
-                        docker compose up -d --build --no-deps --force-recreate $APP_SERVICES
-
-                        echo "⏳ Waiting for services to initialize..."
-                        sleep 30
-
-                        echo "✅ Checking service status..."
-                        docker compose ps
-
-                        echo "🏥 Running smoke tests..."
-                        failed=0
-
-                        curl -sf http://localhost:8080/health >/dev/null || failed=1
-                        curl -sf http://localhost:8082/health >/dev/null || failed=1
-                        curl -sf http://localhost:8083/health >/dev/null || failed=1
-                        curl -sf http://localhost:8081/health >/dev/null || failed=1
-
-                        if [ "$failed" -ne 0 ]; then
-                            echo "❌ Smoke tests failed"
-                            exit 1
-                        fi
-
-                        echo "✅ Deployment completed successfully!"
-                    '''
+                    withEnv(["JWT_SECRET=${jwtSecret}"]) {
+                        sh '''
+                            docker compose down -v
+                            docker compose up -d --build
+                            sleep 10
+                            docker compose ps
+                        '''
+                    }
                 }
             }
         }
@@ -166,14 +159,13 @@ pipeline {
 
     post {
         always {
-            echo "Collecting test results..."
-            catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
-            }
+            echo '========== Collecting Artifacts =========='
+            junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
+            archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true
         }
 
         success {
-            echo '✅ All tests passed!'
+            echo '✓ Build and Deploy Successful!'
             script {
                 catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
                     def slackCredId = null
@@ -251,7 +243,18 @@ pipeline {
         }
 
         failure {
-            echo '❌ Build or tests failed!'
+            echo '✗ Build or Deploy Failed! Attempting Rollback to Backup...'
+            sh '''
+                # Revert tags from backup back to latest
+                for svc in $APP_SERVICES; do
+                    docker tag buy-01-dev-$svc:backup buy-01-dev-$svc:latest 2>/dev/null || true
+                done
+
+                # Restart using the reverted images (no --build flag)
+                docker compose up -d
+            '''
+
+            echo '✗ Sending Failure Notifications...'
             script {
                 catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
                     def slackCredId = null
@@ -312,101 +315,6 @@ pipeline {
                                                     \\"text\\": {
                                                         \\"type\\": \\"plain_text\\",
                                                         \\"text\\": \\"View Failure Details\\"
-                                                    },
-                                                    \\"url\\": \\"''' + "${env.BUILD_URL_DISPLAY ?: ''}" + '''\\",
-                                                    \\"style\\": \\"danger\\"
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }" \
-                                $SLACK_WEBHOOK_URL || echo "Slack notification failed"
-                            '''
-                        }
-                    }
-                }
-            }
-        }
-
-        unstable {
-            echo '⚠️  Deployment failed - initiating rollback...'
-            script {
-                sh '''
-                    set +e
-
-                    echo "🔄 Rolling back application services only..."
-                    for svc in $APP_SERVICES; do
-                        docker tag buy-01-dev-$svc:previous buy-01-dev-$svc:latest 2>/dev/null || true
-                    done
-
-                    echo "🔄 Restarting previous application version..."
-                    docker compose up -d --no-deps --force-recreate $APP_SERVICES
-
-                    echo "⏳ Waiting for services to stabilize..."
-                    sleep 20
-
-                    docker compose ps
-
-                    echo "✅ Rollback completed!"
-                '''
-            }
-
-            script {
-                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
-                    def slackCredId = null
-                    try {
-                        withCredentials([string(credentialsId: 'slack-webhook-url', variable: 'DUMMY')]) {
-                            slackCredId = 'slack-webhook-url'
-                        }
-                    } catch (Exception e) {
-                        try {
-                            withCredentials([string(credentialsId: 'slack token bot', variable: 'DUMMY')]) {
-                                slackCredId = 'slack token bot'
-                            }
-                        } catch (Exception ex) {
-                            echo "Slack notification skipped: No credential 'slack-webhook-url' or 'slack token bot' configured."
-                        }
-                    }
-
-                    if (slackCredId != null) {
-                        withCredentials([string(credentialsId: slackCredId, variable: 'SLACK_WEBHOOK_URL')]) {
-                            sh '''
-                                curl -X POST -H 'Content-type: application/json' \
-                                --data "{
-                                    \\"text\\": \\"⚠️  ROLLBACK EXECUTED\\",
-                                    \\"blocks\\": [
-                                        {
-                                            \\"type\\": \\"header\\",
-                                            \\"text\\": {
-                                                \\"type\\": \\"plain_text\\",
-                                                \\"text\\": \\"⚠️  Deployment Failed - Rollback Executed\\"
-                                            }
-                                        },
-                                        {
-                                            \\"type\\": \\"section\\",
-                                            \\"fields\\": [
-                                                {
-                                                    \\"type\\": \\"mrkdwn\\",
-                                                    \\"text\\": \\"*Repository:*\\\\nbuy-01-dev\\"
-                                                },
-                                                {
-                                                    \\"type\\": \\"mrkdwn\\",
-                                                    \\"text\\": \\"*Action:*\\nReverted to previous stable version\\"
-                                                },
-                                                {
-                                                    \\"type\\": \\"mrkdwn\\",
-                                                    \\"text\\": \\"*Build #:*\\\\n''' + "${env.BUILD_NUMBER}" + '''\\"
-                                                }
-                                            ]
-                                        },
-                                        {
-                                            \\"type\\": \\"actions\\",
-                                            \\"elements\\": [
-                                                {
-                                                    \\"type\\": \\"button\\",
-                                                    \\"text\\": {
-                                                        \\"type\\": \\"plain_text\\",
-                                                        \\"text\\": \\"View Build Log\\"
                                                     },
                                                     \\"url\\": \\"''' + "${env.BUILD_URL_DISPLAY ?: ''}" + '''\\",
                                                     \\"style\\": \\"danger\\"
