@@ -80,7 +80,7 @@ pipeline {
                     steps {
                         echo 'Building discovery-server...'
                         dir('discovery-server') {
-                            sh 'mvn clean package -DskipTests'
+                           sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=discovery-service'
                         }
                     }
                 }
