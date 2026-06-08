@@ -14,7 +14,6 @@ pipeline {
 
     environment {
         SLACK_CHANNEL = '#build-notifications'
-        SLACK_WEBHOOK_URL = credentials('slack-webhook-url')
         BUILD_URL_DISPLAY = "${env.BUILD_URL}console"
         BUILD_TAG = "build-${BUILD_NUMBER}"
         IMAGE_TAG_LATEST = "latest"
@@ -22,21 +21,13 @@ pipeline {
         DEPLOYMENT_TIMEOUT = '300'
         APP_SERVICES = "api-gateway product-service media-service identity-service frontend"
         SONARQUBE_URL = 'http://sonarqube:9000'
-        SONARQUBE_LOGIN = credentials('sonar-token')
         MVN_TEST_CMD = 'mvn test'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: '*/main']],
-                    userRemoteConfigs: [[
-                        url: 'git@github.com:Violet-Ogombo/buy-01-dev.git',
-                        credentialsId: 'github-ssh-key'
-                    ]]
-                ])
+                checkout scm
             }
         }
 
@@ -184,114 +175,156 @@ pipeline {
         success {
             echo '✅ All tests passed!'
             script {
-                sh '''
-                    curl -X POST -H 'Content-type: application/json' \
-                    --data "{
-                        \"text\": \"✅ Build SUCCESS\",
-                        \"blocks\": [
-                            {
-                                \"type\": \"header\",
-                                \"text\": {
-                                    \"type\": \"plain_text\",
-                                    \"text\": \"✅ Build Successful\"
-                                }
-                            },
-                            {
-                                \"type\": \"section\",
-                                \"fields\": [
-                                    {
-                                        \"type\": \"mrkdwn\",
-                                        \"text\": \"*Repository:*\\nbuy-01-dev\"
-                                    },
-                                    {
-                                        \"type\": \"mrkdwn\",
-                                        \"text\": \"*Branch:*\\nmain\"
-                                    },
-                                    {
-                                        \"type\": \"mrkdwn\",
-                                        \"text\": \"*Commit:*\\n''' + "${env.GIT_COMMIT?.take(7) ?: 'N/A'}" + '''\"
-                                    },
-                                    {
-                                        \"type\": \"mrkdwn\",
-                                        \"text\": \"*Build #:*\\n''' + "${env.BUILD_NUMBER}" + '''\"
-                                    }
-                                ]
-                            },
-                            {
-                                \"type\": \"actions\",
-                                \"elements\": [
-                                    {
-                                        \"type\": \"button\",
-                                        \"text\": {
-                                            \"type\": \"plain_text\",
-                                            \"text\": \"View Build Details\"
-                                        },
-                                        \"url\": \"''' + "${BUILD_URL_DISPLAY}" + '''\",
-                                        \"style\": \"primary\"
-                                    }
-                                ]
+                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
+                    def slackCredId = null
+                    try {
+                        withCredentials([string(credentialsId: 'slack-webhook-url', variable: 'DUMMY')]) {
+                            slackCredId = 'slack-webhook-url'
+                        }
+                    } catch (Exception e) {
+                        try {
+                            withCredentials([string(credentialsId: 'slack token bot', variable: 'DUMMY')]) {
+                                slackCredId = 'slack token bot'
                             }
-                        ]
-                    }" \
-                    $SLACK_WEBHOOK_URL || echo "Slack notification failed (webhook may not be configured yet)"
-                '''
+                        } catch (Exception ex) {
+                            echo "Slack notification skipped: No credential 'slack-webhook-url' or 'slack token bot' configured."
+                        }
+                    }
+
+                    if (slackCredId != null) {
+                        withCredentials([string(credentialsId: slackCredId, variable: 'SLACK_WEBHOOK_URL')]) {
+                            sh '''
+                                curl -X POST -H 'Content-type: application/json' \
+                                --data "{
+                                    \"text\": \"✅ Build SUCCESS\",
+                                    \"blocks\": [
+                                        {
+                                            \"type\": \"header\",
+                                            \"text\": {
+                                                \"type\": \"plain_text\",
+                                                \"text\": \"✅ Build Successful\"
+                                            }
+                                        },
+                                        {
+                                            \"type\": \"section\",
+                                            \"fields\": [
+                                                {
+                                                    \"type\": \"mrkdwn\",
+                                                    \"text\": \"*Repository:*\\nbuy-01-dev\"
+                                                },
+                                                {
+                                                    \"type\": \"mrkdwn\",
+                                                    \"text\": \"*Branch:*\\nmain\"
+                                                },
+                                                {
+                                                    \"type\": \"mrkdwn\",
+                                                    \"text\": \"*Commit:*\\n''' + "${env.GIT_COMMIT?.take(7) ?: 'N/A'}" + '''\"
+                                                },
+                                                {
+                                                    \"type\": \"mrkdwn\",
+                                                    \"text\": \"*Build #:*\\n''' + "${env.BUILD_NUMBER}" + '''\"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            \"type\": \"actions\",
+                                            \"elements\": [
+                                                {
+                                                    \"type\": \"button\",
+                                                    \"text\": {
+                                                        \"type\": \"plain_text\",
+                                                        \"text\": \"View Build Details\"
+                                                    },
+                                                    \"url\": \"''' + "${env.BUILD_URL_DISPLAY ?: ''}" + '''\",
+                                                    \"style\": \"primary\"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }" \
+                                $SLACK_WEBHOOK_URL || echo "Slack notification failed"
+                            '''
+                        }
+                    }
+                }
             }
         }
 
         failure {
             echo '❌ Build or tests failed!'
             script {
-                sh '''
-                    curl -X POST -H 'Content-type: application/json' \
-                    --data "{
-                        \"text\": \"❌ Build FAILED\",
-                        \"blocks\": [
-                            {
-                                \"type\": \"header\",
-                                \"text\": {
-                                    \"type\": \"plain_text\",
-                                    \"text\": \"❌ Build Failed\"
-                                }
-                            },
-                            {
-                                \"type\": \"section\",
-                                \"fields\": [
-                                    {
-                                        \"type\": \"mrkdwn\",
-                                        \"text\": \"*Repository:*\\nbuy-01-dev\"
-                                    },
-                                    {
-                                        \"type\": \"mrkdwn\",
-                                        \"text\": \"*Branch:*\\nmain\"
-                                    },
-                                    {
-                                        \"type\": \"mrkdwn\",
-                                        \"text\": \"*Commit:*\\n''' + "${env.GIT_COMMIT?.take(7) ?: 'N/A'}" + '''\"
-                                    },
-                                    {
-                                        \"type\": \"mrkdwn\",
-                                        \"text\": \"*Build #:*\\n''' + "${env.BUILD_NUMBER}" + '''\"
-                                    }
-                                ]
-                            },
-                            {
-                                \"type\": \"actions\",
-                                \"elements\": [
-                                    {
-                                        \"type\": \"button\",
-                                        \"text\": {
-                                            \"type\": \"plain_text\",
-                                            \"text\": \"View Failure Details\"
-                                        },
-                                        \"url\": \"''' + "${BUILD_URL_DISPLAY}" + '''\",
-                                        \"style\": \"danger\"
-                                    }
-                                ]
+                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
+                    def slackCredId = null
+                    try {
+                        withCredentials([string(credentialsId: 'slack-webhook-url', variable: 'DUMMY')]) {
+                            slackCredId = 'slack-webhook-url'
+                        }
+                    } catch (Exception e) {
+                        try {
+                            withCredentials([string(credentialsId: 'slack token bot', variable: 'DUMMY')]) {
+                                slackCredId = 'slack token bot'
                             }
-                        ]
-                    }" \
-                    $SLACK_WEBHOOK_URL || echo "Slack notification failed (webhook may not be configured yet)"
-                '''
+                        } catch (Exception ex) {
+                            echo "Slack notification skipped: No credential 'slack-webhook-url' or 'slack token bot' configured."
+                        }
+                    }
+
+                    if (slackCredId != null) {
+                        withCredentials([string(credentialsId: slackCredId, variable: 'SLACK_WEBHOOK_URL')]) {
+                            sh '''
+                                curl -X POST -H 'Content-type: application/json' \
+                                --data "{
+                                    \"text\": \"❌ Build FAILED\",
+                                    \"blocks\": [
+                                        {
+                                            \"type\": \"header\",
+                                            \"text\": {
+                                                \"type\": \"plain_text\",
+                                                \"text\": \"❌ Build Failed\"
+                                            }
+                                        },
+                                        {
+                                            \"type\": \"section\",
+                                            \"fields\": [
+                                                {
+                                                    \"type\": \"mrkdwn\",
+                                                    \"text\": \"*Repository:*\\nbuy-01-dev\"
+                                                },
+                                                {
+                                                    \"type\": \"mrkdwn\",
+                                                    \"text\": \"*Branch:*\\nmain\"
+                                                },
+                                                {
+                                                    \"type\": \"mrkdwn\",
+                                                    \"text\": \"*Commit:*\\n''' + "${env.GIT_COMMIT?.take(7) ?: 'N/A'}" + '''\"
+                                                },
+                                                {
+                                                    \"type\": \"mrkdwn\",
+                                                    \"text\": \"*Build #:*\\n''' + "${env.BUILD_NUMBER}" + '''\"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            \"type\": \"actions\",
+                                            \"elements\": [
+                                                {
+                                                    \"type\": \"button\",
+                                                    \"text\": {
+                                                        \"type\": \"plain_text\",
+                                                        \"text\": \"View Failure Details\"
+                                                    },
+                                                    \"url\": \"''' + "${env.BUILD_URL_DISPLAY ?: ''}" + '''\",
+                                                    \"style\": \"danger\"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }" \
+                                $SLACK_WEBHOOK_URL || echo "Slack notification failed"
+                            '''
+                        }
+                    }
+                }
             }
         }
 
@@ -319,53 +352,74 @@ pipeline {
             }
 
             script {
-                sh '''
-                    curl -X POST -H 'Content-type: application/json' \
-                    --data "{
-                        \"text\": \"⚠️  ROLLBACK EXECUTED\",
-                        \"blocks\": [
-                            {
-                                \"type\": \"header\",
-                                \"text\": {
-                                    \"type\": \"plain_text\",
-                                    \"text\": \"⚠️  Deployment Failed - Rollback Executed\"
-                                }
-                            },
-                            {
-                                \"type\": \"section\",
-                                \"fields\": [
-                                    {
-                                        \"type\": \"mrkdwn\",
-                                        \"text\": \"*Repository:*\\nbuy-01-dev\"
-                                    },
-                                    {
-                                        \"type\": \"mrkdwn\",
-                                        \"text\": \"*Action:*\\nReverted to previous stable version\"
-                                    },
-                                    {
-                                        \"type\": \"mrkdwn\",
-                                        \"text\": \"*Build #:*\\n''' + "${env.BUILD_NUMBER}" + '''\"
-                                    }
-                                ]
-                            },
-                            {
-                                \"type\": \"actions\",
-                                \"elements\": [
-                                    {
-                                        \"type\": \"button\",
-                                        \"text\": {
-                                            \"type\": \"plain_text\",
-                                            \"text\": \"View Build Log\"
-                                        },
-                                        \"url\": \"''' + "${BUILD_URL_DISPLAY}" + '''\",
-                                        \"style\": \"danger\"
-                                    }
-                                ]
+                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
+                    def slackCredId = null
+                    try {
+                        withCredentials([string(credentialsId: 'slack-webhook-url', variable: 'DUMMY')]) {
+                            slackCredId = 'slack-webhook-url'
+                        }
+                    } catch (Exception e) {
+                        try {
+                            withCredentials([string(credentialsId: 'slack token bot', variable: 'DUMMY')]) {
+                                slackCredId = 'slack token bot'
                             }
-                        ]
-                    }" \
-                    $SLACK_WEBHOOK_URL || echo "Slack notification failed"
-                '''
+                        } catch (Exception ex) {
+                            echo "Slack notification skipped: No credential 'slack-webhook-url' or 'slack token bot' configured."
+                        }
+                    }
+
+                    if (slackCredId != null) {
+                        withCredentials([string(credentialsId: slackCredId, variable: 'SLACK_WEBHOOK_URL')]) {
+                            sh '''
+                                curl -X POST -H 'Content-type: application/json' \
+                                --data "{
+                                    \"text\": \"⚠️  ROLLBACK EXECUTED\",
+                                    \"blocks\": [
+                                        {
+                                            \"type\": \"header\",
+                                            \"text\": {
+                                                \"type\": \"plain_text\",
+                                                \"text\": \"⚠️  Deployment Failed - Rollback Executed\"
+                                            }
+                                        },
+                                        {
+                                            \"type\": \"section\",
+                                            \"fields\": [
+                                                {
+                                                    \"type\": \"mrkdwn\",
+                                                    \"text\": \"*Repository:*\\nbuy-01-dev\"
+                                                },
+                                                {
+                                                    \"type\": \"mrkdwn\",
+                                                    \"text\": \"*Action:*\\nReverted to previous stable version\"
+                                                },
+                                                {
+                                                    \"type\": \"mrkdwn\",
+                                                    \"text\": \"*Build #:*\\n''' + "${env.BUILD_NUMBER}" + '''\"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            \"type\": \"actions\",
+                                            \"elements\": [
+                                                {
+                                                    \"type\": \"button\",
+                                                    \"text\": {
+                                                        \"type\": \"plain_text\",
+                                                        \"text\": \"View Build Log\"
+                                                    },
+                                                    \"url\": \"''' + "${env.BUILD_URL_DISPLAY ?: ''}" + '''\",
+                                                    \"style\": \"danger\"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }" \
+                                $SLACK_WEBHOOK_URL || echo "Slack notification failed"
+                            '''
+                        }
+                    }
+                }
             }
         }
     }
