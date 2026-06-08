@@ -34,7 +34,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 echo "🔍 Running SonarQube Analysis on all services..."
-                withSonarQubeEnv('SonarQube') {
+                withSonarQubeEnv('sonarqube') {
                     script {
                         // Analyze API Gateway
                         dir('api-gateway') {
@@ -196,47 +196,47 @@ pipeline {
                             sh '''
                                 curl -X POST -H 'Content-type: application/json' \
                                 --data "{
-                                    \"text\": \"✅ Build SUCCESS\",
-                                    \"blocks\": [
+                                    \\"text\\": \\"✅ Build SUCCESS\\",
+                                    \\"blocks\\": [
                                         {
-                                            \"type\": \"header\",
-                                            \"text\": {
-                                                \"type\": \"plain_text\",
-                                                \"text\": \"✅ Build Successful\"
+                                            \\"type\\": \\"header\\",
+                                            \\"text\\": {
+                                                \\"type\\": \\"plain_text\\",
+                                                \\"text\\": \\"✅ Build Successful\\"
                                             }
                                         },
                                         {
-                                            \"type\": \"section\",
-                                            \"fields\": [
+                                            \\"type\\": \\"section\\",
+                                            \\"fields\\": [
                                                 {
-                                                    \"type\": \"mrkdwn\",
-                                                    \"text\": \"*Repository:*\\nbuy-01-dev\"
+                                                    \\"type\\": \\"mrkdwn\\",
+                                                    \\"text\\": \\"*Repository:*\\\\nbuy-01-dev\\"
                                                 },
                                                 {
-                                                    \"type\": \"mrkdwn\",
-                                                    \"text\": \"*Branch:*\\nmain\"
+                                                    \\"type\\": \\"mrkdwn\\",
+                                                    \\"text\\": \\"*Branch:*\\\\nmain\\"
                                                 },
                                                 {
-                                                    \"type\": \"mrkdwn\",
-                                                    \"text\": \"*Commit:*\\n''' + "${env.GIT_COMMIT?.take(7) ?: 'N/A'}" + '''\"
+                                                    \\"type\\": \\"mrkdwn\\",
+                                                    \\"text\\": \\"*Commit:*\\\\n''' + "${env.GIT_COMMIT?.take(7) ?: 'N/A'}" + '''\\"
                                                 },
                                                 {
-                                                    \"type\": \"mrkdwn\",
-                                                    \"text\": \"*Build #:*\\n''' + "${env.BUILD_NUMBER}" + '''\"
+                                                    \\"type\\": \\"mrkdwn\\",
+                                                    \\"text\\": \\"*Build #:*\\\\n''' + "${env.BUILD_NUMBER}" + '''\\"
                                                 }
                                             ]
                                         },
                                         {
-                                            \"type\": \"actions\",
-                                            \"elements\": [
+                                            \\"type\\": \\"actions\\",
+                                            \\"elements\\": [
                                                 {
-                                                    \"type\": \"button\",
-                                                    \"text\": {
-                                                        \"type\": \"plain_text\",
-                                                        \"text\": \"View Build Details\"
+                                                    \\"type\\": \\"button\\",
+                                                    \\"text\\": {
+                                                        \\"type\\": \\"plain_text\\",
+                                                        \\"text\\": \\"View Build Details\\"
                                                     },
-                                                    \"url\": \"''' + "${env.BUILD_URL_DISPLAY ?: ''}" + '''\",
-                                                    \"style\": \"primary\"
+                                                    \\"url\\": \\"''' + "${env.BUILD_URL_DISPLAY ?: ''}" + '''\\",
+                                                    \\"style\\": \\"primary\\"
                                                 }
                                             ]
                                         }
@@ -274,47 +274,47 @@ pipeline {
                             sh '''
                                 curl -X POST -H 'Content-type: application/json' \
                                 --data "{
-                                    \"text\": \"❌ Build FAILED\",
-                                    \"blocks\": [
+                                    \\"text\\": \\"❌ Build FAILED\\",
+                                    \\"blocks\\": [
                                         {
-                                            \"type\": \"header\",
-                                            \"text\": {
-                                                \"type\": \"plain_text\",
-                                                \"text\": \"❌ Build Failed\"
+                                            \\"type\\": \\"header\\",
+                                            \\"text\\": {
+                                                \\"type\\": \\"plain_text\\",
+                                                \\"text\\": \\"❌ Build Failed\\"
                                             }
                                         },
                                         {
-                                            \"type\": \"section\",
-                                            \"fields\": [
+                                            \\"type\\": \\"section\\",
+                                            \\"fields\\": [
                                                 {
-                                                    \"type\": \"mrkdwn\",
-                                                    \"text\": \"*Repository:*\\nbuy-01-dev\"
+                                                    \\"type\\": \\"mrkdwn\\",
+                                                    \\"text\\": \\"*Repository:*\\\\nbuy-01-dev\\"
                                                 },
                                                 {
-                                                    \"type\": \"mrkdwn\",
-                                                    \"text\": \"*Branch:*\\nmain\"
+                                                    \\"type\\": \\"mrkdwn\\",
+                                                    \\"text\\": \\"*Branch:*\\\\nmain\\"
                                                 },
                                                 {
-                                                    \"type\": \"mrkdwn\",
-                                                    \"text\": \"*Commit:*\\n''' + "${env.GIT_COMMIT?.take(7) ?: 'N/A'}" + '''\"
+                                                    \\"type\\": \\"mrkdwn\\",
+                                                    \\"text\\": \\"*Commit:*\\\\n''' + "${env.GIT_COMMIT?.take(7) ?: 'N/A'}" + '''\\"
                                                 },
                                                 {
-                                                    \"type\": \"mrkdwn\",
-                                                    \"text\": \"*Build #:*\\n''' + "${env.BUILD_NUMBER}" + '''\"
+                                                    \\"type\\": \\"mrkdwn\\",
+                                                    \\"text\\": \\"*Build #:*\\\\n''' + "${env.BUILD_NUMBER}" + '''\\"
                                                 }
                                             ]
                                         },
                                         {
-                                            \"type\": \"actions\",
-                                            \"elements\": [
+                                            \\"type\\": \\"actions\\",
+                                            \\"elements\\": [
                                                 {
-                                                    \"type\": \"button\",
-                                                    \"text\": {
-                                                        \"type\": \"plain_text\",
-                                                        \"text\": \"View Failure Details\"
+                                                    \\"type\\": \\"button\\",
+                                                    \\"text\\": {
+                                                        \\"type\\": \\"plain_text\\",
+                                                        \\"text\\": \\"View Failure Details\\"
                                                     },
-                                                    \"url\": \"''' + "${env.BUILD_URL_DISPLAY ?: ''}" + '''\",
-                                                    \"style\": \"danger\"
+                                                    \\"url\\": \\"''' + "${env.BUILD_URL_DISPLAY ?: ''}" + '''\\",
+                                                    \\"style\\": \\"danger\\"
                                                 }
                                             ]
                                         }
@@ -373,43 +373,43 @@ pipeline {
                             sh '''
                                 curl -X POST -H 'Content-type: application/json' \
                                 --data "{
-                                    \"text\": \"⚠️  ROLLBACK EXECUTED\",
-                                    \"blocks\": [
+                                    \\"text\\": \\"⚠️  ROLLBACK EXECUTED\\",
+                                    \\"blocks\\": [
                                         {
-                                            \"type\": \"header\",
-                                            \"text\": {
-                                                \"type\": \"plain_text\",
-                                                \"text\": \"⚠️  Deployment Failed - Rollback Executed\"
+                                            \\"type\\": \\"header\\",
+                                            \\"text\\": {
+                                                \\"type\\": \\"plain_text\\",
+                                                \\"text\\": \\"⚠️  Deployment Failed - Rollback Executed\\"
                                             }
                                         },
                                         {
-                                            \"type\": \"section\",
-                                            \"fields\": [
+                                            \\"type\\": \\"section\\",
+                                            \\"fields\\": [
                                                 {
-                                                    \"type\": \"mrkdwn\",
-                                                    \"text\": \"*Repository:*\\nbuy-01-dev\"
+                                                    \\"type\\": \\"mrkdwn\\",
+                                                    \\"text\\": \\"*Repository:*\\\\nbuy-01-dev\\"
                                                 },
                                                 {
-                                                    \"type\": \"mrkdwn\",
-                                                    \"text\": \"*Action:*\\nReverted to previous stable version\"
+                                                    \\"type\\": \\"mrkdwn\\",
+                                                    \\"text\\": \\"*Action:*\\nReverted to previous stable version\\"
                                                 },
                                                 {
-                                                    \"type\": \"mrkdwn\",
-                                                    \"text\": \"*Build #:*\\n''' + "${env.BUILD_NUMBER}" + '''\"
+                                                    \\"type\\": \\"mrkdwn\\",
+                                                    \\"text\\": \\"*Build #:*\\\\n''' + "${env.BUILD_NUMBER}" + '''\\"
                                                 }
                                             ]
                                         },
                                         {
-                                            \"type\": \"actions\",
-                                            \"elements\": [
+                                            \\"type\\": \\"actions\\",
+                                            \\"elements\\": [
                                                 {
-                                                    \"type\": \"button\",
-                                                    \"text\": {
-                                                        \"type\": \"plain_text\",
-                                                        \"text\": \"View Build Log\"
+                                                    \\"type\\": \\"button\\",
+                                                    \\"text\\": {
+                                                        \\"type\\": \\"plain_text\\",
+                                                        \\"text\\": \\"View Build Log\\"
                                                     },
-                                                    \"url\": \"''' + "${env.BUILD_URL_DISPLAY ?: ''}" + '''\",
-                                                    \"style\": \"danger\"
+                                                    \\"url\\": \\"''' + "${env.BUILD_URL_DISPLAY ?: ''}" + '''\\",
+                                                    \\"style\\": \\"danger\\"
                                                 }
                                             ]
                                         }
