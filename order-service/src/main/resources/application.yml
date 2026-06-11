@@ -1,0 +1,21 @@
+server:
+  port: 8084
+spring:
+  application:
+    name: order-service
+  data:
+    mongodb:
+      uri: mongodb://mongodb:27017/buy01
+      auto-index-creation: true
+  kafka:
+    bootstrap-servers: kafka:9092
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-server:8761/eureka
+    register-with-eureka: true
+    fetch-registry: true
+
+product:
+  service:
+    url: ${PRODUCT_SERVICE_URL:http://localhost:8082}

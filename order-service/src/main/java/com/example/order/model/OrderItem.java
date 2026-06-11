@@ -1,7 +1,6 @@
-package com.example.product.model;
+package com.example.order.model;
 
 import org.springframework.data.mongodb.core.mapping.Field;
-
 import java.math.BigDecimal;
 
 public class OrderItem {
@@ -18,7 +17,6 @@ public class OrderItem {
     @Field("total_price")
     private BigDecimal totalPrice;
 
-    // Constructors
     public OrderItem() {
     }
 
@@ -29,7 +27,6 @@ public class OrderItem {
         this.totalPrice = unitPrice.multiply(BigDecimal.valueOf(quantity));
     }
 
-    // Getters and Setters
     public String getProductId() {
         return productId;
     }
@@ -44,7 +41,6 @@ public class OrderItem {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
-        // Recalculate total price
         if (unitPrice != null) {
             this.totalPrice = unitPrice.multiply(BigDecimal.valueOf(quantity));
         }
@@ -56,7 +52,6 @@ public class OrderItem {
 
     public void setUnitPrice(BigDecimal unitPrice) {
         this.unitPrice = unitPrice;
-        // Recalculate total price
         this.totalPrice = unitPrice.multiply(BigDecimal.valueOf(quantity));
     }
 

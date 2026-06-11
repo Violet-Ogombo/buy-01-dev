@@ -1,10 +1,9 @@
-package com.example.product.model;
+package com.example.order.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -51,7 +50,6 @@ public class Order {
     @Field("delivered_at")
     private LocalDateTime deliveredAt;
 
-    // Constructors
     public Order() {
         this.status = OrderStatus.PENDING;
         this.totalAmount = BigDecimal.ZERO;
@@ -67,7 +65,6 @@ public class Order {
         this.shippingAddress = shippingAddress;
     }
 
-    // Getters and Setters
     public String getId() {
         return id;
     }

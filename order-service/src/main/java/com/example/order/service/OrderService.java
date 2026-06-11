@@ -1,32 +1,50 @@
-package com.example.product.service;
+package com.example.order.service;
 
-import com.example.product.dto.OrderDTO;
-import com.example.product.dto.OrderItemDTO;
-import com.example.product.exception.ResourceNotFoundException;
-import com.example.product.model.Product;
-import com.example.product.model.Order;
-import com.example.product.model.OrderStatus;
-import com.example.product.repository.OrderRepository;
-import com.example.product.repository.ProductRepository;
+import com.example.order.dto.OrderDTO;
+import com.example.order.dto.OrderItemDTO;
+import com.example.order.dto.ProductDTO;
+import com.example.order.exception.ResourceNotFoundException;
+import com.example.order.model.Order;
+import com.example.order.model.OrderStatus;
+import com.example.order.repository.OrderRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 public class OrderService {
 
+    private static final Logger log = LoggerFactory.getLogger(OrderService.class);
     private static final String ORDER_NOT_FOUND_PREFIX = "Order not found with id: ";
 
     private final OrderRepository orderRepository;
-    private final ProductRepository productRepository;
+    private final RestTemplate restTemplate;
+
+    @Value("${product.service.url:http://localhost:8082}")
+    private String productServiceUrl;
 
     @Autowired
-    public OrderService(OrderRepository orderRepository, ProductRepository productRepository) {
+    public OrderService(OrderRepository orderRepository, RestTemplate restTemplate) {
         this.orderRepository = orderRepository;
-        this.productRepository = productRepository;
+        this.restTemplate = restTemplate;
+    }
+
+    private String getProductName(String productId) {
+        try {
+            ProductDTO p = restTemplate.getForObject(productServiceUrl + "/" + productId, ProductDTO.class);
+            return p != null ? p.getName() : "Unknown Product";
+        } catch (Exception e) {
+            log.warn("Could not retrieve product name for ID {}: {}", productId, e.getMessage());
+            return "Unknown Product";
+        }
     }
 
     public OrderDTO getOrderById(String orderId) {
@@ -113,9 +131,7 @@ public class OrderService {
     private OrderDTO convertToDTO(Order order) {
         List<OrderItemDTO> itemDTOs = order.getItems().stream()
                 .map(item -> {
-                    String productName = productRepository.findById(item.getProductId())
-                            .map(Product::getName)
-                            .orElse("Unknown Product");
+                    String productName = getProductName(item.getProductId());
                     return new OrderItemDTO(item.getProductId(), productName,
                             item.getQuantity(), item.getUnitPrice(), item.getTotalPrice());
                 })

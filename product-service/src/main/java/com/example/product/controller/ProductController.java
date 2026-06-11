@@ -88,5 +88,11 @@ public class ProductController {
 		Product updated = productService.addImages(id, request.getMediaIds(), userId);
 		return ResponseEntity.ok(updated);
 	}
+
+	@PostMapping("/internal/products/reduce-stock")
+	public ResponseEntity<Void> reduceStock(@RequestBody List<com.example.product.dto.ReduceStockItem> items) {
+		productService.reduceStock(items);
+		return ResponseEntity.ok().build();
+	}
 }
 

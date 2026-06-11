@@ -1,9 +1,9 @@
-package com.example.product.controller;
+package com.example.order.controller;
 
-import com.example.product.dto.CartDTO;
-import com.example.product.dto.CheckoutRequest;
-import com.example.product.dto.OrderDTO;
-import com.example.product.service.CartService;
+import com.example.order.dto.CartDTO;
+import com.example.order.dto.CheckoutRequest;
+import com.example.order.dto.OrderDTO;
+import com.example.order.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

@@ -20,7 +20,7 @@ pipeline {
         IMAGE_TAG_LATEST = "latest"
         IMAGE_TAG_PREVIOUS = "previous"
         DEPLOYMENT_TIMEOUT = '300'
-        APP_SERVICES = "api-gateway product-service media-service identity-service frontend"
+        APP_SERVICES = "api-gateway product-service order-service media-service identity-service frontend"
         SONARQUBE_URL = 'http://sonarqube:9000'
         MVN_TEST_CMD = 'mvn test'
     }
@@ -52,6 +52,16 @@ pipeline {
                         withSonarQubeEnv('SonarQube') {
                             dir('product-service') {
                                 sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=product-service'
+                            }
+                        }
+                    }
+                }
+                stage('Order Service') {
+                    steps {
+                        echo 'Building & Analyzing order-service...'
+                        withSonarQubeEnv('SonarQube') {
+                            dir('order-service') {
+                                sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=order-service'
                             }
                         }
                     }

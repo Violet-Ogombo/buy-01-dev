@@ -1,28 +1,45 @@
-package com.example.product.service;
+package com.example.order.service;
 
-import com.example.product.dto.BuyerAnalyticsDTO;
-import com.example.product.model.Order;
-import com.example.product.model.OrderItem;
-import com.example.product.repository.OrderRepository;
+import com.example.order.dto.BuyerAnalyticsDTO;
+import com.example.order.dto.ProductDTO;
+import com.example.order.model.Order;
+import com.example.order.model.OrderItem;
+import com.example.order.repository.OrderRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.util.*;
 
-import com.example.product.repository.ProductRepository;
-import com.example.product.model.Product;
-
 @Service
 public class BuyerAnalyticsService {
 
-    private final OrderRepository orderRepository;
-    private final ProductRepository productRepository;
+    private static final Logger log = LoggerFactory.getLogger(BuyerAnalyticsService.class);
 
-    public BuyerAnalyticsService(OrderRepository orderRepository, ProductRepository productRepository) {
+    private final OrderRepository orderRepository;
+    private final RestTemplate restTemplate;
+
+    @Value("${product.service.url:http://localhost:8082}")
+    private String productServiceUrl;
+
+    public BuyerAnalyticsService(OrderRepository orderRepository, RestTemplate restTemplate) {
         this.orderRepository = orderRepository;
-        this.productRepository = productRepository;
+        this.restTemplate = restTemplate;
+    }
+
+    private String getProductName(String productId) {
+        try {
+            ProductDTO p = restTemplate.getForObject(productServiceUrl + "/" + productId, ProductDTO.class);
+            return p != null ? p.getName() : "Product " + productId.substring(0, Math.min(5, productId.length()));
+        } catch (Exception e) {
+            log.warn("Could not retrieve product name for ID {}: {}", productId, e.getMessage());
+            return "Product " + productId.substring(0, Math.min(5, productId.length()));
+        }
     }
 
     public BuyerAnalyticsDTO getBuyerAnalytics(String userId) {
@@ -61,9 +78,7 @@ public class BuyerAnalyticsService {
                 .sorted((a, b) -> Integer.compare(b.getValue().totalQuantity, a.getValue().totalQuantity))
                 .limit(5)
                 .map(entry -> {
-                    String name = productRepository.findById(entry.getKey())
-                            .map(Product::getName)
-                            .orElse("Product " + entry.getKey().substring(0, Math.min(5, entry.getKey().length())));
+                    String name = getProductName(entry.getKey());
                     return new BuyerAnalyticsDTO.MostBoughtProductDTO(
                             entry.getKey(),
                             name,

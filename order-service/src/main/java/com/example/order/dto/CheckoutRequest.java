@@ -1,4 +1,4 @@
-package com.example.product.dto;
+package com.example.order.dto;
 
 public class CheckoutRequest {
     private String paymentMethod; // PAY_ON_DELIVERY, CREDIT_CARD, etc.

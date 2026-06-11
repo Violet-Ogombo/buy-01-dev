@@ -1,6 +1,6 @@
-package com.example.product.repository;
+package com.example.order.repository;
 
-import com.example.product.model.ShoppingCart;
+import com.example.order.model.ShoppingCart;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 

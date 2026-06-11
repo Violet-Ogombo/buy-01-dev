@@ -1,6 +1,6 @@
-package com.example.product.dto;
+package com.example.order.dto;
 
-import com.example.product.model.OrderStatus;
+import com.example.order.model.OrderStatus;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;

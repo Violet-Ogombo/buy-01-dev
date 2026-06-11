@@ -1,8 +1,8 @@
-package com.example.product.controller;
+package com.example.order.controller;
 
-import com.example.product.dto.OrderDTO;
-import com.example.product.model.OrderStatus;
-import com.example.product.service.OrderService;
+import com.example.order.dto.OrderDTO;
+import com.example.order.model.OrderStatus;
+import com.example.order.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

@@ -1,17 +1,25 @@
-package com.example.product.service;
+package com.example.order.service;
 
-import com.example.product.dto.CartDTO;
-import com.example.product.dto.CartItemDTO;
-import com.example.product.dto.CheckoutRequest;
-import com.example.product.dto.OrderDTO;
-import com.example.product.dto.OrderItemDTO;
-import com.example.product.exception.ResourceNotFoundException;
-import com.example.product.model.*;
-import com.example.product.repository.ShoppingCartRepository;
-import com.example.product.repository.ProductRepository;
-import com.example.product.repository.OrderRepository;
+import com.example.order.dto.CartDTO;
+import com.example.order.dto.CartItemDTO;
+import com.example.order.dto.CheckoutRequest;
+import com.example.order.dto.OrderDTO;
+import com.example.order.dto.OrderItemDTO;
+import com.example.order.dto.ProductDTO;
+import com.example.order.dto.ReduceStockItem;
+import com.example.order.exception.ResourceNotFoundException;
+import com.example.order.model.*;
+import com.example.order.repository.ShoppingCartRepository;
+import com.example.order.repository.OrderRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -19,18 +27,44 @@ import java.util.*;
 @Service
 public class CartService {
 
+    private static final Logger log = LoggerFactory.getLogger(CartService.class);
     private static final String CART_NOT_FOUND_PREFIX = "Cart not found for user: ";
 
     private final ShoppingCartRepository cartRepository;
-    private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
+    private final RestTemplate restTemplate;
+
+    @Value("${product.service.url:http://localhost:8082}")
+    private String productServiceUrl;
 
     @Autowired
-    public CartService(ShoppingCartRepository cartRepository, ProductRepository productRepository,
-                       OrderRepository orderRepository) {
+    public CartService(ShoppingCartRepository cartRepository,
+                       OrderRepository orderRepository,
+                       RestTemplate restTemplate) {
         this.cartRepository = cartRepository;
-        this.productRepository = productRepository;
         this.orderRepository = orderRepository;
+        this.restTemplate = restTemplate;
+    }
+
+    private ProductDTO fetchProduct(String productId) {
+        try {
+            return restTemplate.getForObject(productServiceUrl + "/" + productId, ProductDTO.class);
+        } catch (HttpClientErrorException.NotFound e) {
+            throw new ResourceNotFoundException("Product not found with id: " + productId);
+        } catch (RestClientException e) {
+            log.error("Failed to fetch product metadata for id {}: {}", productId, e.getMessage());
+            throw new RuntimeException("Product service is currently unavailable.");
+        }
+    }
+
+    private String getProductName(String productId) {
+        try {
+            ProductDTO p = restTemplate.getForObject(productServiceUrl + "/" + productId, ProductDTO.class);
+            return p != null ? p.getName() : "Unknown Product";
+        } catch (Exception e) {
+            log.warn("Could not retrieve product name for ID {}: {}", productId, e.getMessage());
+            return "Unknown Product";
+        }
     }
 
     public CartDTO getCart(String userId) {
@@ -44,8 +78,7 @@ public class CartService {
             throw new IllegalArgumentException("Quantity must be greater than 0");
         }
 
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
+        ProductDTO product = fetchProduct(productId);
 
         if (product.getQuantity() < quantity) {
             throw new IllegalArgumentException("Insufficient stock. Available: " + product.getQuantity());
@@ -89,8 +122,7 @@ public class CartService {
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException("Item not found in cart: " + itemId));
 
-        Product product = productRepository.findById(item.getProductId())
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        ProductDTO product = fetchProduct(item.getProductId());
 
         if (product.getQuantity() < quantity) {
             throw new IllegalArgumentException("Insufficient stock. Available: " + product.getQuantity());
@@ -130,15 +162,28 @@ public class CartService {
         }
 
         // Validate all products have sufficient stock
+        List<ReduceStockItem> reduceStockItems = new ArrayList<>();
         for (CartItem item : cart.getItems()) {
-            Product product = productRepository.findById(item.getProductId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + item.getProductId()));
+            ProductDTO product = fetchProduct(item.getProductId());
             if (product.getQuantity() < item.getQuantity()) {
                 throw new IllegalArgumentException(String.format(
                         "Insufficient stock for product: %s. Only %d units left.",
                         product.getName(), product.getQuantity()
                 ));
             }
+            reduceStockItems.add(new ReduceStockItem(item.getProductId(), item.getQuantity()));
+        }
+
+        // Call remote stock reduction
+        try {
+            restTemplate.postForEntity(
+                    productServiceUrl + "/internal/products/reduce-stock",
+                    reduceStockItems,
+                    Void.class
+            );
+        } catch (RestClientException e) {
+            log.error("Failed to perform remote stock reduction: {}", e.getMessage());
+            throw new RuntimeException("Stock reduction failed. Checkout aborted.");
         }
 
         // Create order from cart
@@ -156,21 +201,10 @@ public class CartService {
         BigDecimal totalPrice = BigDecimal.ZERO;
 
         for (CartItem cartItem : cart.getItems()) {
-            Product product = productRepository.findById(cartItem.getProductId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + cartItem.getProductId()));
-
             OrderItem orderItem = new OrderItem(cartItem.getProductId(), cartItem.getQuantity(), cartItem.getPriceAtTime());
             orderItems.add(orderItem);
 
             BigDecimal subtotal = cartItem.getPriceAtTime().multiply(BigDecimal.valueOf(cartItem.getQuantity()));
-
-            // Update product: reduce quantity, increment sales, add revenue
-            product.setQuantity(product.getQuantity() - cartItem.getQuantity());
-            product.setSalesCount(product.getSalesCount() + cartItem.getQuantity());
-            product.setRevenue(product.getRevenue().add(subtotal));
-            product.setUpdatedAt(LocalDateTime.now());
-            productRepository.save(product);
-
             totalPrice = totalPrice.add(subtotal);
         }
 
@@ -218,9 +252,7 @@ public class CartService {
         List<CartItemDTO> itemDTOs = cart.getItems().stream()
                 .map(item -> {
                     BigDecimal subtotal = item.getPriceAtTime().multiply(BigDecimal.valueOf(item.getQuantity()));
-                    String productName = productRepository.findById(item.getProductId())
-                            .map(Product::getName)
-                            .orElse("Unknown Product");
+                    String productName = getProductName(item.getProductId());
                     return new CartItemDTO(item.getProductId(), item.getProductId(), productName,
                             item.getQuantity(), item.getPriceAtTime(), subtotal);
                 })
@@ -238,9 +270,7 @@ public class CartService {
     private OrderDTO convertOrderToDTO(Order order) {
         List<OrderItemDTO> itemDTOs = order.getItems().stream()
                 .map(item -> {
-                    String productName = productRepository.findById(item.getProductId())
-                            .map(Product::getName)
-                            .orElse("Unknown Product");
+                    String productName = getProductName(item.getProductId());
                     return new OrderItemDTO(item.getProductId(), productName,
                             item.getQuantity(), item.getUnitPrice(), item.getTotalPrice());
                 })

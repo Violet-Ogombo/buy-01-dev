@@ -1,7 +1,6 @@
-package com.example.product.model;
+package com.example.order.model;
 
 import org.springframework.data.mongodb.core.mapping.Field;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -19,7 +18,6 @@ public class CartItem {
     @Field("added_at")
     private LocalDateTime addedAt;
 
-    // Constructors
     public CartItem() {
         this.addedAt = LocalDateTime.now();
     }
@@ -31,7 +29,6 @@ public class CartItem {
         this.priceAtTime = priceAtTime;
     }
 
-    // Getters and Setters
     public String getProductId() {
         return productId;
     }

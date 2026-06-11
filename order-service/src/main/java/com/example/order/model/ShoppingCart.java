@@ -1,9 +1,8 @@
-package com.example.product.model;
+package com.example.order.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -30,7 +29,6 @@ public class ShoppingCart {
     @Field("updated_at")
     private LocalDateTime updatedAt;
 
-    // Constructors
     public ShoppingCart() {
         this.totalAmount = BigDecimal.ZERO;
         this.createdAt = LocalDateTime.now();
@@ -42,7 +40,6 @@ public class ShoppingCart {
         this.userId = userId;
     }
 
-    // Getters and Setters
     public String getId() {
         return id;
     }

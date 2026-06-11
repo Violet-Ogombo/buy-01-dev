@@ -51,6 +51,36 @@ spring:
                 name: X-Forwarded-Proto
                 value: http
 
+        - id: order-service-cart
+          uri: lb://order-service
+          predicates:
+            - Path=/api/v1/cart/**
+          filters:
+            - name: AddRequestHeader
+              args:
+                name: X-Forwarded-Proto
+                value: http
+
+        - id: order-service-orders
+          uri: lb://order-service
+          predicates:
+            - Path=/api/v1/orders/**
+          filters:
+            - name: AddRequestHeader
+              args:
+                name: X-Forwarded-Proto
+                value: http
+
+        - id: order-service-buyers
+          uri: lb://order-service
+          predicates:
+            - Path=/api/v1/buyers/**
+          filters:
+            - name: AddRequestHeader
+              args:
+                name: X-Forwarded-Proto
+                value: http
+
         - id: product-service-v1
           uri: lb://product-service
           predicates:

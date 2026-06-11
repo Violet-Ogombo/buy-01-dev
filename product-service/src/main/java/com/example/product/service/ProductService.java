@@ -16,6 +16,8 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import com.example.product.dto.ReduceStockItem;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +50,27 @@ public class ProductService {
         this.kafkaTemplate = kafkaTemplate;
         this.restTemplate = restTemplate;
         this.auditService = auditService;
+    }
+
+    public void reduceStock(List<ReduceStockItem> items) {
+        for (ReduceStockItem item : items) {
+            Product product = productRepository.findById(item.getProductId())
+                    .orElseThrow(() -> new com.example.product.exception.ResourceNotFoundException(NOT_FOUND_MESSAGE + item.getProductId()));
+            
+            if (product.getQuantity() < item.getQuantity()) {
+                throw new IllegalArgumentException("Insufficient stock for product " + product.getName() + 
+                                                   " (id: " + product.getId() + "). Available: " + product.getQuantity() + 
+                                                   ", Requested: " + item.getQuantity());
+            }
+            
+            BigDecimal subtotal = BigDecimal.valueOf(product.getPrice()).multiply(BigDecimal.valueOf(item.getQuantity()));
+            
+            product.setQuantity(product.getQuantity() - item.getQuantity());
+            product.setSalesCount(product.getSalesCount() + item.getQuantity());
+            product.setRevenue(product.getRevenue().add(subtotal));
+            product.setUpdatedAt(LocalDateTime.now());
+            productRepository.save(product);
+        }
     }
 
     public List<Product> getAllProducts(int page, int size) {

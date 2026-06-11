@@ -1,7 +1,7 @@
-package com.example.product.repository;
+package com.example.order.repository;
 
-import com.example.product.model.Order;
-import com.example.product.model.OrderStatus;
+import com.example.order.model.Order;
+import com.example.order.model.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;

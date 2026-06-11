@@ -1,7 +1,7 @@
-package com.example.product.controller;
+package com.example.order.controller;
 
-import com.example.product.dto.BuyerAnalyticsDTO;
-import com.example.product.service.BuyerAnalyticsService;
+import com.example.order.dto.BuyerAnalyticsDTO;
+import com.example.order.service.BuyerAnalyticsService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
