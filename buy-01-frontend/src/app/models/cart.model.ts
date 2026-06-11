@@ -18,5 +18,4 @@ export interface CartDTO {
 export interface CheckoutRequest {
   paymentMethod: string;
   shippingAddress: string;
-  phoneNumber: string;
 }

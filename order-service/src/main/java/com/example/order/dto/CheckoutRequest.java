@@ -3,14 +3,12 @@ package com.example.order.dto;
 public class CheckoutRequest {
     private String paymentMethod; // PAY_ON_DELIVERY, CREDIT_CARD, etc.
     private String shippingAddress;
-    private String phoneNumber;
 
     public CheckoutRequest() {}
 
-    public CheckoutRequest(String paymentMethod, String shippingAddress, String phoneNumber) {
+    public CheckoutRequest(String paymentMethod, String shippingAddress) {
         this.paymentMethod = paymentMethod;
         this.shippingAddress = shippingAddress;
-        this.phoneNumber = phoneNumber;
     }
 
     public String getPaymentMethod() {
@@ -27,13 +25,5 @@ public class CheckoutRequest {
 
     public void setShippingAddress(String shippingAddress) {
         this.shippingAddress = shippingAddress;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
     }
 }

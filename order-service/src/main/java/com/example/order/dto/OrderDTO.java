@@ -14,7 +14,7 @@ public class OrderDTO {
     private OrderStatus status;
     private String paymentMethod;
     private String shippingAddress;
-    private String phoneNumber;
+    private String trackingNumber;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -22,7 +22,7 @@ public class OrderDTO {
 
     public OrderDTO(String id, String orderNumber, String userId, List<OrderItemDTO> items,
                     BigDecimal total, OrderStatus status, String paymentMethod,
-                    String shippingAddress, String phoneNumber, LocalDateTime createdAt, LocalDateTime updatedAt) {
+                    String shippingAddress, String trackingNumber, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.orderNumber = orderNumber;
         this.userId = userId;
@@ -31,7 +31,7 @@ public class OrderDTO {
         this.status = status;
         this.paymentMethod = paymentMethod;
         this.shippingAddress = shippingAddress;
-        this.phoneNumber = phoneNumber;
+        this.trackingNumber = trackingNumber;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -100,12 +100,12 @@ public class OrderDTO {
         this.shippingAddress = shippingAddress;
     }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
+    public String getTrackingNumber() {
+        return trackingNumber;
     }
 
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
+    public void setTrackingNumber(String trackingNumber) {
+        this.trackingNumber = trackingNumber;
     }
 
     public LocalDateTime getCreatedAt() {

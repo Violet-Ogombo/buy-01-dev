@@ -16,22 +16,6 @@
       <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()" class="checkout-form">
         <h2 class="section-title">Shipping & Payment Information</h2>
 
-        <!-- Phone Number Field -->
-        <div class="form-field">
-          <label for="phoneNumber">Phone Number</label>
-          <input
-            type="tel"
-            id="phoneNumber"
-            formControlName="phoneNumber"
-            placeholder="e.g. +1234567890"
-            [class.input-error]="isFieldInvalid('phoneNumber')"
-          />
-          <div *ngIf="isFieldInvalid('phoneNumber')" class="form-error-text">
-            <span *ngIf="checkoutForm.get('phoneNumber')?.errors?.['required']">Phone number is required.</span>
-            <span *ngIf="checkoutForm.get('phoneNumber')?.errors?.['pattern']">Please enter a valid phone format.</span>
-          </div>
-        </div>
-
         <!-- Pay on Delivery Checkbox -->
         <div class="form-field-checkbox">
           <label class="checkbox-label">

@@ -160,7 +160,7 @@
   &::before {
     content: '';
     position: absolute;
-    top: 24px;
+    top: 38px;
     left: 12.5%;
     right: 12.5%;
     height: 4px;
@@ -467,7 +467,7 @@
     padding-left: 2rem;
 
     &::before {
-      left: 42px;
+      left: 54px;
       width: 4px;
       height: calc(100% - 60px);
       transform: none;

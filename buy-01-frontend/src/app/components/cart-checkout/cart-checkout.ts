@@ -68,8 +68,7 @@ export class CartCheckoutComponent implements OnInit, OnDestroy {
       expiryMonth: ['', [Validators.required, Validators.pattern('^(0[1-9]|1[0-2])$')]],
       expiryYear: ['', [Validators.required, Validators.pattern('^\\d{2}$')]],
       securityNumber: ['', [Validators.required, Validators.pattern('^\\d{3,4}$')]],
-      shippingAddress: ['', [Validators.required, Validators.minLength(10)]],
-      phoneNumber: ['', [Validators.required, Validators.pattern('^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\\s\\./0-9]*$')]]
+      shippingAddress: ['', [Validators.required, Validators.minLength(10)]]
     });
 
     this.checkoutForm.valueChanges
@@ -149,8 +148,7 @@ export class CartCheckoutComponent implements OnInit, OnDestroy {
     const formVal = this.checkoutForm.getRawValue();
     const request = {
       paymentMethod: formVal.payOnDelivery ? 'PAY_ON_DELIVERY' : 'CARD_PAYMENT',
-      shippingAddress: formVal.shippingAddress,
-      phoneNumber: formVal.phoneNumber
+      shippingAddress: formVal.shippingAddress
     };
     
     this.cartService.checkout(request)

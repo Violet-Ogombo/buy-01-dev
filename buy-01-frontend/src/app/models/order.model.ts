@@ -17,7 +17,6 @@ export interface OrderDTO {
   status: OrderStatus;
   paymentMethod: string;
   shippingAddress: string;
-  phoneNumber: string;
   createdAt: string;
   updatedAt: string;
 }
