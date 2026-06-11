@@ -34,66 +34,67 @@ pipeline {
             }
         }
 
-        stage('Build & Analyze Java Services') {
-            parallel {
-                stage('API Gateway') {
-                    steps {
-                        echo 'Building & Analyzing api-gateway...'
-                        withSonarQubeEnv('SonarQube') {
-                            dir('api-gateway') {
-                                sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=api-gateway'
-                            }
-                        }
+        stage('Build & Analyze API Gateway') {
+            steps {
+                echo 'Building & Analyzing api-gateway...'
+                withSonarQubeEnv('SonarQube') {
+                    dir('api-gateway') {
+                        sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=api-gateway'
                     }
                 }
-                stage('Product Service') {
-                    steps {
-                        echo 'Building & Analyzing product-service...'
-                        withSonarQubeEnv('SonarQube') {
-                            dir('product-service') {
-                                sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=product-service'
-                            }
-                        }
+            }
+        }
+
+        stage('Build & Analyze Product Service') {
+            steps {
+                echo 'Building & Analyzing product-service...'
+                withSonarQubeEnv('SonarQube') {
+                    dir('product-service') {
+                        sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=product-service'
                     }
                 }
-                stage('Order Service') {
-                    steps {
-                        echo 'Building & Analyzing order-service...'
-                        withSonarQubeEnv('SonarQube') {
-                            dir('order-service') {
-                                sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=order-service'
-                            }
-                        }
+            }
+        }
+
+        stage('Build & Analyze Order Service') {
+            steps {
+                echo 'Building & Analyzing order-service...'
+                withSonarQubeEnv('SonarQube') {
+                    dir('order-service') {
+                        sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=order-service'
                     }
                 }
-                stage('Media Service') {
-                    steps {
-                        echo 'Building & Analyzing media-service...'
-                        withSonarQubeEnv('SonarQube') {
-                            dir('media-service') {
-                                sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=media-service'
-                            }
-                        }
+            }
+        }
+
+        stage('Build & Analyze Media Service') {
+            steps {
+                echo 'Building & Analyzing media-service...'
+                withSonarQubeEnv('SonarQube') {
+                    dir('media-service') {
+                        sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=media-service'
                     }
                 }
-                stage('Identity Service') {
-                    steps {
-                        echo 'Building & Analyzing identity-service...'
-                        withSonarQubeEnv('SonarQube') {
-                            dir('identity-service') {
-                                sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=identity-service'
-                            }
-                        }
+            }
+        }
+
+        stage('Build & Analyze Identity Service') {
+            steps {
+                echo 'Building & Analyzing identity-service...'
+                withSonarQubeEnv('SonarQube') {
+                    dir('identity-service') {
+                        sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=identity-service'
                     }
                 }
-                stage('Discovery Server') {
-                    steps {
-                        echo 'Building discovery-server...'
-                        withSonarQubeEnv('SonarQube') {
-                            dir('discovery-server') {
-                                sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=discovery-service'
-                            }
-                        }
+            }
+        }
+
+        stage('Build & Analyze Discovery Server') {
+            steps {
+                echo 'Building discovery-server...'
+                withSonarQubeEnv('SonarQube') {
+                    dir('discovery-server') {
+                        sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=discovery-service'
                     }
                 }
             }
