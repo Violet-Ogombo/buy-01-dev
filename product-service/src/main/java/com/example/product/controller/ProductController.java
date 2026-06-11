@@ -94,5 +94,11 @@ public class ProductController {
 		productService.reduceStock(items);
 		return ResponseEntity.ok().build();
 	}
+
+	@PostMapping("/internal/products/revert-stock")
+	public ResponseEntity<Void> revertStock(@RequestBody List<com.example.product.dto.RevertStockItem> items) {
+		productService.revertStock(items);
+		return ResponseEntity.ok().build();
+	}
 }
 

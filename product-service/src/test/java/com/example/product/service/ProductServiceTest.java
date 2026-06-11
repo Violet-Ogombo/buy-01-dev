@@ -53,6 +53,31 @@ class ProductServiceTest {
     }
 
     @Test
+    void revertStock_successRevertsQuantitySalesAndRevenue() {
+        Product p = new Product();
+        p.setId("p1");
+        p.setQuantity(10);
+        p.setSalesCount(5);
+        p.setRevenue(new java.math.BigDecimal("100.00"));
+        fakeRepoHolder.saved.put("p1", p);
+
+        var revertItem = new com.example.product.dto.RevertStockItem("p1", 2, new java.math.BigDecimal("40.00"));
+        productService.revertStock(List.of(revertItem));
+
+        Product updated = fakeRepoHolder.saved.get("p1");
+        assertThat(updated.getQuantity()).isEqualTo(12);
+        assertThat(updated.getSalesCount()).isEqualTo(3);
+        assertThat(updated.getRevenue()).isEqualByComparingTo("60.00");
+    }
+
+    @Test
+    void revertStock_throwsNotFoundWhenProductMissing() {
+        var revertItem = new com.example.product.dto.RevertStockItem("missing", 2, new java.math.BigDecimal("40.00"));
+        assertThatThrownBy(() -> productService.revertStock(List.of(revertItem)))
+            .isInstanceOf(com.example.product.exception.ResourceNotFoundException.class);
+    }
+
+    @Test
     void addImages_successAddsUrl() {
         Product p = new Product();
         p.setId("p1");

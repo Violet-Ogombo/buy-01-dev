@@ -17,6 +17,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.example.product.dto.ReduceStockItem;
+import com.example.product.dto.RevertStockItem;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -68,6 +69,24 @@ public class ProductService {
             product.setQuantity(product.getQuantity() - item.getQuantity());
             product.setSalesCount(product.getSalesCount() + item.getQuantity());
             product.setRevenue(product.getRevenue().add(subtotal));
+            product.setUpdatedAt(LocalDateTime.now());
+            productRepository.save(product);
+        }
+    }
+
+    public void revertStock(List<RevertStockItem> items) {
+        for (RevertStockItem item : items) {
+            Product product = productRepository.findById(item.getProductId())
+                    .orElseThrow(() -> new com.example.product.exception.ResourceNotFoundException(NOT_FOUND_MESSAGE + item.getProductId()));
+            
+            product.setQuantity(product.getQuantity() + item.getQuantity());
+            product.setSalesCount(Math.max(0, product.getSalesCount() - item.getQuantity()));
+            
+            BigDecimal newRevenue = product.getRevenue().subtract(item.getSubtotal());
+            if (newRevenue.compareTo(BigDecimal.ZERO) < 0) {
+                newRevenue = BigDecimal.ZERO;
+            }
+            product.setRevenue(newRevenue);
             product.setUpdatedAt(LocalDateTime.now());
             productRepository.save(product);
         }

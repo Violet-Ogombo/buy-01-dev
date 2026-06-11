@@ -16,6 +16,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.example.order.dto.RevertStockItem;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -85,6 +87,24 @@ public class OrderService {
 
         if (order.getStatus() == OrderStatus.DELIVERED || order.getStatus() == OrderStatus.CANCELLED) {
             throw new IllegalArgumentException("Cannot cancel order with status: " + order.getStatus());
+        }
+
+        // Call remote stock reversion in product-service
+        List<RevertStockItem> revertItems = new java.util.ArrayList<>();
+        for (com.example.order.model.OrderItem item : order.getItems()) {
+            BigDecimal subtotal = item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
+            revertItems.add(new RevertStockItem(item.getProductId(), item.getQuantity(), subtotal));
+        }
+
+        try {
+            restTemplate.postForEntity(
+                    productServiceUrl + "/internal/products/revert-stock",
+                    revertItems,
+                    Void.class
+            );
+        } catch (org.springframework.web.client.RestClientException e) {
+            log.error("Failed to revert stock for cancelled order {}: {}", orderId, e.getMessage());
+            throw new RuntimeException("Could not cancel order due to communication failure with product service.");
         }
 
         order.setStatus(OrderStatus.CANCELLED);

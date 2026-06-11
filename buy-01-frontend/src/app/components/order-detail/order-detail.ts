@@ -1,9 +1,10 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subject, forkJoin } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { OrderService } from '../../services/order.service';
+import { CartService } from '../../services/cart.service';
 import { ToastService } from '../../services/toast.service';
 import { OrderDTO } from '../../models/order.model';
 
@@ -27,6 +28,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private orderService: OrderService,
+    private cartService: CartService,
     private toast: ToastService,
     private router: Router,
     private cdr: ChangeDetectorRef
@@ -97,16 +99,23 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     if (!this.order) return;
     if (!confirm('Duplicating items to your cart. Continue?')) return;
 
-    this.orderService.redoOrder(this.order.id)
-      .subscribe({
-        next: () => {
-          this.toast.success('Items added to cart');
-          this.router.navigate(['/cart']);
-        },
-        error: () => {
-          this.toast.error('Failed to reorder items');
-        }
-      });
+    this.loading = true;
+    const additions$ = this.order.items.map(item => this.cartService.addToCart(item.productId, item.quantity));
+
+    forkJoin(additions$).subscribe({
+      next: () => {
+        this.loading = false;
+        this.toast.success('Items added to cart');
+        this.router.navigate(['/cart']);
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.loading = false;
+        const msg = err.error?.message || err.error?.error || 'Failed to add items to cart';
+        this.toast.error(msg);
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   getStatusStepIndex(status: string): number {

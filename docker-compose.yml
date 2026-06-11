@@ -274,7 +274,7 @@ services:
       - jenkins_data:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      JAVA_OPTS: "-Xmx2g -Xms1g"
+      JAVA_OPTS: "-Xmx2g -Xms1g -Dorg.jenkinsci.plugins.durabletask.BourneShellScript.HEARTBEAT_CHECK_INTERVAL=86400 -Dorg.jenkinsci.plugins.durabletask.BourneShellScript.USE_BINARY_WRAPPER=true"
     networks:
       - app-network
     restart: unless-stopped
