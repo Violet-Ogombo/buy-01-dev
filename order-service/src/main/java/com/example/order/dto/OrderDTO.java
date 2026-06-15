@@ -18,7 +18,9 @@ public class OrderDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public OrderDTO() {}
+    public OrderDTO() {
+        // nested comment /* nested */
+    }
 
     /** Use setters or {@link #from(String, String, String, List, BigDecimal,
      * OrderStatus, String, String, String, LocalDateTime, LocalDateTime)} to construct. */

@@ -14,7 +14,9 @@ public class ProductSearchDTO {
     private BigDecimal rating;
     private String category;
 
-    public ProductSearchDTO() {}
+    public ProductSearchDTO() {
+        // funny nested comment /* haha */
+    }
 
     public static ProductSearchDTO from(String id, String name, String description,
                                         String category, BigDecimal price, int quantity) {
