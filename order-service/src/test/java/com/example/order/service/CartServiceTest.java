@@ -5,6 +5,7 @@ import com.example.order.dto.CheckoutRequest;
 import com.example.order.dto.OrderDTO;
 import com.example.order.dto.ProductDTO;
 import com.example.order.exception.ResourceNotFoundException;
+import com.example.order.exception.ServiceUnavailableException;
 import com.example.order.model.*;
 import com.example.order.repository.OrderRepository;
 import com.example.order.repository.ShoppingCartRepository;
@@ -211,8 +212,16 @@ class CartServiceTest {
     void addToCart_serviceDown_throws() {
         restTemplate.throwServiceDown = true;
         assertThatThrownBy(() -> cartService.addToCart("u1", "p1", 1))
-                .isInstanceOf(RuntimeException.class)
+                .isInstanceOf(ServiceUnavailableException.class)
                 .hasMessageContaining("Product service is currently unavailable");
+    }
+
+    @Test
+    void addToCart_nullProductResponse_throws() {
+        restTemplate.product = null;
+        assertThatThrownBy(() -> cartService.addToCart("u1", "p1", 1))
+                .isInstanceOf(ServiceUnavailableException.class)
+                .hasMessageContaining("empty response");
     }
 
     // ──────────────────────────────────────────────────────────────────────
@@ -329,7 +338,7 @@ class CartServiceTest {
         CheckoutRequest req = new CheckoutRequest();
         req.setPaymentMethod("PAY_ON_DELIVERY");
         assertThatThrownBy(() -> cartService.checkoutCart("u1", req))
-                .isInstanceOf(RuntimeException.class)
+                .isInstanceOf(ServiceUnavailableException.class)
                 .hasMessageContaining("Stock reduction failed");
     }
 

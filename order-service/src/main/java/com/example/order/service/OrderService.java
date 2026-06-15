@@ -4,6 +4,7 @@ import com.example.order.dto.OrderDTO;
 import com.example.order.dto.OrderItemDTO;
 import com.example.order.dto.ProductDTO;
 import com.example.order.exception.ResourceNotFoundException;
+import com.example.order.exception.ServiceUnavailableException;
 import com.example.order.model.Order;
 import com.example.order.model.OrderStatus;
 import com.example.order.repository.OrderRepository;
@@ -104,7 +105,7 @@ public class OrderService {
             );
         } catch (org.springframework.web.client.RestClientException e) {
             log.error("Failed to revert stock for cancelled order {}: {}", orderId, e.getMessage());
-            throw new RuntimeException("Could not cancel order due to communication failure with product service.");
+            throw new ServiceUnavailableException("Could not cancel order due to communication failure with product service.");
         }
 
         order.setStatus(OrderStatus.CANCELLED);

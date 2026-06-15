@@ -5,6 +5,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import com.example.order.exception.AccessDeniedException;
+import com.example.order.exception.GlobalExceptionHandler;
+import com.example.order.exception.ResourceNotFoundException;
+import com.example.order.exception.ServiceUnavailableException;
 
 import java.util.Map;
 
@@ -82,6 +86,15 @@ class GlobalExceptionHandlerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody()).containsEntry("email", "must not be blank");
+    }
+
+    @Test
+    void handleServiceUnavailable_returns503WithMessage() {
+        ServiceUnavailableException ex = new ServiceUnavailableException("Product service is down");
+        ResponseEntity<Map<String, String>> response = handler.handleServiceUnavailable(ex);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        assertThat(response.getBody()).containsEntry("error", "Product service is down");
     }
 
     @Test

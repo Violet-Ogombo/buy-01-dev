@@ -3,6 +3,7 @@ package com.example.order.service;
 import com.example.order.dto.OrderDTO;
 import com.example.order.dto.ProductDTO;
 import com.example.order.exception.ResourceNotFoundException;
+import com.example.order.exception.ServiceUnavailableException;
 import com.example.order.model.Order;
 import com.example.order.model.OrderItem;
 import com.example.order.model.OrderStatus;
@@ -257,7 +258,7 @@ class OrderServiceTest {
         persistWithItems("o1", "u1", OrderStatus.PENDING);
         restTemplate.failPost = true;
         assertThatThrownBy(() -> orderService.cancelOrder("o1"))
-                .isInstanceOf(RuntimeException.class)
+                .isInstanceOf(ServiceUnavailableException.class)
                 .hasMessageContaining("communication failure");
     }
 

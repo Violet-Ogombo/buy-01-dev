@@ -8,6 +8,7 @@ import com.example.order.dto.OrderItemDTO;
 import com.example.order.dto.ProductDTO;
 import com.example.order.dto.ReduceStockItem;
 import com.example.order.exception.ResourceNotFoundException;
+import com.example.order.exception.ServiceUnavailableException;
 import com.example.order.model.*;
 import com.example.order.repository.ShoppingCartRepository;
 import com.example.order.repository.OrderRepository;
@@ -48,12 +49,16 @@ public class CartService {
 
     private ProductDTO fetchProduct(String productId) {
         try {
-            return restTemplate.getForObject(productServiceUrl + "/" + productId, ProductDTO.class);
+            ProductDTO product = restTemplate.getForObject(productServiceUrl + "/" + productId, ProductDTO.class);
+            if (product == null) {
+                throw new ServiceUnavailableException("Product service returned an empty response for id: " + productId);
+            }
+            return product;
         } catch (HttpClientErrorException.NotFound e) {
             throw new ResourceNotFoundException("Product not found with id: " + productId);
         } catch (RestClientException e) {
             log.error("Failed to fetch product metadata for id {}: {}", productId, e.getMessage());
-            throw new RuntimeException("Product service is currently unavailable.");
+            throw new ServiceUnavailableException("Product service is currently unavailable.");
         }
     }
 
@@ -183,7 +188,7 @@ public class CartService {
             );
         } catch (RestClientException e) {
             log.error("Failed to perform remote stock reduction: {}", e.getMessage());
-            throw new RuntimeException("Stock reduction failed. Checkout aborted.");
+            throw new ServiceUnavailableException("Stock reduction failed. Checkout aborted.");
         }
 
         // Create order from cart
