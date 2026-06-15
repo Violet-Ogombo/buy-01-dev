@@ -1,351 +1,132 @@
-# SafeZone: Code Quality & Security Enhancement
+# E-Commerce Microservices Platform
 
-## Project Overview
-
-SafeZone is an automated code quality and security enhancement framework for the buy-01-dev e-commerce microservices project. It integrates **SonarQube** with **GitHub** and **GitHub Actions** to provide continuous code analysis, detect quality issues, and enforce quality gates across all microservices.
-
-**Key Objectives:**
-- Automated code quality checks using SonarQube
-- GitHub integration for PR-based analysis
-- Security vulnerability detection
-- Continuous monitoring and compliance tracking
-- Code review and approval workflows
+Welcome to the fully completed e-commerce platform codebase. This repository comprises a robust, cloud-native microservices architecture designed to provide a secure, scalable, and responsive online shopping environment.
 
 ---
 
-## Architecture
+## 1. Project Overview & Features
 
-### Components
+This platform integrates a modern Angular frontend with a Java Spring Boot backend, orchestrating data transactions across MongoDB databases and synchronizing states using Apache Kafka events.
 
-| Component | Purpose | Details |
-|-----------|---------|---------|
-| **SonarCloud** | Cloud Code Quality Platform | Analyzes code and provides quality metrics |
-| **GitHub Actions** | CI/CD Pipeline | Triggers analysis on push/PR events |
-| **SonarQube (local)** | Local Analysis Server | Optional: for Jenkins integration |
-| **Jenkins** | Local CI/CD | Optional: alternative to GitHub Actions |
-
-### Supported Microservices
-
-- **api-gateway**: API Gateway service (Port 8080)
-- **product-service**: Product management (Port 8082)
-- **media-service**: Media handling (Port 8083)
-- **identity-service**: User authentication (Port 8081)
-- **buy-01-frontend**: Angular frontend application
+### Core Implemented Features:
+1.  **Shopping Cart System**:
+    *   Fully persisted inside MongoDB (per user session).
+    *   Supports real-time stock checks against catalog quantities.
+    *   Add items, update quantities, remove items, and clear cart actions.
+2.  **Checkout & Order Processing**:
+    *   Converts cart items to Pending Orders with a 25% VAT tax calculation.
+    *   Enables checkout using the default "Pay on Delivery" (`PAY_ON_DELIVERY`) option.
+3.  **Order Management**:
+    *   Track order state transitions: `PENDING` ➔ `PROCESSING` ➔ `SHIPPED` ➔ `DELIVERED`.
+    *   Order cancellation: Releases reserved stock, updating inventory counts back to catalog in MongoDB, and adjusts seller revenue.
+    *   Order duplication (Buy Again): Re-populates cart with historical order items for checkout.
+4.  **Keyword Search & Advanced Filtering**:
+    *   Full-text search matching name and description keywords.
+    *   Filters by category and price range bounds (min/max).
+    *   Sort products by Popularity (Sales Count), Price (Ascending/Descending), Alphabetical Name, or Newest.
+5.  **User & Seller Profiles**:
+    *   **Buyer Profile**: Displays total orders count, total spent money, and a breakdown of the top 5 most bought items.
+    *   **Seller Dashboard**: Displays product listings management, total products sold, total accrued revenue, and top 5 best-selling products.
+6.  **Wishlist (Bonus Feature)**:
+    *   Save products for future purchases.
+    *   Puts pinned wishlist items directly into the cart.
+    *   Displays wishlist count badges inside the Navigation bar.
 
 ---
 
-## Setup Instructions
+## 2. Microservices Architecture
+
+The platform is divided into decoupled, single-responsibility services:
+
+```mermaid
+graph TD
+    Client[Angular Frontend] -->|HTTP :8080| Gateway[API Gateway]
+    Gateway -->|Route| AuthSvc[Identity Service :8081]
+    Gateway -->|Route| ProdSvc[Product Service :8082]
+    Gateway -->|Route| MediaSvc[Media Service :8083]
+    Gateway -->|Route| OrderSvc[Order Service :8084]
+    
+    ProdSvc -->|REST| MediaSvc
+    OrderSvc -->|REST| ProdSvc
+    
+    AuthSvc -->|Kafka: user-registered| TopicReg[Kafka Broker]
+    ProdSvc -->|Kafka: product-events| TopicProd[Kafka Broker]
+    MediaSvc -->|Kafka: image-uploaded| TopicMedia[Kafka Broker]
+    
+    TopicMedia -->|Consume| ProdSvc
+    
+    Discovery[Eureka Discovery Server :8761] <-->|Register/Discover| Gateway
+    Discovery <-->|Register/Discover| AuthSvc
+    Discovery <-->|Register/Discover| ProdSvc
+    Discovery <-->|Register/Discover| MediaSvc
+    Discovery <-->|Register/Discover| OrderSvc
+```
+
+### Downstream Microservices:
+*   **`discovery-server` (Port 8761)**: Serves as the Eureka Service Registry.
+*   **`api-gateway` (Port 8080)**: Single entryway handling CORS configuration and JWT claim extraction (propagates `X-User-Id` headers downstream).
+*   **`identity-service` (Port 8081)**: Manages accounts, hashes passwords using BCrypt, generates JWT tokens, and aggregates user spent details.
+*   **`product-service` (Port 8082)**: Manages catalog listings, search indexes, wishlists, and seller sales aggregations.
+*   **`media-service` (Port 8083)**: Secure image uploads, validates magic bytes (protects against MIME-type spoofing), and writes files to disk.
+*   **`order-service` (Port 8084)**: Cart transactions, checkout handling, order lifecycle updates, and buyer purchases analytics.
+*   **`buy-01-frontend` (Port 80/4200)**: Desktop and mobile responsive Angular UI.
+
+---
+
+## 3. Tech Stack & Infrastructure
+
+*   **Core Backend**: Java 21, Spring Boot 3.2, Spring Cloud Gateway, Netflix Eureka.
+*   **Core Frontend**: Angular 17+, Bootstrap, SCSS.
+*   **Databases**: MongoDB.
+*   **Messaging**: Apache Kafka (Zookeeper orchestrated).
+*   **DevOps & CI/CD**: Jenkins, Docker, Nginx, SonarQube.
+
+---
+
+## 4. Setup & Running Locally
 
 ### Prerequisites
+*   Docker & Docker Compose
+*   Maven 3.8+
+*   Node.js 18+ & Angular CLI
 
-- Git and GitHub account
-- SonarCloud account (https://sonarcloud.io)
-- GitHub repository access (Violet-Ogombo/buy-01-dev)
-- Docker (for local SonarQube, optional)
-
-### Step 1: Set Up SonarCloud
-
-1. Sign up at https://sonarcloud.io with your GitHub account
-2. Import your GitHub repository
-3. Generate a user authentication token:
-   - Navigate to: **Account → Security**
-   - Click: **Generate Tokens**
-   - Name: `GitHub Actions`
-   - Copy the token (shown only once)
-
-### Step 2: Add GitHub Secrets
-
-1. Go to GitHub repository: https://github.com/Violet-Ogombo/buy-01-dev
-2. Navigate to: **Settings → Secrets and variables → Actions**
-3. Create secret: `SONAR_TOKEN`
-   - Paste the token from Step 1
-
-### Step 3: Configure SonarQube Properties
-
-File: `sonar-project.properties` (repo root)
-
-```properties
-# Project Identification
-sonar.projectKey=buy-01-dev
-sonar.projectName=buy-01-dev
-sonar.organization=violet-ogombo
-
-# Code Analysis
-sonar.sources=.
-sonar.java.binaries=**/target/classes
-
-# Language & Encoding
-sonar.sourceEncoding=UTF-8
-
-# Test Reports
-sonar.junit.reportPaths=**/target/surefire-reports
-
-# Exclusions
-sonar.exclusions=\
-  **/node_modules/**,\
-  **/.git/**,\
-  **/target/**,\
-  **/dist/**,\
-  **/.angular/**
-```
-
-### Step 4: Set Up GitHub Actions Workflow
-
-File: `.github/workflows/sonarqube.yml`
-
-```yaml
-name: SonarQube Analysis
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-jobs:
-  sonarqube:
-    runs-on: ubuntu-latest
-    
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: 17
-          distribution: 'temurin'
-
-      - name: Run SonarQube Analysis
-        uses: SonarSource/sonarqube-scan-action@master
-        env:
-          SONAR_HOST_URL: https://sonarcloud.io
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_ORGANIZATION: violet-ogombo
-
-      - name: SonarQube Quality Gate
-        uses: SonarSource/sonarqube-quality-gate-action@master
-        timeout-minutes: 5
-        env:
-          SONAR_HOST_URL: https://sonarcloud.io
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-```
-
----
-
-## Configuration Details
-
-### SonarQube Properties Explained
-
-| Property | Purpose |
-|----------|---------|
-| `sonar.projectKey` | Unique project identifier in SonarCloud |
-| `sonar.organization` | SonarCloud organization namespace |
-| `sonar.sources` | Source code directory to analyze |
-| `sonar.java.binaries` | Compiled Java classes location |
-| `sonar.junit.reportPaths` | JUnit test results location |
-| `sonar.exclusions` | Directories to skip during analysis |
-
-### Exclusions
-
-The following directories are **excluded** from analysis:
-- `node_modules/` - Frontend dependencies
-- `target/` - Maven build artifacts
-- `dist/` - Build output
-- `.git/` - Version control
-- `.angular/` - Angular build cache
-
----
-
-## GitHub Integration
-
-### Workflow Triggers
-
-**GitHub Actions runs automatically on:**
-
-1. **Push to main branch**
-   ```bash
-   git push origin main
-   ```
-
-2. **Pull Requests to main**
-   ```bash
-   git checkout -b feature/my-feature
-   # Make changes
-   git push origin feature/my-feature
-   # Create PR via GitHub UI
-   ```
-
-### PR Analysis Results
-
-After workflow completion:
-- ✅ SonarCloud analysis status posted to PR
-- ✅ Quality gate results shown
-- ✅ Code issues highlighted
-- ❌ PR can be blocked if quality gate fails (with branch protection rules)
-
-### Branch Protection Rules (Recommended)
-
-1. Go to: **Settings → Branches → Branch protection rules**
-2. Add rule for `main` branch
-3. Require: "Status checks to pass before merging"
-4. Select: SonarQube Quality Gate
-
----
-
-## Code Analysis
-
-### Analysis Scope
-
-SonarQube analyzes:
-- ✅ Java code (all microservices)
-- ✅ Test coverage
-- ✅ Code smells
-- ✅ Security vulnerabilities
-- ✅ Bugs and potential issues
-
-### Running Analysis Locally
-
-For **SonarCloud** (recommended):
+### Fast Start (Docker Orchestrated)
+Start the entire ecosystem including databases, brokers, and microservices with a single command:
 ```bash
-# GitHub Actions runs automatically on push/PR
-# View results at: https://sonarcloud.io/dashboard?id=buy-01-dev
+# Start all containers in the background
+docker compose up -d
+
+# Verify all services are healthy
+docker compose ps
 ```
+The application will be accessible at `https://localhost` (or `http://localhost`).
 
-For **local SonarQube** (optional):
-```bash
-# Start SonarQube
-docker-compose up -d sonarqube
+### Manual Local Development Startup
 
-# Access at: http://localhost:9000
-# Admin: admin / admin
-```
-
----
-
-## Continuous Monitoring
-
-### SonarCloud Dashboard
-
-Monitor code quality at: **https://sonarcloud.io/dashboard?id=buy-01-dev**
-
-Metrics tracked:
-- **Code Coverage**: Percentage of code tested
-- **Technical Debt**: Time to fix all issues
-- **Code Smells**: Maintainability issues
-- **Bugs**: Critical issues
-- **Vulnerabilities**: Security issues
-- **Security Hotspots**: Potential security concerns
-
-### Quality Gate Status
-
-- **PASSED** ✅: Code meets quality standards
-- **FAILED** ❌: Issues detected, PR blocked (with branch rules)
+1.  **Start Services Registry**:
+    ```bash
+    cd discovery-server
+    mvn spring-boot:run
+    ```
+2.  **Start Support Databases/Brokers**:
+    ```bash
+    # Runs Mongo, Kafka, and Zookeeper
+    docker compose up -d mongodb kafka zookeeper
+    ```
+3.  **Start Services**:
+    Run `mvn spring-boot:run` inside `identity-service`, `product-service`, `media-service`, `order-service`, and `api-gateway` directories.
+4.  **Start Angular UI**:
+    ```bash
+    cd buy-01-frontend
+    npm install
+    npm run start # Access at http://localhost:4200
+    ```
 
 ---
 
-## Code Review & Approval Process
+## 5. CI/CD & Code Quality (Jenkins & SonarQube)
 
-### Recommended Workflow
-
-1. **Create Feature Branch**
-   ```bash
-   git checkout -b feature/description
-   ```
-
-2. **Commit Changes**
-   ```bash
-   git commit -m "feat: description"
-   ```
-
-3. **Push and Create PR**
-   ```bash
-   git push origin feature/description
-   ```
-
-4. **Wait for GitHub Actions**
-   - SonarCloud analysis runs automatically
-   - Results posted to PR
-
-5. **Review SonarCloud Results**
-   - Check quality gate status
-   - Review code issues
-   - Address findings
-
-6. **Code Review by Teammates**
-   - Team members review code
-   - SonarCloud findings discussed
-   - Approval required before merge
-
-7. **Merge to Main**
-   ```bash
-   # Merge via GitHub UI (requires approval + quality gate)
-   ```
-
----
-
-## Notifications & Monitoring (Bonus)
-
-### GitHub Notifications
-
-- PR comments with SonarCloud results
-- Commit status checks
-- Branch protection rule feedback
-
----
-
-## Testing & Verification
-
-### Verify SonarCloud Integration
-
-1. **Check Workflow Status**
-   ```bash
-   # On GitHub: Actions tab
-   # Should show: SonarQube Analysis workflow runs
-   ```
-
-2. **Create Test PR**
-   ```bash
-   git checkout -b test/sonarqube-integration
-   # Make small change
-   git commit -m "test: SonarQube integration"
-   git push origin test/sonarqube-integration
-   # Create PR via GitHub
-   ```
-
-3. **Verify Results**
-   - ✅ GitHub Actions runs
-   - ✅ SonarCloud analysis completes
-   - ✅ PR shows quality gate status
-   - ✅ Issues highlighted in PR
-
-### Local Testing (Optional)
-
-If using local SonarQube:
-```bash
-# Start containers
-docker-compose up -d
-
-# Verify SonarQube is running
-curl http://localhost:9000/api/system/health
-
-# Run analysis for a service
-cd product-service
-mvn clean verify sonar:sonar -Dsonar.projectKey=product-service
-```
-
----
-
-## Resources
-
-- [SonarQube Official Documentation](https://docs.sonarqube.org/latest/)
-- [SonarCloud Documentation](https://docs.sonarcloud.io/)
-- [GitHub Actions Documentation](https://docs.github.com/en/actions)
-- [SonarLint IDE Integration](https://www.sonarlint.org/)
-
----
-
-**Project**: buy-01-dev
-**Framework**: SafeZone Code Quality Initiative  
-**Last Updated**: May 2026
+This project adopts software engineering best practices with an automated CI/CD pipeline defined in the `Jenkinsfile`:
+*   **Build & Tests Execution**: Automatically compiles and executes unit tests on PR events (`mvn clean verify`).
+*   **Quality Gates Analysis**: Performs deep code inspection using SonarQube (`mvn sonar:sonar`) to flag Bugs, Vulnerabilities, Code Smells, and Code Coverage issues.
+*   **Automatic Deployment**: Compiles production bundles, tags Docker image backups (`buy-01-dev-<service>:backup`), and deploys new builds to the runtime system.
