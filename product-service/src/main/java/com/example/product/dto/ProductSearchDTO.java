@@ -16,29 +16,16 @@ public class ProductSearchDTO {
 
     public ProductSearchDTO() {}
 
-    public ProductSearchDTO(String id, String name, String description, BigDecimal price,
-                           int quantity, List<String> imageUrls, long salesCount, BigDecimal rating) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.price = price;
-        this.quantity = quantity;
-        this.imageUrls = imageUrls;
-        this.salesCount = salesCount;
-        this.rating = rating;
-    }
-
-    public ProductSearchDTO(String id, String name, String description, String category, BigDecimal price,
-                           int quantity, List<String> imageUrls, long salesCount, BigDecimal rating) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.category = category;
-        this.price = price;
-        this.quantity = quantity;
-        this.imageUrls = imageUrls;
-        this.salesCount = salesCount;
-        this.rating = rating;
+    public static ProductSearchDTO from(String id, String name, String description,
+                                        String category, BigDecimal price, int quantity) {
+        ProductSearchDTO dto = new ProductSearchDTO();
+        dto.id = id;
+        dto.name = name;
+        dto.description = description;
+        dto.category = category;
+        dto.price = price;
+        dto.quantity = quantity;
+        return dto;
     }
 
     public String getId() {

@@ -133,16 +133,17 @@ public class SearchService {
     }
 
     private ProductSearchDTO convertToSearchDTO(Product product) {
-        return new ProductSearchDTO(
+        ProductSearchDTO dto = ProductSearchDTO.from(
                 product.getId(),
                 product.getName(),
                 product.getDescription(),
                 product.getCategory(),
                 BigDecimal.valueOf(product.getPrice()),
-                product.getQuantity(),
-                product.getImageUrls(),
-                product.getSalesCount(),
-                BigDecimal.ZERO
+                product.getQuantity()
         );
+        dto.setImageUrls(product.getImageUrls());
+        dto.setSalesCount(product.getSalesCount());
+        dto.setRating(BigDecimal.ZERO);
+        return dto;
     }
 }

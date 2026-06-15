@@ -158,8 +158,12 @@ public class OrderService {
                 })
                 .toList();
 
-        return new OrderDTO(order.getId(), order.getOrderNumber(), order.getUserId(), itemDTOs,
-                order.getTotalAmount(), order.getStatus(), order.getPaymentMethod(),
-                order.getShippingAddress(), order.getTrackingNumber(), order.getCreatedAt(), order.getUpdatedAt());
+        OrderDTO dto = OrderDTO.from(order.getId(), order.getOrderNumber(), order.getUserId(), itemDTOs,
+                order.getTotalAmount(), order.getStatus(), order.getPaymentMethod());
+        dto.setShippingAddress(order.getShippingAddress());
+        dto.setTrackingNumber(order.getTrackingNumber());
+        dto.setCreatedAt(order.getCreatedAt());
+        dto.setUpdatedAt(order.getUpdatedAt());
+        return dto;
     }
 }

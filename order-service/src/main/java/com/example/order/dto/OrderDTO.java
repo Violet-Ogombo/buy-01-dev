@@ -20,20 +20,20 @@ public class OrderDTO {
 
     public OrderDTO() {}
 
-    public OrderDTO(String id, String orderNumber, String userId, List<OrderItemDTO> items,
-                    BigDecimal total, OrderStatus status, String paymentMethod,
-                    String shippingAddress, String trackingNumber, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.id = id;
-        this.orderNumber = orderNumber;
-        this.userId = userId;
-        this.items = items;
-        this.total = total;
-        this.status = status;
-        this.paymentMethod = paymentMethod;
-        this.shippingAddress = shippingAddress;
-        this.trackingNumber = trackingNumber;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+    /** Use setters or {@link #from(String, String, String, List, BigDecimal,
+     * OrderStatus, String, String, String, LocalDateTime, LocalDateTime)} to construct. */
+    public static OrderDTO from(String id, String orderNumber, String userId,
+                                List<OrderItemDTO> items, BigDecimal total,
+                                OrderStatus status, String paymentMethod) {
+        OrderDTO dto = new OrderDTO();
+        dto.id = id;
+        dto.orderNumber = orderNumber;
+        dto.userId = userId;
+        dto.items = items;
+        dto.total = total;
+        dto.status = status;
+        dto.paymentMethod = paymentMethod;
+        return dto;
     }
 
     public String getId() {

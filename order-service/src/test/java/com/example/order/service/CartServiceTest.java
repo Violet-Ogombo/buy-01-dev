@@ -307,14 +307,16 @@ class CartServiceTest {
 
     @Test
     void checkoutCart_notFound_throws() {
-        assertThatThrownBy(() -> cartService.checkoutCart("u-missing", new CheckoutRequest()))
+        CheckoutRequest req = new CheckoutRequest();
+        assertThatThrownBy(() -> cartService.checkoutCart("u-missing", req))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test
     void checkoutCart_emptyCart_throws() {
         savedCart("u1");
-        assertThatThrownBy(() -> cartService.checkoutCart("u1", new CheckoutRequest()))
+        CheckoutRequest req = new CheckoutRequest();
+        assertThatThrownBy(() -> cartService.checkoutCart("u1", req))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("empty cart");
     }
@@ -324,7 +326,8 @@ class CartServiceTest {
         ShoppingCart c = savedCart("u1");
         c.getItems().add(new CartItem("p1", 10, BigDecimal.TEN));
         restTemplate.product = new ProductDTO("p1", "Widget", 10.0, 2, "s");
-        assertThatThrownBy(() -> cartService.checkoutCart("u1", new CheckoutRequest()))
+        CheckoutRequest req = new CheckoutRequest();
+        assertThatThrownBy(() -> cartService.checkoutCart("u1", req))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Insufficient stock");
     }

@@ -37,7 +37,7 @@ class OrderModelTest {
     void order_setStatus_updatesUpdatedAt() throws InterruptedException {
         Order o = new Order();
         LocalDateTime before = o.getUpdatedAt();
-        Thread.sleep(10);
+        
         o.setStatus(OrderStatus.PROCESSING);
         assertThat(o.getStatus()).isEqualTo(OrderStatus.PROCESSING);
         assertThat(o.getUpdatedAt()).isAfterOrEqualTo(before);
