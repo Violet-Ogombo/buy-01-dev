@@ -31,15 +31,6 @@ pipeline {
                 echo "========== Checking out code =========="
                 checkout scm
                 sh 'git log --oneline -1'
-                script {
-                    try {
-                        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-                            sh 'echo "SONAR_TOKEN (base64):" && echo "$SONAR_TOKEN" | base64'
-                        }
-                    } catch (Exception e) {
-                        echo "Failed to load sonar-token: ${e.message}"
-                    }
-                }
             }
         }
 
