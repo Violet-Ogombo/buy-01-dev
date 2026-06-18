@@ -42,10 +42,8 @@ public class SearchService {
                     if (minPrice != null && price.compareTo(minPrice) < 0) {
                         return false;
                     }
-                    if (maxPrice != null && price.compareTo(maxPrice) > 0) {
-                        return false;
-                    }
-                    return true;
+                    
+                    return (maxPrice != null && price.compareTo(maxPrice) > 0);
                 })
                 .sorted((p1, p2) -> BigDecimal.valueOf(p1.getPrice()).compareTo(BigDecimal.valueOf(p2.getPrice())))
                 .map(this::convertToSearchDTO)
